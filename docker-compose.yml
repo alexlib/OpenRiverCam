@@ -1,0 +1,60 @@
+version: "3.8"
+services:
+  # Python-flask application with web portal and API.
+  portal:
+    build: ./portal
+    ports:
+      - 80:80
+    volumes:
+      - type: bind
+        source: ./portal
+        target: /app
+    depends_on:
+      - storage
+      - rabbitmq
+
+  # Python application for data processing.
+  processing:
+    build: ./processing
+    volumes:
+      - type: bind
+        source: ./processing
+        target: /app
+    depends_on:
+      - portal
+      - storage
+      - rabbitmq
+    restart: always
+
+  # S3 storage application which mimics AWS storage service.
+  storage:
+    image: minio/minio
+    ports:
+      - 9000:9000
+    environment:
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY}"
+    volumes:
+      - storage-data:/data
+    command: server /data
+
+  # Message broker for processing queue.
+  rabbitmq:
+    image: rabbitmq:3.8.9-management
+    ports:
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER}"
+      RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASSWORD}"
+
+  # Postgress database.
+  db:
+    image: postgres:9
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+
+# Persistent volume for storage container, not mounted to host OS.
+volumes:
+  storage-data:
