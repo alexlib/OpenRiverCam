@@ -1,0 +1,19 @@
+name: openrivercam
+
+channels:
+  - conda-forge
+
+# note that these are the developer dependencies,
+# if you only want the user dependencies, see
+# install_requires in setup.py
+dependencies:
+  - black
+  - numpy
+  - pip
+  - scipy
+  - scipy-image
+  - opencv
+  - python>=3.8
+  - pip:
+    - openpiv
+
