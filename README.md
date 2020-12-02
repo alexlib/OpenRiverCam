@@ -24,3 +24,26 @@ Interaction with services:
 * Postgres database is exposed at port 5432 and can be connected to with pgAdmin or any other PostgreSQL client.
 
 Please note: it's strongly advised to change the default credentials in the ".env" file, especially when opening the ports for other machines.
+
+## Examples
+Example task for queue:
+```json
+{
+  "type": "extract_snapshots",
+  "kwargs": {
+    "movie": {
+      "file": {
+        "bucket": "test-bucket",
+        "identifier": "schedule_20201120_142304.mkv"
+      }
+    },
+    "camera": {
+      "name": "Foscam E9900P",
+      "configuration": {},
+      "lensParameters": {
+        "k": 0.5
+      }
+    }
+  }
+}
+```
