@@ -16,6 +16,8 @@ services:
   # Python application for data processing.
   processing:
     build: ./processing
+    environment:
+      AMQP_CONNECTION_STRING: "amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/"
     volumes:
       - type: bind
         source: ./processing
@@ -43,6 +45,7 @@ services:
     image: rabbitmq:3.8.9-management
     ports:
       - 15672:15672
+      - 5672:5672
     environment:
       RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER}"
       RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASSWORD}"
