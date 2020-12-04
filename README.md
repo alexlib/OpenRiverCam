@@ -47,3 +47,8 @@ Example task for queue:
   }
 }
 ```
+
+Command to enter processing container shell:
+```
+docker exec -it hydrohub_processing_1 bash
+```
