@@ -18,7 +18,7 @@ def upload_file(fn, bucket, dest=None):
     # TODO: finalize implementation
     # Example upload file to S3.
     s3 = boto3.resource('s3',
-                        endpoint_url='http://storage:9000',
+                        endpoint_url=os.getenv('MINIO_ACCESS_URL'),
                         aws_access_key_id=os.getenv('S3_ACCESS_KEY'),
                         aws_secret_access_key=os.getenv('S3_ACCESS_SECRET'),
                         config=boto3.session.Config(signature_version='s3v4')
