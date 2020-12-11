@@ -12,11 +12,27 @@ More information: https://docs.docker.com/compose/install/.
 3. Install Git.  
 More information: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git.
 
-4. Clone repository.  
-Run "git clone https://github.com/TAHMO/OpenRiverCam.git" in your terminal.
+4. Clone repository.
+Run
+   ```
+   git clone https://github.com/TAHMO/OpenRiverCam.git" in your terminal
+   ```
 
+5. Move to the target folder to run the software as a service
+```
+cd OpenRiverCam
+```
 ## Usage
-To run the software, simply run "docker-compose up" from the folder in which "docker-compose.yml" is located.
+To run the software, simply:
+1. Open a terminal 
+2. Change directory to the location of the software, e.g.
+```
+cd /home/user/OpenRiverCam
+```
+3. Type the following to start the service
+```
+docker-compose up
+```
 Interaction with services:
 * OpenRiverCam dashboard is available at http://localhost
 * MinIO storage dashboard is available at http://localhost:9000
@@ -50,5 +66,5 @@ Example task for queue:
 
 Command to enter processing container shell:
 ```
-docker exec -it hydrohub_processing_1 bash
+docker exec -it openrivercam_processing_1 bash
 ```
