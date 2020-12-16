@@ -23,7 +23,16 @@ def upload_file(fn, bucket, dest=None):
     print("Uploading is done!")
 
 
+
 def extract_frames(movie, camera, prefix="frame", logger=logging):
+    """
+    Extract raw frames, only lens correct using camera lensParameters, and store in RGB photos
+    :param movie: dict containing movie information
+    :param camera: dict, camera properties, such as lensParameters, name
+    :param prefix: str, prefix of file names, used in storage bucket
+    :param logger: 
+    :return: 
+    """
     # open S3 bucket
     s3 = utils.get_s3()
     n = 0
@@ -51,3 +60,37 @@ def extract_frames(movie, camera, prefix="frame", logger=logging):
     # requests.post("http://.....", msg)
     return 200
 
+def extract_project_frames(movie, camera_config, prefix="proj", logger=logging):
+    """
+    Extract frames, lens correct, greyscale correct and project to defined AOI with GCPs, water level and camera position
+    Results in GeoTIFF files in desired projection and resolution within bucket defined in movie
+    :param movie: dict, movie information
+    :param camera_config: dict, camera_config containing camera properties, aoi, gcps, site, camera position
+    :param prefix="proj": str, prefix of file names, used in storage bucket
+    :param logger=logging: logging obj
+    :return:
+    """
+    # FIXME: implement
+    # TODO check on time frame of movie and validity of the camera_config
+    # TODO check if aoi is defined, without it, projection is not possible
+    # TODO check if gcps are defined, without it projection not possible
+    # TODO check resolution, without set resolution, not possible to reproject
+    # TODO reprojection implementation based on AOI object and resolution
+    # TODO storage in BytesIO representation of GeoTIFF (rasterio) and push to bucket
+    raise NotImplementedError("Implement me")
+    # post request
+    return 200
+
+def get_aoi(camera_config):
+    gcps
+    src_corners
+    crs
+    # call OpenRiverCam.ortho.get_aoi()
+
+
+def compute_v():
+    """
+    compute velocities over frame pairs, choosing frame interval, start / end frame.
+
+    :return:
+    """
