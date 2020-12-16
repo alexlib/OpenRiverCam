@@ -1,8 +1,7 @@
 import os
-import boto3
 import OpenRiverCam
+import utils
 import logging
-import io
 
 def upload_file(fn, bucket, dest=None):
     """
@@ -17,86 +16,40 @@ def upload_file(fn, bucket, dest=None):
         dest = os.path.split(os.path.abspath(fn))[1]
     # TODO: finalize implementation
     # Example upload file to S3.
-    s3 = boto3.resource('s3',
-                        endpoint_url=os.getenv('MINIO_ACCESS_URL'),
-                        aws_access_key_id=os.getenv('S3_ACCESS_KEY'),
-                        aws_secret_access_key=os.getenv('S3_ACCESS_SECRET'),
-                        config=boto3.session.Config(signature_version='s3v4')
-                        )
+    s3 = utils.get_s3()
 
     # Create bucket if it doesn't exist yet.
     if s3.Bucket(bucket) not in s3.buckets.all():
         s3.create_bucket(Bucket=bucket)
-    with open(fn, "rb") as f:
-        buf = io.BytesIO(f.read())
-    # Seek beginning of in-memory file before storing.
-    buf.seek(0)
-    s3.Object(bucket, dest).put(Body=buf)
+    s3.Bucket(bucket).upload_file(fn, dest)
     print("Uploading is done!")
 
 
-
-def extract_frames(movie, camera, dest, prefix="frame_", logger=logging):
+def extract_frames(movie, camera, prefix="frame", logger=logging):
     # open S3 bucket
-    s3 = boto3.resource('s3',
-                        endpoint_url='http://storage:9000',
-                        aws_access_key_id=os.getenv('S3_ACCESS_KEY'),
-                        aws_secret_access_key=os.getenv('S3_ACCESS_SECRET'),
-                        config=boto3.session.Config(signature_version='s3v4')
-                        )
-
-    # Create bucket if it doesn't exist yet.
-    if s3.Bucket('test-bucket') not in s3.buckets.all():
-        s3.create_bucket(Bucket='test-bucket')
-
-
+    s3 = utils.get_s3()
     n = 0
-    fns = []
-    t = []
-    logger.info(f"Writing movie {movie['file']['identifier']} to {dest}")
+    logger.info(f"Writing movie {movie['file']['identifier']} to {movie['file']['bucket']}")
     # open file from bucket in memory
-    mov = io.BytesIO()
-    s3.Object(movie["file"]["bucket"], movie["file"]["identifier"]).download_fileobj(mov)
-    with open(movie["file"]["identifier"], 'wb') as f:
-        f.write(mov)
-    for _t, buf in OpenRiverCam.io.frames(movie["file"]["identifier"], lens_pars=camera["lensParameters"]):
-        # Bucket filename
-        dest_fn = os.path.join(dest, '{:s}{:04d}.jpg'.format(prefix, n))
+    bucket = movie["file"]["bucket"]
+    fn = movie["file"]["identifier"]
+    # make a temporary file
+    s3.Bucket(bucket).download_file(fn, fn)
+    for _t, buf in OpenRiverCam.io.frames(
+        fn, lens_pars=camera["lensParameters"]
+    ):
+        # filename in bucket, following template frame_{4-digit_framenumber}_{time_in_milliseconds}.jpg
+        dest_fn = "{:s}_{:04d}_{:06d}.jpg".format(prefix, n, int(_t*1000))
         logger.debug(f"Write frame {n} in {dest_fn} to S3")
         # Seek beginning of bytestream
         buf.seek(0)
+        print(len(buf.getvalue()))
         # Put file in bucket
-        s3.Object(movie["file"]["bucket"], dest_fn).put(Body=buf)
+        s3.Object(bucket, dest_fn).put(Body=buf)
         n += 1
-        # add file and timestamp to list
-        t += _t
-        fns += dest_fn
-
-    # TODO: Post status code on specific end point
+    # clean up of temp file
+    os.remove(fn)
+    # TODO: Post status code on specific end point (Rick)
     # requests.post("http://.....", msg)
-    # r = 200  # Rick, agree on format for response body. I assume an error code (success: 200), and a data body
     return 200
-#     "type": "extract_snapshots",
-#     "kwargs": {
-#         "movie": {
-#             "file": {
-#                 "bucket": "test-bucket",
-#                 "identifier": "schedule_20201120_142304.mkv"
-#             }
-#         },
-#         "camera": {
-#             "name": "Foscam E9900P",
-#             "configuration": {},
-#             "lensParameters": {
-#                 "k": 0.5
-#             }
-#         }
-#     }
-#
-# }
-#
-#     lens_pars = {
-#         "k1": -10.0e-6,
-#         "c": 2,
-#         "f": 8.0,
-#     }
+
