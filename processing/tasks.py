@@ -14,8 +14,6 @@ def upload_file(fn, bucket, dest=None):
     """
     if dest is None:
         dest = os.path.split(os.path.abspath(fn))[1]
-    # TODO: finalize implementation
-    # Example upload file to S3.
     s3 = utils.get_s3()
 
     # Create bucket if it doesn't exist yet.
