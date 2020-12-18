@@ -14,12 +14,8 @@ def process(ch, method, properties, body):
         if hasattr(tasks, task_name):
             task = getattr(tasks, task_name)
             print("Process task of type %s" % taskInput["type"])
-            try:
-                print(kwargs)
-                task(**kwargs)
-                r = 200
-            except:
-                r = 500
+            print(kwargs)
+            task(**kwargs)
         # # Example request to API (only used for posting/updating information).
         # r = requests.get('http://portal/api/sites')
         #
