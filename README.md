@@ -73,8 +73,8 @@ docker exec -it openrivercam_processing_1 bash
 All communication about objects is arranged in serializable dictionaries. Below, we keep track of what dictionaries may exist.
 These dictionaries are communicated as json strings 
 
-### camera 
-defines a type of ```camera```, and can be reused if you for instance have the same ```camera``` type at multiple locations
+### camera_type 
+defines ```camera_type```, and can be reused if you for instance have the same ```camera_type``` at multiple locations
 ```json
 {
     "name": "Foscam E9900P",  # user-chosen name for camera
@@ -85,6 +85,23 @@ defines a type of ```camera```, and can be reused if you for instance have the s
     }
 }
 ```
+
+### camera
+defines one specific camera with id, and its connection details, no details about exact position.
+```json
+{
+   "id": 1,  # int
+   "camera_type": camera_type,
+   "site": site,
+   "status": 1,  # int defining state
+   "connection": {
+      "type": "ftp",
+      "url": "data.tahmo.org",
+      "port": 21,
+      "username": "rick",
+      "hashed_password": "hashed_passwd",
+    }
+}
 
 ### Site
 Contains general information about a river gauging ```site```
@@ -142,7 +159,7 @@ and the position of the camera, which can be used toi interpret where in space t
 ```json
 {
     "camera": camera,  # dict, camera object, relational, because a camera configuration belongs to a certain camera.
-    "site": site,  # dict, site object, relational because we need to know to whcih site a camera_config belongs. you can have multiple camera configs per site.
+site.
     "time_start": "2020-12-16T00:00:00",  # start time of valid range
     "time_end": "2020-12-31T00:00:00",  # end time of valid range, can for instance be used to find the right camera config with a given movie
     "gcps": gcps,    # dict, gcps dictionary, see above
