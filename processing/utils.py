@@ -1,6 +1,7 @@
 import boto3
 import os
 
+
 def get_s3():
     return boto3.resource(
         "s3",
