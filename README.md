@@ -102,14 +102,15 @@ defines one specific camera with id, and its connection details, no details abou
       "hashed_password": "hashed_passwd",
     }
 }
+```
 
 ### Site
 Contains general information about a river gauging ```site```
 ```json
 {
     "name": "Hommerich",  # str, name of user
-    "uuid": "<uuid string>",  # some uuid for relational database purposes
-    "position": (345003, 1298345),  # approximate geographical location of site in crs (x, y) coordinates in metres.
+    "id": 1,  # some uuid for relational database purposes
+    "position": (345003, 1298345, 105),  # approximate geographical location of site in crs (x, y, z) coordinates in metres.
     "crs": 28992,  # int, coordinate ref system as EPSG code
 }
 ```
@@ -160,6 +161,10 @@ and the position of the camera, which can be used toi interpret where in space t
 {
     "camera": camera,  # dict, camera object, relational, because a camera configuration belongs to a certain camera.
 site.
+    "movie_settings": {
+        "resolution": "1920x1080",
+        "fps": 25
+    }
     "time_start": "2020-12-16T00:00:00",  # start time of valid range
     "time_end": "2020-12-31T00:00:00",  # end time of valid range, can for instance be used to find the right camera config with a given movie
     "gcps": gcps,    # dict, gcps dictionary, see above
@@ -170,7 +175,7 @@ site.
         "cols": 30,  # int, amount of cols (from upstream to downstream) for interrogation window
     },
     "resolution": 0.01,  # resolution to be used in reprojection to AOI
-    "lensPosition": (-3.0, 8.0, 110.0),  # we could also make this a geojson but it is just one point (x, y, z)
+    "lensPosition": [-3.0, 8.0, 110.0],  # we could also make this a geojson but it is just one point (x, y, z)
 }
 
 ```
@@ -179,11 +184,16 @@ site.
 A ```movie``` object is associated with a ```camera_config``` and only contains file information.
 ```json
 {
+    "type": "configuration",  # str, defines what the movie is used for, either "configuration" or "normal"
     "camera_config": camera_config,  # dict, camera_config object, relational, because a movie belongs to a given camera_config (which in turn belongs to a site).
     "file": {  # file contains the actual filename, and the bucket in which it sits.
         "bucket": "example",
         "identifier": "example_video.mp4"
-    }
+    },
+    "timestamp": "2021-01-01T00:05:30Z",
+    "resolution": "1920x1080",
+    "fps": 25.,  # float
+    "bathymetry": bathymetry,
 }
 ```
 
@@ -220,7 +230,7 @@ setup, i.e. to point out gcps in the raw imagery, and to define corner coordates
 {
     "site": site,  # dict, site, relational, because a bathymetry profile belongs to a site.
     "crs": 28992,  # int, epsg code in [m], only projected coordinate systems are supported
-    "coords": [(1., 2., 3), (2, 2, 4), (...),   ... ]  # list of (x, y, z) tuples defined in crs [m], coords are not valid in the example
+    "coords": [[1., 2., 3], [2, 2, 4], [...],   ... ]  # list of (x, y, z) tuples defined in crs [m], coords are not valid in the example
 }
 
 ```
@@ -254,7 +264,6 @@ of each cross-sectional point. NetCDF-CF compatible.
 ```json
 {
     "movie": movie,  # a projected frame belong to a certain movie, so needs a relation
-    "bathymetry": bathymetry,  # ref to the relevant bathymetric profile. Can also be done as attrribute inside netCDF file
     "file": {  # file contains the actual filename, and the bucket in which it sits.
         "bucket": "example",
         "identifier": "q_filter.nc"
@@ -268,7 +277,6 @@ of each cross-sectional point. NetCDF-CF compatible.
 ```json
 {
     "movie": movie,  # a projected frame belong to a certain movie, so needs a relation
-    "bathymetry": bathymetry,  # ref to the relevant bathymetric profile. Can also be done as attrribute inside netCDF file
     "file": {  # file contains the actual filename, and the bucket in which it sits.
         "bucket": "example",
         "identifier": "flow_filter.nc"
@@ -276,3 +284,5 @@ of each cross-sectional point. NetCDF-CF compatible.
     }
 }
 ```
+From ```flow_filter``` a number of statistics are derived for storage in the database.
+
