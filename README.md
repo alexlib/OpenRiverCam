@@ -194,6 +194,7 @@ A ```movie``` object is associated with a ```camera_config``` and only contains 
     "resolution": "1920x1080",
     "fps": 25.,  # float
     "bathymetry": bathymetry,
+    "actual_water_level": 3.4  # float, water level with reference to gauge plate zero level
 }
 ```
 
