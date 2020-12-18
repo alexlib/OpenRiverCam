@@ -2,6 +2,8 @@ import os
 import OpenRiverCam
 import utils
 import logging
+import io
+import cv2
 
 def upload_file(fn, bucket, dest=None):
     """
@@ -22,8 +24,6 @@ def upload_file(fn, bucket, dest=None):
     s3.Bucket(bucket).upload_file(fn, dest)
     print("Uploading is done!")
 
-
-
 def extract_frames(movie, camera, prefix="frame", logger=logging):
     """
     Extract raw frames, only lens correct using camera lensParameters, and store in RGB photos
@@ -42,15 +42,17 @@ def extract_frames(movie, camera, prefix="frame", logger=logging):
     fn = movie["file"]["identifier"]
     # make a temporary file
     s3.Bucket(bucket).download_file(fn, fn)
-    for _t, buf in OpenRiverCam.io.frames(
+    for _t, img in OpenRiverCam.io.frames(
         fn, lens_pars=camera["lensParameters"]
     ):
         # filename in bucket, following template frame_{4-digit_framenumber}_{time_in_milliseconds}.jpg
         dest_fn = "{:s}_{:04d}_{:06d}.jpg".format(prefix, n, int(_t*1000))
         logger.debug(f"Write frame {n} in {dest_fn} to S3")
+        # encode img
+        ret, im_en = cv2.imencode(".jpg", img)
+        buf = io.BytesIO(im_en)
         # Seek beginning of bytestream
         buf.seek(0)
-        print(len(buf.getvalue()))
         # Put file in bucket
         s3.Object(bucket, dest_fn).put(Body=buf)
         n += 1
@@ -82,11 +84,27 @@ def extract_project_frames(movie, camera_config, prefix="proj", logger=logging):
     return 200
 
 def get_aoi(camera_config):
-    gcps
-    src_corners
-    crs
-    # call OpenRiverCam.ortho.get_aoi()
+    """
 
+    :param camera_config: camera configuration with ["aoi"]["bbox"] still missing
+    :return:
+    """
+    # some assertion
+    if not "gcps" in camera_config:
+        raise AttributeError("'gcps' key missing in camera_config dictionary. User must first specify ground control points in interface.")
+    if not "corners" in camera_config:
+        raise AttributeError("'corners' key missing in camera_config dictionary. User must first specify a box in the camera objective")
+    if not "site" in camera_config:
+        raise AttributeError("'site' key missing in camera_config dictionary. User must first specify site id, location and crs")
+    gcps = camera_config["gcps"]
+    corners = camera_config["corners"]
+    crs = f"EPSG:{camera_config['site']['crs']}"
+    bbox = OpenRiverCam.cv.get_aoi(gcps["src"], gcps["dst"], corners)
+    bbox_json = OpenRiverCam.io.to_geojson(bbox, crs=crs)
+    if not "aoi" in camera_config:
+        camera_config["aoi"] = {}
+    camera_config["aoi"]["bbox"] = bbox_json
+    return camera_config
 
 def compute_v():
     """
