@@ -4,6 +4,9 @@ import traceback
 import os
 import json
 import tasks
+import log
+
+logger = log.start_logger(True, False)
 
 # Callback function for each process task that is queued.
 def process(ch, method, properties, body):
@@ -13,9 +16,16 @@ def process(ch, method, properties, body):
         kwargs = taskInput["kwargs"]
         if hasattr(tasks, task_name):
             task = getattr(tasks, task_name)
-            print("Process task of type %s" % taskInput["type"])
-            print(kwargs)
-            task(**kwargs)
+            logger.info("Process task of type %s" % taskInput["type"])
+            logger.debug(f"kwargs: {kwargs}")
+            try:
+                task(**kwargs, logger=logger)
+                logger.info(f"Task {task_name} was successful")
+                r = 200
+            except BaseException as e:
+                logger.error(f"{task_name} failed with error {e}")
+                r = 500
+
         # # Example request to API (only used for posting/updating information).
         # r = requests.get('http://portal/api/sites')
         #
