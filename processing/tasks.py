@@ -166,9 +166,82 @@ def get_aoi(camera_config, logger=logging):
     return camera_config
 
 
-def compute_v():
+def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
     """
     compute velocities over frame pairs, choosing frame interval, start / end frame.
 
     :return:
     """
+    # open S3 bucket
+    camera_config = movie["camera_config"]
+    s3 = utils.get_s3()
+    n = 0
+    logger.info(
+        f"Computing velocities from projected frames in {movie['file']['bucket']}"
+    )
+    # open file from bucket in memory
+    bucket = movie["file"]["bucket"]
+    # get files with the right prefix
+    fns = s3.Bucket(bucket).objects.filter(Prefix=prefix)
+    frame_b = None
+    for n, fn in enumerate(fns.limit(3)):
+        frame_a = frame_b
+        buf = io.BytesIO()
+        fn.Object().download_fileobj(buf)
+        buf.seek(0)
+        frame_b = OpenRiverCam.piv.imread(buf)
+        # rewind to beginning of file
+        if (frame_a is not None) and (frame_b is not None):
+            # we have two frames in memory, now estimate velocity
+            logger.info(f"Processing frame {n}")
+            cols, rows, v_x, v_y, s2n = OpenRiverCam.piv.piv(frame_a, frame_b, **piv_kwargs)
+        print("Check")
+
+    # finally read GeoTiff transform from the first file
+    for fn in fns.limit(1):
+        logger.info("Retrieving axis information")
+        buf = io.BytesIO()
+        fn.Object().download_fileobj(buf)
+        buf.seek(0)
+        lons, lats = OpenRiverCam.io.convert_cols_rows(buf, cols, rows)
+    encoding = {var: {"zlib": True} for var in var_names}
+
+
+    #     for _t, img in OpenRiverCam.io.frames(
+    #         fn, lens_pars=camera_config["camera_type"]["lensParameters"]
+    #     ):
+    #     # filename in bucket, following template frame_{4-digit_framenumber}_{time_in_milliseconds}.jpg
+    #     dest_fn = "{:s}_{:04d}_{:06d}.tif".format(prefix, n, int(_t * 1000))
+    #     logger.debug(f"Write frame {n} in {dest_fn} to S3")
+    #     bbox = shape(
+    #         camera_config["aoi"]["bbox"]["features"][0]["geometry"]
+    #     )  # extract the one and only geometry from geojson
+    #     # reproject frame with camera_config
+    #     # inputs needed
+    #     corr_img, transform = OpenRiverCam.cv.orthorectification(
+    #         img=img,
+    #         lensPosition=camera_config["lensPosition"],
+    #         h_a=movie["h_a"],
+    #         bbox=bbox,
+    #         resolution=0.01,
+    #         **camera_config["gcps"],
+    #     )
+    #     raster = reshape_as_raster(corr_img)
+    #     # write to temporary file
+    #     OpenRiverCam.io.to_geotiff(
+    #         "temp.tif",
+    #         raster,
+    #         transform,
+    #         crs=camera_config["site"]["crs"],
+    #         compress="deflate",
+    #     )
+    #     # Put file in bucket
+    #     s3.Bucket(bucket).upload_file("temp.tif", dest_fn)
+    #     n += 1
+    # # clean up of temp file
+    # os.remove(fn)
+    # logger.info(f"{fn} sucessfully reprojected into frames in {bucket}")
+    # TODO: Post status code on specific end point (Rick)
+    # requests.post("http://.....", msg)
+    return 200
+
