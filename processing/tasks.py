@@ -4,10 +4,10 @@ import utils
 import logging
 import io
 import cv2
+import numpy as np
 from datetime import datetime, timedelta
 from shapely.geometry import shape
 from rasterio.plot import reshape_as_raster
-
 
 def upload_file(fn, bucket, dest=None, logger=logging):
     """
@@ -196,9 +196,8 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
         },
     ]
     encoding = {var: {"zlib": True} for var in var_names}
-
     start_time = datetime.strptime(movie["timestamp"], "%Y-%m-%dT%H:%M:%SZ")
-
+    resolution = movie["camera_config"]["resolution"]
     # open S3 bucket
     camera_config = movie["camera_config"]
     s3 = utils.get_s3()
@@ -230,12 +229,11 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
             logger.debug(f"Processing frame {n}")
             # determine time difference dt between frames
             dt = (ms - _ms).total_seconds()
-
             cols, rows, _v_x, _v_y, _s2n = OpenRiverCam.piv.piv(
                 frame_a,
                 frame_b,
-                res_x=movie["camera_config"]["resolution"],
-                res_y=movie["camera_config"]["resolution"],
+                res_x=resolution,
+                res_y=resolution,
                 dt=dt,
                 **piv_kwargs,
             )
@@ -248,12 +246,19 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
         fn.Object().download_fileobj(buf)
         buf.seek(0)
         lons, lats = OpenRiverCam.io.convert_cols_rows(buf, cols, rows)
+
+    # prepare local axes
+    spacing_x = np.diff(cols[0])[0]
+    spacing_y = np.diff(rows[:, 0])[0]
+    x = np.linspace(resolution / 2 * spacing_x, (len(cols[0]) - 0.5) * resolution * spacing_x, len(cols[0]))
+    y = np.flipud(np.linspace(resolution / 2 * spacing_y, (len(rows[:, 0]) - 0.5) * resolution * spacing_y, len(rows[:, 0])))
+
     # prepare dataset
     dataset = OpenRiverCam.io.to_dataset(
         [v_x, v_y, s2n],
         var_names,
-        cols[0],
-        rows[:, 0],
+        x,
+        y,
         time=time,
         lat=lats,
         lon=lons,
