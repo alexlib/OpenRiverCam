@@ -236,7 +236,9 @@ setup, i.e. to point out gcps in the raw imagery, and to define corner coordates
 
 ```
 ### v (velocity)
-```v``` object contains raw velocities as (t, y, x) time series so that it can be displayed in any NetCDF-CF compatible viewer
+```v``` object contains raw velocities as (t, y, x) time series so that it can be displayed in any NetCDF-CF compatible viewer. 
+Several keyword arguments can be passed that are specifically used to process the frames into velocities.
+This includes window_size (interrogation window in pixels), overlap (overlap in pixels between windows), and search_area_size (size of area that is searched for correlations in PIV).
 ```json
 {
     "movie": movie,  # a set of velocities belongs to a certain movie, so needs a relation
@@ -244,6 +246,12 @@ setup, i.e. to point out gcps in the raw imagery, and to define corner coordates
         "bucket": "example",
         "identifier": "v.nc"  # netcdf file containing all info for velocity, inc naming conventions, so that it can be
     }
+    "piv_kwargs": {
+        "window_size": 60,
+        "overlap": 30,
+        "search_area_size": 60,
+    },
+
 }
 
 ```
