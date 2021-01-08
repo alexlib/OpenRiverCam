@@ -274,3 +274,32 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
     # TODO: Post status code on specific end point (Rick)
     # requests.post("http://.....", msg)
     return 200
+
+
+def compute_q(velocity, bathymetry, logger=logging):
+    """
+    compute velocities over provided bathymetric cross section points.
+    :param
+
+    :return:
+    """
+    encoding = {}
+    # open S3 bucket
+    s3 = utils.get_s3()
+    logger.info(
+        f"Extracting cross section from velocities in {velocity['file']['bucket']}"
+    )
+    # open file from bucket in memory
+    bucket = velocity["file"]["bucket"]
+    fn = velocity["file"]["identifier"]
+    s3.Bucket(bucket).download_file(fn, "temp.nc")
+
+    ds_points = OpenRiverCam.io.interp_coords("temp.nc", *zip(*bathymetry["coords"]))
+    # overwrite gridded netCDF with cross section netCDF
+    ds_points.to_netcdf("temp.nc", encoding=encoding)
+    s3.Bucket(bucket).upload_file("temp.nc", "q.nc")
+    os.remove("temp.nc")
+    logger.info(f"q.nc successfully written in {bucket}")
+    # TODO: Post status code on specific end point (Rick)
+    # requests.post("http://.....", msg)
+    return 200
