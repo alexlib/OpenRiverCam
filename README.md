@@ -73,8 +73,8 @@ docker exec -it openrivercam_processing_1 bash
 All communication about objects is arranged in serializable dictionaries. Below, we keep track of what dictionaries may exist.
 These dictionaries are communicated as json strings 
 
-### camera 
-defines a type of ```camera```, and can be reused if you for instance have the same ```camera``` type at multiple locations
+### camera_type 
+defines ```camera_type```, and can be reused if you for instance have the same ```camera_type``` at multiple locations
 ```json
 {
     "name": "Foscam E9900P",  # user-chosen name for camera
@@ -86,13 +86,31 @@ defines a type of ```camera```, and can be reused if you for instance have the s
 }
 ```
 
+### camera
+defines one specific camera with id, and its connection details, no details about exact position.
+```json
+{
+   "id": 1,  # int
+   "camera_type": camera_type,
+   "site": site,
+   "status": 1,  # int defining state
+   "connection": {
+      "type": "ftp",
+      "url": "data.tahmo.org",
+      "port": 21,
+      "username": "rick",
+      "hashed_password": "hashed_passwd",
+    }
+}
+```
+
 ### Site
 Contains general information about a river gauging ```site```
 ```json
 {
     "name": "Hommerich",  # str, name of user
-    "uuid": "<uuid string>",  # some uuid for relational database purposes
-    "position": (345003, 1298345),  # approximate geographical location of site in crs (x, y) coordinates in metres.
+    "id": 1,  # some uuid for relational database purposes
+    "position": (345003, 1298345, 105),  # approximate geographical location of site in crs (x, y, z) coordinates in metres.
     "crs": 28992,  # int, coordinate ref system as EPSG code
 }
 ```
@@ -142,7 +160,11 @@ and the position of the camera, which can be used toi interpret where in space t
 ```json
 {
     "camera": camera,  # dict, camera object, relational, because a camera configuration belongs to a certain camera.
-    "site": site,  # dict, site object, relational because we need to know to whcih site a camera_config belongs. you can have multiple camera configs per site.
+site.
+    "movie_settings": {
+        "resolution": "1920x1080",
+        "fps": 25
+    }
     "time_start": "2020-12-16T00:00:00",  # start time of valid range
     "time_end": "2020-12-31T00:00:00",  # end time of valid range, can for instance be used to find the right camera config with a given movie
     "gcps": gcps,    # dict, gcps dictionary, see above
@@ -153,7 +175,7 @@ and the position of the camera, which can be used toi interpret where in space t
         "cols": 30,  # int, amount of cols (from upstream to downstream) for interrogation window
     },
     "resolution": 0.01,  # resolution to be used in reprojection to AOI
-    "lensPosition": (-3.0, 8.0, 110.0),  # we could also make this a geojson but it is just one point (x, y, z)
+    "lensPosition": [-3.0, 8.0, 110.0],  # we could also make this a geojson but it is just one point (x, y, z)
 }
 
 ```
@@ -162,11 +184,17 @@ and the position of the camera, which can be used toi interpret where in space t
 A ```movie``` object is associated with a ```camera_config``` and only contains file information.
 ```json
 {
+    "type": "configuration",  # str, defines what the movie is used for, either "configuration" or "normal"
     "camera_config": camera_config,  # dict, camera_config object, relational, because a movie belongs to a given camera_config (which in turn belongs to a site).
     "file": {  # file contains the actual filename, and the bucket in which it sits.
         "bucket": "example",
         "identifier": "example_video.mp4"
-    }
+    },
+    "timestamp": "2021-01-01T00:05:30Z",
+    "resolution": "1920x1080",
+    "fps": 25.,  # float
+    "bathymetry": bathymetry,
+    "actual_water_level": 3.4  # float, water level with reference to gauge plate zero level
 }
 ```
 
@@ -203,12 +231,14 @@ setup, i.e. to point out gcps in the raw imagery, and to define corner coordates
 {
     "site": site,  # dict, site, relational, because a bathymetry profile belongs to a site.
     "crs": 28992,  # int, epsg code in [m], only projected coordinate systems are supported
-    "coords": [(1., 2., 3), (2, 2, 4), (...),   ... ]  # list of (x, y, z) tuples defined in crs [m], coords are not valid in the example
+    "coords": [[1., 2., 3], [2, 2, 4], [...],   ... ]  # list of (x, y, z) tuples defined in crs [m], coords are not valid in the example
 }
 
 ```
 ### v (velocity)
-```v``` object contains raw velocities as (t, y, x) time series so that it can be displayed in any NetCDF-CF compatible viewer
+```v``` object contains raw velocities as (t, y, x) time series so that it can be displayed in any NetCDF-CF compatible viewer. 
+Several keyword arguments can be passed that are specifically used to process the frames into velocities.
+This includes window_size (interrogation window in pixels), overlap (overlap in pixels between windows), and search_area_size (size of area that is searched for correlations in PIV).
 ```json
 {
     "movie": movie,  # a set of velocities belongs to a certain movie, so needs a relation
@@ -216,6 +246,12 @@ setup, i.e. to point out gcps in the raw imagery, and to define corner coordates
         "bucket": "example",
         "identifier": "v.nc"  # netcdf file containing all info for velocity, inc naming conventions, so that it can be
     }
+    "piv_kwargs": {
+        "window_size": 60,
+        "overlap": 30,
+        "search_area_size": 60,
+    },
+
 }
 
 ```
@@ -237,7 +273,6 @@ of each cross-sectional point. NetCDF-CF compatible.
 ```json
 {
     "movie": movie,  # a projected frame belong to a certain movie, so needs a relation
-    "bathymetry": bathymetry,  # ref to the relevant bathymetric profile. Can also be done as attrribute inside netCDF file
     "file": {  # file contains the actual filename, and the bucket in which it sits.
         "bucket": "example",
         "identifier": "q_filter.nc"
@@ -251,7 +286,6 @@ of each cross-sectional point. NetCDF-CF compatible.
 ```json
 {
     "movie": movie,  # a projected frame belong to a certain movie, so needs a relation
-    "bathymetry": bathymetry,  # ref to the relevant bathymetric profile. Can also be done as attrribute inside netCDF file
     "file": {  # file contains the actual filename, and the bucket in which it sits.
         "bucket": "example",
         "identifier": "flow_filter.nc"
@@ -259,3 +293,5 @@ of each cross-sectional point. NetCDF-CF compatible.
     }
 }
 ```
+From ```flow_filter``` a number of statistics are derived for storage in the database.
+

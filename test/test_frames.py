@@ -5,12 +5,7 @@ import json
 body = {
     "type": "extract_frames",
     "kwargs": {
-        "movie": {
-            "file": {
-                "bucket": "example",
-                "identifier": "example_video.mp4"
-            }
-        },
+        "movie": {"file": {"bucket": "example", "identifier": "example_video.mp4"}},
         "camera": {
             "name": "Foscam E9900P",
             "configuration": {},
@@ -18,9 +13,9 @@ body = {
                 "k1": -10.0e-6,
                 "c": 2,
                 "f": 8.0,
-            }
-        }
-    }
+            },
+        },
+    },
 }
 
 
