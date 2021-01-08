@@ -1,6 +1,6 @@
 from flask import Flask, redirect, jsonify
-from flask.ext.sqlalchemy import SQLAlchemy
 import flask_admin as admin
+from models import *
 
 # Create custom admin view
 class MyAdminView(admin.BaseView):
@@ -22,7 +22,6 @@ class AnotherAdminView(admin.BaseView):
 # Create flask app
 app = Flask(__name__, template_folder="templates")
 app.debug = True
-db = SQLAlchemy(app)
 
 # Alternative routes
 @app.route("/")
