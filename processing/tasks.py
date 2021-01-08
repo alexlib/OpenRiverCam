@@ -245,7 +245,7 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
         buf = io.BytesIO()
         fn.Object().download_fileobj(buf)
         buf.seek(0)
-        lons, lats = OpenRiverCam.io.convert_cols_rows(buf, cols, rows)
+        xs, ys, lons, lats = OpenRiverCam.io.convert_cols_rows(buf, cols, rows)
 
     # prepare local axes
     spacing_x = np.diff(cols[0])[0]
@@ -262,6 +262,8 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
         time=time,
         lat=lats,
         lon=lons,
+        xs=xs,
+        ys=ys,
         attrs=var_attrs,
     )
     # write to file and to bucket
