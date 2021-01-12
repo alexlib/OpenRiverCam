@@ -1,8 +1,8 @@
 from flask import Flask, redirect, jsonify
 import flask_admin as admin
 from models import *
+from controllers import camera_type_api
 
-# Create custom admin view
 class MyAdminView(admin.BaseView):
     @admin.expose("/")
     def index(self):
@@ -21,18 +21,13 @@ class AnotherAdminView(admin.BaseView):
 
 # Create flask app
 app = Flask(__name__, template_folder="templates")
+app.register_blueprint(camera_type_api)
 app.debug = True
 
 # Alternative routes
 @app.route("/")
 def index():
     return redirect("/portal", code=302)
-
-
-@app.route("/api/sites")
-def api_sites():
-    return jsonify(sites=[{"name": "Site 1"}, {"name": "Site 2"}])
-
 
 # Create admin interface
 admin = admin.Admin(name="OpenRiverCam", template_mode="bootstrap4", url="/portal")
