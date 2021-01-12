@@ -1,4 +1,5 @@
 from sqlalchemy import Integer, ForeignKey, String, Column, DateTime, Enum, Float, Text
+from sqlalchemy_serializer import SerializerMixin
 import enum
 from models.base import Base
 
@@ -6,7 +7,7 @@ class CameraStatus(enum.Enum):
     CAMERA_STATUS_INACTIVE = 0
     CAMERA_STATUS_ACTIVE = 1
 
-class Camera(Base):
+class Camera(Base, SerializerMixin):
     __tablename__ = 'camera'
     id = Column(Integer, primary_key=True)
     camera_type_id = Column(Integer, ForeignKey('cameratype.id'))
@@ -19,7 +20,7 @@ class Camera(Base):
     def __repr__(self):
         return "{}".format(self.__str__())
 
-class CameraConfig(Base):
+class CameraConfig(Base, SerializerMixin):
     __tablename__ = 'configuration'
     id = Column(Integer, primary_key=True)
     camera_id = Column(Integer, ForeignKey('camera.id'))
@@ -47,7 +48,7 @@ class CameraConfig(Base):
     def __repr__(self):
         return "{}".format(self.__str__())
 
-class CameraType(Base):
+class CameraType(Base, SerializerMixin):
     __tablename__ = 'cameratype'
     id = Column(Integer, primary_key=True)
     name = Column(String)
