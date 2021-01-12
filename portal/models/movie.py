@@ -1,4 +1,5 @@
 from sqlalchemy import Integer, ForeignKey, String, Column, DateTime, Enum, Float, Text
+from sqlalchemy_serializer import SerializerMixin
 import enum
 from models.base import Base
 
@@ -12,7 +13,7 @@ class MovieStatus(enum.Enum):
     MOVIE_STATUS_READY = 2
     MOVIE_STATUS_PROCESSED = 3
 
-class Movie(Base):
+class Movie(Base, SerializerMixin):
     __tablename__ = 'movie'
     id = Column(Integer, primary_key=True)
     config_id = Column(Integer, ForeignKey('configuration.id'))
