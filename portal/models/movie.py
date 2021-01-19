@@ -11,7 +11,8 @@ class MovieStatus(enum.Enum):
     MOVIE_STATUS_NEW = 0
     MOVIE_STATUS_EXTRACTED = 1
     MOVIE_STATUS_READY = 2
-    MOVIE_STATUS_PROCESSED = 3
+    MOVIE_STATUS_FINISHED = 3
+    MOVIE_STATUS_ERROR = 4
 
 class Movie(Base, SerializerMixin):
     __tablename__ = 'movie'
@@ -21,11 +22,12 @@ class Movie(Base, SerializerMixin):
     file_name = Column(String)
     timestamp = Column(DateTime)
     type = Column(Enum(MovieType))
-    resolution = Column(String)
-    fps = Column(Float)
     actual_water_level = Column(Float)
     bathymetry_id = Column(Integer, ForeignKey('bathymetry.id'))
     status = Column(Enum(MovieStatus))
+    error_message = Column(Text)
+    average_velocity = Column(Float)
+    discharge = Column(Float)
 
     def __str__(self):
         return "{}/{}".format(self.file_bucket, self.file_name)

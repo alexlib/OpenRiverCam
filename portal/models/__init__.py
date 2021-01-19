@@ -12,6 +12,9 @@ from models import movie
 from models import polygon
 from models import site
 
+# TODO: Persistent database by removing drop all once DB models are stable..
+Base.metadata.drop_all(engine)
+
 Base.metadata.create_all(engine)
 DBSession = sessionmaker(bind=engine)
 db = scoped_session(DBSession)
