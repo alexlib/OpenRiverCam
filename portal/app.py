@@ -1,7 +1,7 @@
 from flask import Flask, redirect, jsonify
 import flask_admin as admin
 from models import *
-from controllers import camera_type_api
+from controllers import camera_type_api, processing_api
 
 class MyAdminView(admin.BaseView):
     @admin.expose("/")
@@ -22,6 +22,7 @@ class AnotherAdminView(admin.BaseView):
 # Create flask app
 app = Flask(__name__, template_folder="templates")
 app.register_blueprint(camera_type_api)
+app.register_blueprint(processing_api)
 app.debug = True
 
 # Alternative routes
