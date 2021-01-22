@@ -1,5 +1,6 @@
 from flask import Flask, redirect, jsonify
 import flask_admin as admin
+from models import *
 
 # Create custom admin view
 class MyAdminView(admin.BaseView):

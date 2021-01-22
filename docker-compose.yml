@@ -57,10 +57,14 @@ services:
   db:
     image: postgres:9
     ports:
-      - 9001:9001
+      - 9001:5432
     environment:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "openrivercam"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
 
 # Persistent volume for storage container, not mounted to host OS.
 volumes:
   storage-data:
+  pg-data:
