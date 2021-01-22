@@ -134,6 +134,7 @@ body = {
             "window_size": 60,
             "overlap": 30,
             "search_area_size": 60,
+            "sig2noise_method": "peak2peak",
         },
     },
 }
