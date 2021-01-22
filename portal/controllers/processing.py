@@ -21,10 +21,9 @@ def processing_compute_piv(id):
     schema = {
         "type": "object",
         "properties": {
-            "average_velocity": {"type": "number"},
             "discharge": {"type": "number"}
         },
-        "minProperties": 2,
+        "minProperties": 1,
         "additionalProperties": False
     }
 

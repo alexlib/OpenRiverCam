@@ -26,7 +26,6 @@ class Movie(Base, SerializerMixin):
     bathymetry_id = Column(Integer, ForeignKey('bathymetry.id'))
     status = Column(Enum(MovieStatus))
     error_message = Column(Text)
-    average_velocity = Column(Float)
     discharge = Column(Float)
 
     def __str__(self):
