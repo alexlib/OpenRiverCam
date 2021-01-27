@@ -11,5 +11,3 @@ def get_s3():
         config=boto3.session.Config(signature_version="s3v4"),
     )
 
-
-# def list_files_s3(s3, bucket, wildcard):
