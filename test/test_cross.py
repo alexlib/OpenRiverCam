@@ -77,7 +77,7 @@ bathymetry = {
     "coords": coords,  # list of (x, y, z) tuples defined in crs [m], coords are not valid in the example
 }
 
-velocity = {"file": {"bucket": "example", "identifier": "velocity.nc"}}
+velocity_filter = {"file": {"bucket": "example", "identifier": "velocity_filter.nc"}}
 
 connection = pika.BlockingConnection(
     pika.URLParameters("amqp://admin:password@127.0.0.1:5672")
@@ -89,7 +89,7 @@ channel.queue_declare(queue="processing")
 body = {
     "type": "compute_q",
     "kwargs": {
-        "velocity": velocity,
+        "velocity": velocity_filter,
         "bathymetry": bathymetry,
         "z_0": 100.0,
         "h_a": 0.9,
