@@ -24,6 +24,7 @@ def process(ch, method, properties, body):
                 r = 200
             except BaseException as e:
                 logger.error(f"{task_name} failed with error {e}")
+                requests.post("http://portal/api/processing/error/%s" % taskInput['kwargs']['movie']['id'], json.dumps({"message": e}))
                 r = 500
 
         # # Example request to API (only used for posting/updating information).

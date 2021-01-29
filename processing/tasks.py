@@ -5,6 +5,7 @@ import logging
 import io
 import cv2
 import numpy as np
+import requests
 from datetime import datetime, timedelta
 from shapely.geometry import shape
 from rasterio.plot import reshape_as_raster
@@ -65,8 +66,9 @@ def extract_frames(movie, camera, prefix="frame", logger=logging):
         n += 1
     # clean up of temp file
     os.remove(fn)
-    # TODO: Post status code on specific end point (Rick)
-    # requests.post("http://.....", msg)
+
+    # API request to confirm frame extraction is finished.
+    requests.post("http://portal/api/processing/extract_frames/%s" % movie['id'])
     return 200
 
 
@@ -132,8 +134,6 @@ def extract_project_frames(movie, prefix="proj", logger=logging):
     # clean up of temp file
     os.remove(fn)
     logger.info(f"{fn} successfully reprojected into frames in {bucket}")
-    # TODO: Post status code on specific end point (Rick)
-    # requests.post("http://.....", msg)
     return 200
 
 
@@ -167,7 +167,6 @@ def get_aoi(camera_config, logger=logging):
         camera_config["aoi"] = {}
     camera_config["aoi"]["bbox"] = bbox_json
     logger.info("Bounding box of aoi derived")
-    # TODO replace return for a requests.post
     return camera_config
 
 
@@ -285,8 +284,6 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
     s3.Bucket(bucket).upload_file("temp.nc", file["identifier"])
     os.remove("temp.nc")
     logger.info(f"{file['identifier']} successfully written in {bucket}")
-    # TODO: Post status code on specific end point (Rick)
-    # requests.post("http://.....", msg)
     return 200
 
 
@@ -340,6 +337,4 @@ def compute_q(
 
     os.remove("temp.nc")
     logger.info(f"Q.nc successfully written in {bucket}")
-    # TODO: Post status code on specific end point (Rick)
-    # requests.post("http://.....", msg)
     return 200
