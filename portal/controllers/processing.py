@@ -45,7 +45,7 @@ def processing_error(id):
     schema = {
         "type": "object",
         "properties": {
-            "message": {"type": "string"}
+            "error_message": {"type": "string"}
         },
         "minProperties": 1,
         "additionalProperties": False
