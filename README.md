@@ -229,7 +229,6 @@ setup, i.e. to point out gcps in the raw imagery, and to define corner coordates
 ```bathymetry``` contains a list of coordinates inc. z-coordinate of bathymetry measured in crs.
 ```json
 {
-    "site": site,  # dict, site, relational, because a bathymetry profile belongs to a site.
     "crs": 28992,  # int, epsg code in [m], only projected coordinate systems are supported
     "coords": [[1., 2., 3], [2, 2, 4], [...],   ... ]  # list of (x, y, z) tuples defined in crs [m], coords are not valid in the example
 }
