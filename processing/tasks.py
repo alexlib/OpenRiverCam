@@ -81,13 +81,6 @@ def extract_project_frames(movie, prefix="proj", logger=logging):
     :param logger=logging: logger-object
     :return:
     """
-    # TODO check on time frame of movie and validity of the camera_config
-    # TODO check if aoi is defined, without it, projection is not possible
-    # TODO check if gcps are defined, without it projection not possible
-    # TODO check resolution, without set resolution, not possible to reproject
-    # TODO reprojection implementation based on AOI object and resolution
-    # TODO storage in BytesIO representation of GeoTIFF (rasterio) and push to bucket
-
     # open S3 bucket
     camera_config = movie["camera_config"]
     s3 = utils.get_s3()
@@ -175,9 +168,13 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
     compute velocities over frame pairs, choosing frame interval, start / end frame.
     :param movie: dict, contains file dictionary and camera_config
     :param file: dict, contains file information for writing outputs
+    :param prefix: str, prefix of geotiff files assumed to be present in bucket
+    :param piv_kwargs: str, arguments passed to piv algorithm, parameters are defined in docstring of
+        openpiv.pyprocess.extended_search_area_piv
+    :param logger: logger object
     :return:
     """
-    var_names = ["v_x", "v_y", "s2n"]
+    var_names = ["v_x", "v_y", "s2n", "corr"]
     var_attrs = [
         {
             "standard_name": "sea_water_x_velocity",
@@ -194,6 +191,12 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
         {
             "standard_name": "ratio",
             "long_name": "signal to noise ratio",
+            "units": "",
+            "coordinates": "lon lat",
+        },
+        {
+            "standard_name": "correlation_coefficient",
+            "long_name": "correlation coefficient between frames",
             "units": "",
             "coordinates": "lon lat",
         },
@@ -214,7 +217,7 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
     fns = s3.Bucket(bucket).objects.filter(Prefix=prefix)
     frame_b = None
     ms = None
-    time, v_x, v_y, s2n = [], [], [], []
+    time, v_x, v_y, s2n, corr = [], [], [], [], []
 
     for n, fn in enumerate(fns):
         # store previous time offset
@@ -232,7 +235,7 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
             logger.debug(f"Processing frame {n}")
             # determine time difference dt between frames
             dt = (ms - _ms).total_seconds()
-            cols, rows, _v_x, _v_y, _s2n = OpenRiverCam.piv.piv(
+            cols, rows, _v_x, _v_y, _s2n, _corr = OpenRiverCam.piv.piv(
                 frame_a,
                 frame_b,
                 res_x=resolution,
@@ -240,7 +243,7 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
                 dt=dt,
                 **piv_kwargs,
             )
-            v_x.append(_v_x), v_y.append(_v_y), s2n.append(_s2n)
+            v_x.append(_v_x), v_y.append(_v_y), s2n.append(_s2n), corr.append(_corr)
             time.append(start_time + ms)
     # finally read GeoTiff transform from the first file
     for fn in fns.limit(1):
@@ -268,7 +271,7 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
 
     # prepare dataset
     dataset = OpenRiverCam.io.to_dataset(
-        [v_x, v_y, s2n],
+        [v_x, v_y, s2n, corr],
         var_names,
         x,
         y,
@@ -296,6 +299,12 @@ def compute_q(
     :param velocity: dict, contains bucket / identifier of NetCDF file with velocities as time series grids (time, x, y)
     :param bathymetry: dict, contains site name (str), site CRS (int) and coords (list of [x, y, z]) of
         bathymetry cross section
+    :param z_0: float, zero water level (ref. CRS)
+    :param h_a: float, actual water level (ref. z_0)
+    :param v_corr: float (range: 0-1, typically close to 1), correction factor from surface to depth-average
+        (default: 0.85)
+    :param quantile: float or list of floats (range: 0-1)  (default: 0.5)
+
 
     :return:
     """
@@ -338,3 +347,49 @@ def compute_q(
     os.remove("temp.nc")
     logger.info(f"Q.nc successfully written in {bucket}")
     return 200
+
+
+def filter_piv(
+    velocity, filter_kwargs={}, logger=logging
+):
+    """
+
+    :param velocity: dict, contains bucket / identifier of NetCDF file with velocities as time series grids (time, x, y)
+    :param filter_kwargs: dict with the following possible kwargs for filtering (+default values if not provided)
+        angle_expected=0.5 * np.pi -- expected angle in radians of flow velocity measured from upwards, clock-wise.
+            In OpenRiverCam this is always 0.5*pi because we make sure water flows from left to right
+        angle_bounds=0.25 * np.pi -- the maximum angular deviation from expected angle allowed. Velocities that are
+            outside this bound are masked
+        var_thres=1.0 -- maximum allowed std/mean ratio in a pixel. Pixels are entirely filtered out if they don't stay
+            within this threshold. Individual time steps outside this ratio are also filtered out
+    s_min=0.1 -- minimum velocity expected to be measured by piv in m/s. lower velocities per timestep are filtered out
+    s_max=5.0 -- maximum velocity expected to be measured by piv in m/s. higher velocities per timestep are filtered out
+    corr_min=0.3 -- minimum correlation needed to accept a velocity on timestep basis. Le Coz in FUDAA-LSPIV suggest 0.4
+    :param logger: logging object
+    :return:
+    """
+
+    encoding = {}
+    # open S3 bucket
+    s3 = utils.get_s3()
+    logger.info(
+        f"Filtering surface velocities in {velocity['file']['bucket']}"
+    )
+    # open file from bucket in memory
+    bucket = velocity["file"]["bucket"]
+    fn = velocity["file"]["identifier"]
+    s3.Bucket(bucket).download_file(fn, "temp.nc")
+    ds = OpenRiverCam.piv.piv_filter("temp.nc", **filter_kwargs)
+
+    # remove original file
+    os.remove("temp.nc")
+
+    # write gridded netCDF with filtered velocities netCDF
+    ds.to_netcdf("temp.nc", encoding=encoding)
+    s3.Bucket(bucket).upload_file("temp.nc", "velocity_filter.nc")
+    os.remove("temp.nc")
+    logger.info(f"velocity_filter.nc successfully written in {bucket}")
+    # TODO: Post status code on specific end point (Rick)
+    # requests.post("http://.....", msg)
+    return 200
+
