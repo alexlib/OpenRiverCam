@@ -32,7 +32,7 @@ def upload_file(fn, bucket, dest=None, logger=logging):
     logger.info(f"{fn} uploaded in {bucket}")
 
 
-def extract_frames(movie, camera, prefix="frame", logger=logging):
+def extract_frames(movie, prefix="frame", logger=logging):
     """
     Extract raw frames, only lens correct using camera lensParameters, and store in RGB photos
     :param movie: dict containing movie information
@@ -52,7 +52,7 @@ def extract_frames(movie, camera, prefix="frame", logger=logging):
     fn = movie["file"]["identifier"]
     # make a temporary file
     s3.Bucket(bucket).download_file(fn, fn)
-    for _t, img in OpenRiverCam.io.frames(fn, lens_pars=camera["lensParameters"]):
+    for _t, img in OpenRiverCam.io.frames(fn, lens_pars=movie['camera_config']['camera_type']['lensParameters']):
         # filename in bucket, following template frame_{4-digit_framenumber}_{time_in_milliseconds}.jpg
         dest_fn = "{:s}_{:04d}_{:06d}.jpg".format(prefix, n, int(_t * 1000))
         logger.debug(f"Write frame {n} in {dest_fn} to S3")
