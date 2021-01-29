@@ -1,21 +1,13 @@
 import os
 import pika
 import json
+from example_data import movie
 
 body = {
     "type": "extract_frames",
     "kwargs": {
-        "movie": {"file": {"bucket": "example", "identifier": "example_video.mp4"}, "id": 1 },
-        "camera": {
-            "name": "Foscam E9900P",
-            "configuration": {},
-            "lensParameters": {
-                "k1": -10.0e-6,
-                "c": 2,
-                "f": 8.0,
-            },
-        },
-    },
+        "movie": movie
+    }
 }
 
 
