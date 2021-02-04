@@ -14,7 +14,6 @@ body = {
     "type": "compute_piv",
     "kwargs": {
         "movie": movie,
-        "file": {"bucket": "example", "identifier": "velocity.nc"},
         "piv_kwargs": {
             "window_size": 60,
             "overlap": 30,

@@ -1,8 +1,6 @@
 import pika
 import json
-from example_data import bathymetry
-
-velocity_filter = {"file": {"bucket": "example", "identifier": "velocity_filter.nc"}}
+from example_data import movie
 
 connection = pika.BlockingConnection(
     pika.URLParameters("amqp://admin:password@127.0.0.1:5672")
@@ -13,10 +11,7 @@ channel.queue_declare(queue="processing")
 body = {
     "type": "compute_q",
     "kwargs": {
-        "velocity": velocity_filter,
-        "bathymetry": bathymetry,
-        "z_0": 100.0,
-        "h_a": 0.9,
+        "movie": movie,
         "quantile": [0.1, 0.5, 0.9],
     },
 }
