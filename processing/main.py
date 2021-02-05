@@ -21,9 +21,14 @@ def process(ch, method, properties, body):
             try:
                 task(**kwargs, logger=logger)
                 logger.info(f"Task {task_name} was successful")
+                # Acknowledge queue item at end of task.
+                ch.basic_ack(delivery_tag=method.delivery_tag)
                 r = 200
             except BaseException as e:
                 logger.error(f"{task_name} failed with error {e}")
+                # Acknowledge queue item at end of task.
+                ch.basic_ack(delivery_tag=method.delivery_tag)
+                requests.post("http://portal/api/processing/error/%s" % taskInput['kwargs']['movie']['id'], json={"error_message": str(e)})
                 r = 500
 
         # # Example request to API (only used for posting/updating information).
@@ -50,8 +55,6 @@ def process(ch, method, properties, body):
         # downloadTestFile = io.BytesIO()
         # s3.Object('test-bucket', 'test.jpg').download_fileobj(downloadTestFile)
         #
-        # Acknowledge queue item at end of task.
-        ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
         print("Processing failed with error: %s" % str(e))
         traceback.print_tb(e.__traceback__)

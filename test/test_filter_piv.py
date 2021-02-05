@@ -1,13 +1,12 @@
 import os
 import pika
 import json
-
-velocity = {"file": {"bucket": "example", "identifier": "velocity.nc"}}
+from example_data import movie
 
 body = {
     "type": "filter_piv",
     "kwargs": {
-        "velocity": velocity,
+        "movie": movie,
     },
 }
 

@@ -5,6 +5,7 @@ import logging
 import io
 import cv2
 import numpy as np
+import requests
 from datetime import datetime, timedelta
 from shapely.geometry import shape
 from rasterio.plot import reshape_as_raster
@@ -31,7 +32,7 @@ def upload_file(fn, bucket, dest=None, logger=logging):
     logger.info(f"{fn} uploaded in {bucket}")
 
 
-def extract_frames(movie, camera, prefix="frame", logger=logging):
+def extract_frames(movie, prefix="frame", logger=logging):
     """
     Extract raw frames, only lens correct using camera lensParameters, and store in RGB photos
     :param movie: dict containing movie information
@@ -51,7 +52,7 @@ def extract_frames(movie, camera, prefix="frame", logger=logging):
     fn = movie["file"]["identifier"]
     # make a temporary file
     s3.Bucket(bucket).download_file(fn, fn)
-    for _t, img in OpenRiverCam.io.frames(fn, lens_pars=camera["lensParameters"]):
+    for _t, img in OpenRiverCam.io.frames(fn, lens_pars=movie['camera_config']['camera_type']['lensParameters']):
         # filename in bucket, following template frame_{4-digit_framenumber}_{time_in_milliseconds}.jpg
         dest_fn = "{:s}_{:04d}_{:06d}.jpg".format(prefix, n, int(_t * 1000))
         logger.debug(f"Write frame {n} in {dest_fn} to S3")
@@ -65,9 +66,9 @@ def extract_frames(movie, camera, prefix="frame", logger=logging):
         n += 1
     # clean up of temp file
     os.remove(fn)
-    # TODO: Post status code on specific end point (Rick)
-    # requests.post("http://.....", msg)
-    return 200
+
+    # API request to confirm frame extraction is finished.
+    requests.post("http://portal/api/processing/extract_frames/%s" % movie['id'])
 
 
 def extract_project_frames(movie, prefix="proj", logger=logging):
@@ -125,9 +126,6 @@ def extract_project_frames(movie, prefix="proj", logger=logging):
     # clean up of temp file
     os.remove(fn)
     logger.info(f"{fn} successfully reprojected into frames in {bucket}")
-    # TODO: Post status code on specific end point (Rick)
-    # requests.post("http://.....", msg)
-    return 200
 
 
 def get_aoi(camera_config, logger=logging):
@@ -160,15 +158,13 @@ def get_aoi(camera_config, logger=logging):
         camera_config["aoi"] = {}
     camera_config["aoi"]["bbox"] = bbox_json
     logger.info("Bounding box of aoi derived")
-    # TODO replace return for a requests.post
     return camera_config
 
 
-def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
+def compute_piv(movie, prefix="proj", piv_kwargs={}, logger=logging):
     """
     compute velocities over frame pairs, choosing frame interval, start / end frame.
     :param movie: dict, contains file dictionary and camera_config
-    :param file: dict, contains file information for writing outputs
     :param prefix: str, prefix of geotiff files assumed to be present in bucket
     :param piv_kwargs: str, arguments passed to piv algorithm, parameters are defined in docstring of
         openpiv.pyprocess.extended_search_area_piv
@@ -285,25 +281,18 @@ def compute_piv(movie, file, prefix="proj", piv_kwargs={}, logger=logging):
     )
     # write to file and to bucket
     dataset.to_netcdf("temp.nc", encoding=encoding)
-    s3.Bucket(bucket).upload_file("temp.nc", file["identifier"])
+    s3.Bucket(bucket).upload_file("temp.nc", "velocity.nc")
     os.remove("temp.nc")
-    logger.info(f"{file['identifier']} successfully written in {bucket}")
-    # TODO: Post status code on specific end point (Rick)
-    # requests.post("http://.....", msg)
-    return 200
+    logger.info(f"velocity.nc successfully written in {bucket}")
 
 
 def compute_q(
-    velocity, bathymetry, z_0, h_a, v_corr=0.85, quantile=0.5, logger=logging
+    movie, v_corr=0.85, quantile=0.5, logger=logging
 ):
     """
     compute velocities over provided bathymetric cross section points, depth integrated velocities and river flow
     over several quantiles.
-    :param velocity: dict, contains bucket / identifier of NetCDF file with velocities as time series grids (time, x, y)
-    :param bathymetry: dict, contains site name (str), site CRS (int) and coords (list of [x, y, z]) of
-        bathymetry cross section
-    :param z_0: float, zero water level (ref. CRS)
-    :param h_a: float, actual water level (ref. z_0)
+    :param movie: dict, contains file dictionary and camera_config
     :param v_corr: float (range: 0-1, typically close to 1), correction factor from surface to depth-average
         (default: 0.85)
     :param quantile: float or list of floats (range: 0-1)  (default: 0.5)
@@ -315,15 +304,15 @@ def compute_q(
     # open S3 bucket
     s3 = utils.get_s3()
     logger.info(
-        f"Extracting cross section from velocities in {velocity['file']['bucket']}"
+        f"Extracting cross section from velocities in {movie['file']['bucket']}"
     )
     # open file from bucket in memory
-    bucket = velocity["file"]["bucket"]
-    fn = velocity["file"]["identifier"]
+    bucket = movie["file"]["bucket"]
+    fn = "velocity_filter.nc"
     s3.Bucket(bucket).download_file(fn, "temp.nc")
 
     # retrieve velocities over cross section only (ds_points has time, points as dimension)
-    ds_points = OpenRiverCam.io.interp_coords("temp.nc", *zip(*bathymetry["coords"]))
+    ds_points = OpenRiverCam.io.interp_coords("temp.nc", *zip(*movie['bathymetry']["coords"]))
 
     # add the effective velocity perpendicular to cross-section
     ds_points["v_eff"] = OpenRiverCam.piv.vector_to_scalar(
@@ -332,7 +321,7 @@ def compute_q(
 
     # integrate over depth with vertical correction
     ds_points["q"] = OpenRiverCam.piv.depth_integrate(
-        ds_points["zcoords"], ds_points["v_eff"], z_0, h_a, v_corr=v_corr
+        ds_points["zcoords"], ds_points["v_eff"], movie['camera_config']['gcps']['z_0'], movie['h_a'], v_corr=v_corr
     )
 
     # now integrate over the width of the cross-section
@@ -349,17 +338,14 @@ def compute_q(
 
     os.remove("temp.nc")
     logger.info(f"Q.nc successfully written in {bucket}")
-    # TODO: Post status code on specific end point (Rick)
-    # requests.post("http://.....", msg)
-    return 200
 
 
 def filter_piv(
-    velocity, filter_kwargs={}, logger=logging
+    movie, filter_kwargs={}, logger=logging
 ):
     """
 
-    :param velocity: dict, contains bucket / identifier of NetCDF file with velocities as time series grids (time, x, y)
+    :param movie: dict, contains file dictionary and camera_config
     :param filter_kwargs: dict with the following possible kwargs for filtering (+default values if not provided)
         angle_expected=0.5 * np.pi -- expected angle in radians of flow velocity measured from upwards, clock-wise.
             In OpenRiverCam this is always 0.5*pi because we make sure water flows from left to right
@@ -378,11 +364,11 @@ def filter_piv(
     # open S3 bucket
     s3 = utils.get_s3()
     logger.info(
-        f"Filtering surface velocities in {velocity['file']['bucket']}"
+        f"Filtering surface velocities in {movie['file']['bucket']}"
     )
     # open file from bucket in memory
-    bucket = velocity["file"]["bucket"]
-    fn = velocity["file"]["identifier"]
+    bucket = movie["file"]["bucket"]
+    fn = "velocity.nc"
     s3.Bucket(bucket).download_file(fn, "temp.nc")
     ds = OpenRiverCam.piv.piv_filter("temp.nc", **filter_kwargs)
 
@@ -394,7 +380,29 @@ def filter_piv(
     s3.Bucket(bucket).upload_file("temp.nc", "velocity_filter.nc")
     os.remove("temp.nc")
     logger.info(f"velocity_filter.nc successfully written in {bucket}")
-    # TODO: Post status code on specific end point (Rick)
-    # requests.post("http://.....", msg)
-    return 200
 
+
+def run(movie, logger=logging):
+    """
+    Execute steps of project frames, PIV, filter and compute_q.
+    :param movie: dict, movie information
+    :param logger=logging: logger-object
+    :return:
+    """
+    extract_project_frames(movie, logger=logger)
+    # TODO: Are these default piv_kwargs? If so they can be moved toward the default paramater in the function itself.
+    compute_piv(movie, piv_kwargs = {
+            "window_size": 60,
+            "overlap": 30,
+            "search_area_size": 60,
+            "sig2noise_method": "peak2peak",
+        }, logger=logger)
+    filter_piv(movie, logger=logger)
+    compute_q(movie, logger=logger)
+
+    # TODO: Return the discharge value in the processing callback to be stored in the database.
+
+    # API request to confirm movie run is finished.
+    requests.post("http://portal/api/processing/run/%s" % movie['id'])
+
+    logger.info(f"Full run succesfull for movie {movie['id']}")
