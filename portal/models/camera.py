@@ -1,5 +1,6 @@
 from sqlalchemy import Integer, ForeignKey, String, Column, DateTime, Enum, Float, Text
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy.orm import relationship
 import enum
 from models.base import Base
 
@@ -14,8 +15,11 @@ class Camera(Base, SerializerMixin):
     site_id = Column(Integer, ForeignKey('site.id'))
     status =  Column(Enum(CameraStatus))
 
+    site = relationship('Site')
+    camera_type = relationship('CameraType')
+
     def __str__(self):
-        return "{}".format(self.id)
+        return "{}({}) at {}".format(self.camera_type.name, self.id, self.site.name)
 
     def __repr__(self):
         return "{}".format(self.__str__())
@@ -42,8 +46,10 @@ class CameraConfig(Base, SerializerMixin):
     lens_position_y = Column(Float)
     lens_position_z = Column(Float)
 
+    camera = relationship('Camera')
+
     def __str__(self):
-        return "{}".format(self.id)
+        return "{} - configuration {}".format(self.camera.__str__(), self.id)
 
     def __repr__(self):
         return "{}".format(self.__str__())

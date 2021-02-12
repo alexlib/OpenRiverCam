@@ -1,5 +1,6 @@
 from sqlalchemy import Integer, ForeignKey, String, Column, DateTime, Enum, Float, Text
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy.orm import relationship
 import enum
 from models.base import Base
 
@@ -27,6 +28,9 @@ class Movie(Base, SerializerMixin):
     status = Column(Enum(MovieStatus))
     error_message = Column(Text)
     discharge = Column(Float)
+
+    config = relationship('CameraConfig')
+    bathymetry = relationship('Bathymetry')
 
     def __str__(self):
         return "{}/{}".format(self.file_bucket, self.file_name)
