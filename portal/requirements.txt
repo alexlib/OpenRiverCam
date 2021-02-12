@@ -1,6 +1,9 @@
 Flask
 Flask-Admin
+Flask-Security
 Flask-SQLAlchemy
 psycopg2
 SQLAlchemy-serializer
 jsonschema
+email_validator
+bcrypt
