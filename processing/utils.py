@@ -10,4 +10,3 @@ def get_s3():
         aws_secret_access_key=os.getenv("S3_ACCESS_SECRET"),
         config=boto3.session.Config(signature_version="s3v4"),
     )
-

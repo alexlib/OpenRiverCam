@@ -2,8 +2,9 @@ from sqlalchemy import Integer, ForeignKey, String, Column, DateTime, Enum, Floa
 from sqlalchemy_serializer import SerializerMixin
 from models.base import Base
 
+
 class Polygon(Base, SerializerMixin):
-    __tablename__ = 'polygon'
+    __tablename__ = "polygon"
     id = Column(Integer, primary_key=True)
     ul_x = Column(Float)
     ul_y = Column(Float)
