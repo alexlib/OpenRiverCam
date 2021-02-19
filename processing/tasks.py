@@ -288,7 +288,7 @@ def compute_piv(movie, prefix="proj", piv_kwargs={}, logger=logging):
     logger.info(f"velocity.nc successfully written in {bucket}")
 
 
-def compute_q(movie, v_corr=0.85, quantile=0.5, logger=logging):
+def compute_q(movie, v_corr=0.85, quantile=[0.05, 0.25, 0.5, 0.75, 0.95], logger=logging):
     """
     compute velocities over provided bathymetric cross section points, depth integrated velocities and river flow
     over several quantiles.
@@ -333,8 +333,10 @@ def compute_q(movie, v_corr=0.85, quantile=0.5, logger=logging):
     # integrate over the width of the cross-section
     Q = OpenRiverCam.piv.integrate_flow(ds_points["q"], quantile=quantile)
 
+    # extract a callback from Q
+    Q_callback = {"discharge_q{:02d}".format(int(float(q)*100)): float(Q.sel(quantile=q)) for q in Q["quantile"]}
     # integrate for only median, to return single value to database
-    Q_callback = float(OpenRiverCam.piv.integrate_flow(ds_points["q"], quantile=0.5))
+    # Q_callback = float(OpenRiverCam.piv.integrate_flow(ds_points["q"], quantile=0.5))
 
     # overwrite gridded netCDF with cross section netCDF
     ds_points.to_netcdf("temp.nc", encoding=encoding)
@@ -414,21 +416,15 @@ def filter_piv(
     logger.info(f"velocity_filter.nc successfully written in {bucket}")
 
 
-def run(movie, logger=logging):
+def run(movie, piv_kwargs={}, logger=logging):
     """
     Execute steps of project frames, PIV, filter and compute_q.
     :param movie: dict, movie information
     :param logger=logging: logger-object
     :return:
     """
-    # extract_project_frames(movie, logger=logger)
-    # # TODO: Are these default piv_kwargs? If so they can be moved toward the default paramater in the function itself.
-    # compute_piv(movie, piv_kwargs = {
-    #         "window_size": 30,
-    #         "overlap": 15,
-    #         "search_area_size": 30,
-    #         "sig2noise_method": "peak2peak",
-    #     }, logger=logger)
+    extract_project_frames(movie, logger=logger)
+    compute_piv(movie, piv_kwargs=piv_kwargs, logger=logger)
     filter_piv(movie, logger=logger)
     Q_callback = compute_q(movie, logger=logger)
     print(Q_callback)
@@ -437,6 +433,6 @@ def run(movie, logger=logging):
     # API request to confirm movie run is finished.
     requests.post(
         "http://portal/api/processing/run/%s" % movie["id"],
-        json={"discharge": Q_callback},
+        json=Q_callback,
     )
     logger.info(f"Full run succesfull for movie {movie['id']}")
