@@ -17,8 +17,8 @@ class Camera(Base, SerializerMixin):
     site_id = Column(Integer, ForeignKey("site.id"))
     status = Column(Enum(CameraStatus))
 
-    site = relationship('Site')
-    camera_type = relationship('CameraType')
+    site = relationship("Site")
+    camera_type = relationship("CameraType")
 
     def __str__(self):
         return "{}({}) at {}".format(self.camera_type.name, self.id, self.site.name)
@@ -49,7 +49,7 @@ class CameraConfig(Base, SerializerMixin):
     lens_position_y = Column(Float)
     lens_position_z = Column(Float)
 
-    camera = relationship('Camera')
+    camera = relationship("Camera")
 
     def __str__(self):
         return "{} - configuration {}".format(self.camera.__str__(), self.id)

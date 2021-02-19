@@ -32,8 +32,8 @@ class Movie(Base, SerializerMixin):
     error_message = Column(Text)
     discharge = Column(Float)
 
-    config = relationship('CameraConfig')
-    bathymetry = relationship('Bathymetry')
+    config = relationship("CameraConfig")
+    bathymetry = relationship("Bathymetry")
 
     def __str__(self):
         return "{}/{}".format(self.file_bucket, self.file_name)
