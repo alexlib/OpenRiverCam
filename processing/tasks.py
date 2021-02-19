@@ -14,12 +14,12 @@ from rasterio.plot import reshape_as_raster
 def upload_file(fn, bucket, dest=None, logger=logging):
     """
     Uploads BytesIO obj representation of data in file 'fn' in bucket
+
     :param fn: str, full local path to file containing movie
     :param bucket: str, name of bucket, if it does not exist, it will be created
     :param dest=None: str, name of file in bucket, if left as None, the file name is stripped from fn
     :param logger=logging: logger-object
-
-    :return:
+    :return: None
     """
     if dest is None:
         dest = os.path.split(os.path.abspath(fn))[1]
@@ -35,11 +35,12 @@ def upload_file(fn, bucket, dest=None, logger=logging):
 def extract_frames(movie, prefix="frame", logger=logging):
     """
     Extract raw frames, only lens correct using camera lensParameters, and store in RGB photos
+
     :param movie: dict containing movie information
     :param camera: dict, camera properties, such as lensParameters, name
     :param prefix="frame": str, prefix of file names, used in storage bucket, normally not changed by user
     :param logger=logging: logger-object
-    :return:
+    :return: None
     """
     # open S3 bucket
     s3 = utils.get_s3()
@@ -52,7 +53,9 @@ def extract_frames(movie, prefix="frame", logger=logging):
     fn = movie["file"]["identifier"]
     # make a temporary file
     s3.Bucket(bucket).download_file(fn, fn)
-    for _t, img in OpenRiverCam.io.frames(fn, lens_pars=movie['camera_config']['camera_type']['lensParameters']):
+    for _t, img in OpenRiverCam.io.frames(
+        fn, lens_pars=movie["camera_config"]["camera_type"]["lensParameters"]
+    ):
         # filename in bucket, following template frame_{4-digit_framenumber}_{time_in_milliseconds}.jpg
         dest_fn = "{:s}_{:04d}_{:06d}.jpg".format(prefix, n, int(_t * 1000))
         logger.debug(f"Write frame {n} in {dest_fn} to S3")
@@ -68,17 +71,18 @@ def extract_frames(movie, prefix="frame", logger=logging):
     os.remove(fn)
 
     # API request to confirm frame extraction is finished.
-    requests.post("http://portal/api/processing/extract_frames/%s" % movie['id'])
+    requests.post("http://portal/api/processing/extract_frames/%s" % movie["id"])
 
 
 def extract_project_frames(movie, prefix="proj", logger=logging):
     """
     Extract frames, lens correct, greyscale correct and project to defined AOI with GCPs, water level and camera position
     Results in GeoTIFF files in desired projection and resolution within bucket defined in movie
+
     :param movie: dict, movie information
     :param prefix="proj": str, prefix of file names, used in storage bucket, normally not changed by user
     :param logger=logging: logger-object
-    :return:
+    :return: None
     """
     # open S3 bucket
     camera_config = movie["camera_config"]
@@ -131,9 +135,10 @@ def extract_project_frames(movie, prefix="proj", logger=logging):
 def get_aoi(camera_config, logger=logging):
     """
     add the aoi dictionary to camera_config based on user inputs
+
     :param camera_config: camera configuration with ["aoi"]["bbox"] still missing
     :param logger=logging: logger-object
-    :return:
+    :return: None
     """
     # some assertion
     if not "gcps" in camera_config:
@@ -164,12 +169,13 @@ def get_aoi(camera_config, logger=logging):
 def compute_piv(movie, prefix="proj", piv_kwargs={}, logger=logging):
     """
     compute velocities over frame pairs, choosing frame interval, start / end frame.
+
     :param movie: dict, contains file dictionary and camera_config
     :param prefix: str, prefix of geotiff files assumed to be present in bucket
     :param piv_kwargs: str, arguments passed to piv algorithm, parameters are defined in docstring of
-        openpiv.pyprocess.extended_search_area_piv
+           openpiv.pyprocess.extended_search_area_piv
     :param logger: logger object
-    :return:
+    :return: None
     """
     var_names = ["v_x", "v_y", "s2n", "corr"]
     var_attrs = [
@@ -286,19 +292,16 @@ def compute_piv(movie, prefix="proj", piv_kwargs={}, logger=logging):
     logger.info(f"velocity.nc successfully written in {bucket}")
 
 
-def compute_q(
-    movie, v_corr=0.85, quantile=0.5, logger=logging
-):
+def compute_q(movie, v_corr=0.85, quantile=0.5, logger=logging):
     """
     compute velocities over provided bathymetric cross section points, depth integrated velocities and river flow
     over several quantiles.
+
     :param movie: dict, contains file dictionary and camera_config
     :param v_corr: float (range: 0-1, typically close to 1), correction factor from surface to depth-average
-        (default: 0.85)
+           (default: 0.85)
     :param quantile: float or list of floats (range: 0-1)  (default: 0.5)
-
-
-    :return:
+    :return: None
     """
     encoding = {}
     # open S3 bucket
@@ -312,7 +315,9 @@ def compute_q(
     s3.Bucket(bucket).download_file(fn, "temp.nc")
 
     # retrieve velocities over cross section only (ds_points has time, points as dimension)
-    ds_points = OpenRiverCam.io.interp_coords("temp.nc", *zip(*movie['bathymetry']["coords"]))
+    ds_points = OpenRiverCam.io.interp_coords(
+        "temp.nc", *zip(*movie["bathymetry"]["coords"])
+    )
 
     # add the effective velocity perpendicular to cross-section
     ds_points["v_eff"] = OpenRiverCam.piv.vector_to_scalar(
@@ -321,7 +326,11 @@ def compute_q(
 
     # integrate over depth with vertical correction
     ds_points["q"] = OpenRiverCam.piv.depth_integrate(
-        ds_points["zcoords"], ds_points["v_eff"], movie['camera_config']['gcps']['z_0'], movie['h_a'], v_corr=v_corr
+        ds_points["zcoords"],
+        ds_points["v_eff"],
+        movie["camera_config"]["gcps"]["z_0"],
+        movie["h_a"],
+        v_corr=v_corr,
     )
 
     # now integrate over the width of the cross-section
@@ -340,10 +349,11 @@ def compute_q(
     logger.info(f"Q.nc successfully written in {bucket}")
 
 
-def filter_piv(
-    movie, filter_kwargs={}, logger=logging
-):
+def filter_piv(movie, filter_kwargs={}, logger=logging):
     """
+    Filters a PIV velocity dataset (derived with compute_piv) with several temporal and spatial filter. This removes
+    noise, isolated velocities in space and time, and moving features that are not likely to be water related.
+    Input keyword arguments to the filters can be provided in the request, through several dictionaries.
 
     :param movie: dict, contains file dictionary and camera_config
     :param filter_kwargs: dict with the following possible kwargs for filtering (+default values if not provided)
@@ -363,9 +373,7 @@ def filter_piv(
     encoding = {}
     # open S3 bucket
     s3 = utils.get_s3()
-    logger.info(
-        f"Filtering surface velocities in {movie['file']['bucket']}"
-    )
+    logger.info(f"Filtering surface velocities in {movie['file']['bucket']}")
     # open file from bucket in memory
     bucket = movie["file"]["bucket"]
     fn = "velocity.nc"
@@ -384,25 +392,31 @@ def filter_piv(
 
 def run(movie, logger=logging):
     """
-    Execute steps of project frames, PIV, filter and compute_q.
+    Execute steps of project frames, compute_piv, filter_piv and compute_q.
+
     :param movie: dict, movie information
     :param logger=logging: logger-object
-    :return:
+    :return: None
     """
+
     extract_project_frames(movie, logger=logger)
     # TODO: Are these default piv_kwargs? If so they can be moved toward the default paramater in the function itself.
-    compute_piv(movie, piv_kwargs = {
+    compute_piv(
+        movie,
+        piv_kwargs={
             "window_size": 60,
             "overlap": 30,
             "search_area_size": 60,
             "sig2noise_method": "peak2peak",
-        }, logger=logger)
+        },
+        logger=logger,
+    )
     filter_piv(movie, logger=logger)
     compute_q(movie, logger=logger)
 
     # TODO: Return the discharge value in the processing callback to be stored in the database.
 
     # API request to confirm movie run is finished.
-    requests.post("http://portal/api/processing/run/%s" % movie['id'])
+    requests.post("http://portal/api/processing/run/%s" % movie["id"])
 
     logger.info(f"Full run succesfull for movie {movie['id']}")
