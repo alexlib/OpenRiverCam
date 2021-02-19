@@ -97,7 +97,7 @@ camera_config = {
         8.0 + 313192,
         110.0,
     ],  # we could also make this a geojson but it is just one point (x, y, z)
-    "aoi": {"bbox": bbox, "rows": 10, "cols": 30}
+    "aoi": {"bbox": bbox, "rows": 10, "cols": 30},
 }
 
 # define cross section
@@ -186,5 +186,5 @@ movie = {
     "resolution": "1920x1080",
     "fps": 25.0,  # float
     "bathymetry": bathymetry,  # currently not yet used
-    "h_a": 3.4,  # float, water level with reference to gauge plate zero level
+    "h_a": 2.0,  # float, water level with reference to gauge plate zero level
 }

@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from models.base import Base
 
 # TODO: Remove hardcoded connection URI.
-engine = create_engine('postgresql://postgres:password@db:5432/openrivercam')
+engine = create_engine("postgresql://postgres:password@db:5432/openrivercam")
 
 from models import bathymetry
 from models import camera
