@@ -28,7 +28,11 @@ def process(ch, method, properties, body):
                 logger.error(f"{task_name} failed with error {e}")
                 # Acknowledge queue item at end of task.
                 ch.basic_ack(delivery_tag=method.delivery_tag)
-                requests.post("http://portal/api/processing/error/%s" % taskInput['kwargs']['movie']['id'], json={"error_message": str(e)})
+                requests.post(
+                    "http://portal/api/processing/error/%s"
+                    % taskInput["kwargs"]["movie"]["id"],
+                    json={"error_message": str(e)},
+                )
                 r = 500
 
         # # Example request to API (only used for posting/updating information).

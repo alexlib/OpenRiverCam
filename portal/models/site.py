@@ -2,8 +2,9 @@ from sqlalchemy import Integer, ForeignKey, String, Column, DateTime, Enum, Floa
 from sqlalchemy_serializer import SerializerMixin
 from models.base import Base
 
+
 class Site(Base, SerializerMixin):
-    __tablename__ = 'site'
+    __tablename__ = "site"
     id = Column(Integer, primary_key=True)
     name = Column(String)
     position_crs = Column(Integer)

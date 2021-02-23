@@ -3,6 +3,7 @@ import flask_admin as admin
 from models import *
 from controllers import camera_type_api, processing_api
 
+
 class MyAdminView(admin.BaseView):
     @admin.expose("/")
     def index(self):
@@ -29,6 +30,7 @@ app.debug = True
 @app.route("/")
 def index():
     return redirect("/portal", code=302)
+
 
 # Create admin interface
 admin = admin.Admin(name="OpenRiverCam", template_mode="bootstrap4", url="/portal")

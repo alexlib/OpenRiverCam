@@ -292,7 +292,7 @@ def compute_piv(movie, prefix="proj", piv_kwargs={}, logger=logging):
     logger.info(f"velocity.nc successfully written in {bucket}")
 
 
-def compute_q(movie, v_corr=0.85, quantile=0.5, logger=logging):
+def compute_q(movie, v_corr=0.85, quantile=[0.05, 0.25, 0.5, 0.75, 0.95], logger=logging):
     """
     compute velocities over provided bathymetric cross section points, depth integrated velocities and river flow
     over several quantiles.
@@ -333,8 +333,13 @@ def compute_q(movie, v_corr=0.85, quantile=0.5, logger=logging):
         v_corr=v_corr,
     )
 
-    # now integrate over the width of the cross-section
+    # integrate over the width of the cross-section
     Q = OpenRiverCam.piv.integrate_flow(ds_points["q"], quantile=quantile)
+
+    # extract a callback from Q
+    Q_callback = {"discharge_q{:02d}".format(int(float(q)*100)): float(Q.sel(quantile=q)) for q in Q["quantile"]}
+    # integrate for only median, to return single value to database
+    # Q_callback = float(OpenRiverCam.piv.integrate_flow(ds_points["q"], quantile=0.5))
 
     # overwrite gridded netCDF with cross section netCDF
     ds_points.to_netcdf("temp.nc", encoding=encoding)
@@ -347,30 +352,53 @@ def compute_q(movie, v_corr=0.85, quantile=0.5, logger=logging):
 
     os.remove("temp.nc")
     logger.info(f"Q.nc successfully written in {bucket}")
+    return Q_callback
 
-
-def filter_piv(movie, filter_kwargs={}, logger=logging):
+def filter_piv(
+    movie, filter_temporal_kwargs={}, filter_spatial_kwargs={}, logger=logging
+):
     """
     Filters a PIV velocity dataset (derived with compute_piv) with several temporal and spatial filter. This removes
     noise, isolated velocities in space and time, and moving features that are not likely to be water related.
     Input keyword arguments to the filters can be provided in the request, through several dictionaries.
 
     :param movie: dict, contains file dictionary and camera_config
-    :param filter_kwargs: dict with the following possible kwargs for filtering (+default values if not provided)
-        angle_expected=0.5 * np.pi -- expected angle in radians of flow velocity measured from upwards, clock-wise.
-            In OpenRiverCam this is always 0.5*pi because we make sure water flows from left to right
-        angle_bounds=0.25 * np.pi -- the maximum angular deviation from expected angle allowed. Velocities that are
-            outside this bound are masked
-        var_thres=1.0 -- maximum allowed std/mean ratio in a pixel. Pixels are entirely filtered out if they don't stay
-            within this threshold. Individual time steps outside this ratio are also filtered out
-    s_min=0.1 -- minimum velocity expected to be measured by piv in m/s. lower velocities per timestep are filtered out
-    s_max=5.0 -- maximum velocity expected to be measured by piv in m/s. higher velocities per timestep are filtered out
-    corr_min=0.3 -- minimum correlation needed to accept a velocity on timestep basis. Le Coz in FUDAA-LSPIV suggest 0.4
+    :param filter_temporal_kwargs: dict with the following possible kwargs for temporal filtering
+        (+default values if not provided):
+        kwargs_angle, dict, containing the following keyword args:
+            angle_expected=0.5 * np.pi -- expected angle in radians of flow velocity measured from upwards, clock-wise.
+                In OpenRiverCam this is always 0.5*pi because we make sure water flows from left to right
+            angle_bounds=0.25 * np.pi -- the maximum angular deviation from expected angle allowed. Velocities that are
+                outside this bound are masked
+        kwargs_std, dict, containing following keyword args:
+            tolerance=1.0 -- maximum allowed std/mean ratio in a pixel. Individual time steps outside this ratio are
+                filtered out.
+        kwargs_velocity, dict, containing following keyword args:
+            s_min=0.1 -- minimum velocity expected to be measured by piv in m/s. lower velocities per timestep are
+                filtered out
+            s_max=5.0 -- maximum velocity expected to be measured by piv in m/s. higher velocities per timestep are
+                filtered out
+        kwargs_corr, dict, containing following keyword args:
+            corr_min=0.4 -- minimum correlation needed to accept a velocity on timestep basis. Le Coz in FUDAA-LSPIV
+                suggest 0.4
+        kwargs_neighbour, dict, containing followiung keyword args:
+            roll=5 -- amount of time steps in rolling window (centred)
+            tolerance=0.5 -- Relative acceptable velocity of maximum found within rolling window
+
+    :param filter_spatial_kwargs: dict with the following possible kwargs for spatial filtering
+        (+default values if not provided):
+        kwargs_nan, dict, containing following keyword args:
+            tolerance=0.8 -- float, amount of NaNs in search window measured as a fraction of total amount of values
+                [0-1]
+            stride=1 --int, stride used to determine relevant neighbours
+        kwargs_median, dict, containing following keyword args:
+            tolerance=0.7 -- amount of standard deviations tolerance
+            stride=1 -- int, stride used to determine relevant neighbours
+
     :param logger: logging object
     :return:
     """
 
-    encoding = {}
     # open S3 bucket
     s3 = utils.get_s3()
     logger.info(f"Filtering surface velocities in {movie['file']['bucket']}")
@@ -378,11 +406,14 @@ def filter_piv(movie, filter_kwargs={}, logger=logging):
     bucket = movie["file"]["bucket"]
     fn = "velocity.nc"
     s3.Bucket(bucket).download_file(fn, "temp.nc")
-    ds = OpenRiverCam.piv.piv_filter("temp.nc", **filter_kwargs)
+    logger.debug("applying temporal filters")
+    ds = OpenRiverCam.piv.filter_temporal("temp.nc", **filter_temporal_kwargs)
+    logger.debug("applying spatial filters")
+    ds = OpenRiverCam.piv.filter_spatial(ds, **filter_spatial_kwargs)
 
     # remove original file
     os.remove("temp.nc")
-
+    encoding = {var: {"zlib": True} for var in ds}
     # write gridded netCDF with filtered velocities netCDF
     ds.to_netcdf("temp.nc", encoding=encoding)
     s3.Bucket(bucket).upload_file("temp.nc", "velocity_filter.nc")
@@ -390,7 +421,7 @@ def filter_piv(movie, filter_kwargs={}, logger=logging):
     logger.info(f"velocity_filter.nc successfully written in {bucket}")
 
 
-def run(movie, logger=logging):
+def run(movie, piv_kwargs={}, logger=logging):
     """
     Execute steps of project frames, compute_piv, filter_piv and compute_q.
 
@@ -400,23 +431,14 @@ def run(movie, logger=logging):
     """
 
     extract_project_frames(movie, logger=logger)
-    # TODO: Are these default piv_kwargs? If so they can be moved toward the default paramater in the function itself.
-    compute_piv(
-        movie,
-        piv_kwargs={
-            "window_size": 60,
-            "overlap": 30,
-            "search_area_size": 60,
-            "sig2noise_method": "peak2peak",
-        },
-        logger=logger,
-    )
+    compute_piv(movie, piv_kwargs=piv_kwargs, logger=logger)
     filter_piv(movie, logger=logger)
-    compute_q(movie, logger=logger)
-
+    Q_callback = compute_q(movie, logger=logger)
     # TODO: Return the discharge value in the processing callback to be stored in the database.
-
+    logger.debug(f"Performing callback with discharge value {Q_callback}")
     # API request to confirm movie run is finished.
-    requests.post("http://portal/api/processing/run/%s" % movie["id"])
-
+    requests.post(
+        "http://portal/api/processing/run/%s" % movie["id"],
+        json=Q_callback,
+    )
     logger.info(f"Full run succesfull for movie {movie['id']}")

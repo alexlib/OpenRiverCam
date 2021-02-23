@@ -3,12 +3,7 @@ import pika
 import json
 from example_data import movie
 
-body = {
-    "type": "extract_frames",
-    "kwargs": {
-        "movie": movie
-    }
-}
+body = {"type": "extract_frames", "kwargs": {"movie": movie}}
 
 
 connection = pika.BlockingConnection(
