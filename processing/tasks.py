@@ -340,12 +340,10 @@ def compute_q(
     Q = OpenRiverCam.piv.integrate_flow(ds_points["q"], quantile=quantile)
 
     # extract a callback from Q
-    Q_callback = {
+    Q_dict = {
         "discharge_q{:02d}".format(int(float(q) * 100)): float(Q.sel(quantile=q))
         for q in Q["quantile"]
     }
-    # integrate for only median, to return single value to database
-    # Q_callback = float(OpenRiverCam.piv.integrate_flow(ds_points["q"], quantile=0.5))
 
     # overwrite gridded netCDF with cross section netCDF
     ds_points.to_netcdf("temp.nc", encoding=encoding)
@@ -358,7 +356,7 @@ def compute_q(
 
     os.remove("temp.nc")
     logger.info(f"Q.nc successfully written in {bucket}")
-    return Q_callback
+    return Q_dict
 
 
 def filter_piv(
@@ -440,12 +438,12 @@ def run(movie, piv_kwargs={}, logger=logging):
     extract_project_frames(movie, logger=logger)
     compute_piv(movie, piv_kwargs=piv_kwargs, logger=logger)
     filter_piv(movie, logger=logger)
-    Q_callback = compute_q(movie, logger=logger)
+    Q = compute_q(movie, logger=logger)
     # TODO: Return the discharge value in the processing callback to be stored in the database.
-    logger.debug(f"Performing callback with discharge value {Q_callback}")
+    logger.debug(f"Performing callback with discharge value {Q}")
     # API request to confirm movie run is finished.
     requests.post(
         "http://portal/api/processing/run/%s" % movie["id"],
-        json=Q_callback,
+        json=Q,
     )
     logger.info(f"Full run succesfull for movie {movie['id']}")
