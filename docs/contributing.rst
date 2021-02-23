@@ -3,4 +3,4 @@ Contributing
 
 .. _contributing:
 
-.. include:: ../CONTRIBUTING.rst
+If you wish to contribute to OpenRiverCam, please visit https://github.com/TAHMO/OpenRiverCam

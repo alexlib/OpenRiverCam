@@ -111,8 +111,8 @@ autodoc_member_order = "bysource"  # overwrite default alphabetical sort
 html_static_path = ["_static"]
 # html_logo = "img/logo.png"
 html_theme_options = {
-    'logo_only': True,
-    'display_version': False,
+    "logo_only": True,
+    "display_version": False,
 }
 html_context = {
     "css_files": [
