@@ -14,12 +14,12 @@ from rasterio.plot import reshape_as_raster
 def upload_file(fn, bucket, dest=None, logger=logging):
     """
     Uploads BytesIO obj representation of data in file 'fn' in bucket
+
     :param fn: str, full local path to file containing movie
     :param bucket: str, name of bucket, if it does not exist, it will be created
     :param dest=None: str, name of file in bucket, if left as None, the file name is stripped from fn
     :param logger=logging: logger-object
-
-    :return:
+    :return: None
     """
     if dest is None:
         dest = os.path.split(os.path.abspath(fn))[1]
@@ -35,11 +35,12 @@ def upload_file(fn, bucket, dest=None, logger=logging):
 def extract_frames(movie, prefix="frame", logger=logging):
     """
     Extract raw frames, only lens correct using camera lensParameters, and store in RGB photos
+
     :param movie: dict containing movie information
     :param camera: dict, camera properties, such as lensParameters, name
     :param prefix="frame": str, prefix of file names, used in storage bucket, normally not changed by user
     :param logger=logging: logger-object
-    :return:
+    :return: None
     """
     # open S3 bucket
     s3 = utils.get_s3()
@@ -77,10 +78,11 @@ def extract_project_frames(movie, prefix="proj", logger=logging):
     """
     Extract frames, lens correct, greyscale correct and project to defined AOI with GCPs, water level and camera position
     Results in GeoTIFF files in desired projection and resolution within bucket defined in movie
+
     :param movie: dict, movie information
     :param prefix="proj": str, prefix of file names, used in storage bucket, normally not changed by user
     :param logger=logging: logger-object
-    :return:
+    :return: None
     """
     # open S3 bucket
     camera_config = movie["camera_config"]
@@ -133,9 +135,10 @@ def extract_project_frames(movie, prefix="proj", logger=logging):
 def get_aoi(camera_config, logger=logging):
     """
     add the aoi dictionary to camera_config based on user inputs
+
     :param camera_config: camera configuration with ["aoi"]["bbox"] still missing
     :param logger=logging: logger-object
-    :return:
+    :return: None
     """
     # some assertion
     if not "gcps" in camera_config:
@@ -166,12 +169,13 @@ def get_aoi(camera_config, logger=logging):
 def compute_piv(movie, prefix="proj", piv_kwargs={}, logger=logging):
     """
     compute velocities over frame pairs, choosing frame interval, start / end frame.
+
     :param movie: dict, contains file dictionary and camera_config
     :param prefix: str, prefix of geotiff files assumed to be present in bucket
     :param piv_kwargs: str, arguments passed to piv algorithm, parameters are defined in docstring of
-        openpiv.pyprocess.extended_search_area_piv
+           openpiv.pyprocess.extended_search_area_piv
     :param logger: logger object
-    :return:
+    :return: None
     """
     var_names = ["v_x", "v_y", "s2n", "corr"]
     var_attrs = [
@@ -292,13 +296,12 @@ def compute_q(movie, v_corr=0.85, quantile=[0.05, 0.25, 0.5, 0.75, 0.95], logger
     """
     compute velocities over provided bathymetric cross section points, depth integrated velocities and river flow
     over several quantiles.
+
     :param movie: dict, contains file dictionary and camera_config
     :param v_corr: float (range: 0-1, typically close to 1), correction factor from surface to depth-average
-        (default: 0.85)
+           (default: 0.85)
     :param quantile: float or list of floats (range: 0-1)  (default: 0.5)
-
-
-    :return:
+    :return: None
     """
     encoding = {}
     # open S3 bucket
@@ -351,11 +354,13 @@ def compute_q(movie, v_corr=0.85, quantile=[0.05, 0.25, 0.5, 0.75, 0.95], logger
     logger.info(f"Q.nc successfully written in {bucket}")
     return Q_callback
 
-
 def filter_piv(
     movie, filter_temporal_kwargs={}, filter_spatial_kwargs={}, logger=logging
 ):
     """
+    Filters a PIV velocity dataset (derived with compute_piv) with several temporal and spatial filter. This removes
+    noise, isolated velocities in space and time, and moving features that are not likely to be water related.
+    Input keyword arguments to the filters can be provided in the request, through several dictionaries.
 
     :param movie: dict, contains file dictionary and camera_config
     :param filter_temporal_kwargs: dict with the following possible kwargs for temporal filtering
@@ -418,16 +423,17 @@ def filter_piv(
 
 def run(movie, piv_kwargs={}, logger=logging):
     """
-    Execute steps of project frames, PIV, filter and compute_q.
+    Execute steps of project frames, compute_piv, filter_piv and compute_q.
+
     :param movie: dict, movie information
     :param logger=logging: logger-object
-    :return:
+    :return: None
     """
+
     extract_project_frames(movie, logger=logger)
     compute_piv(movie, piv_kwargs=piv_kwargs, logger=logger)
     filter_piv(movie, logger=logger)
     Q_callback = compute_q(movie, logger=logger)
-    print(Q_callback)
     # TODO: Return the discharge value in the processing callback to be stored in the database.
     logger.debug(f"Performing callback with discharge value {Q_callback}")
     # API request to confirm movie run is finished.
