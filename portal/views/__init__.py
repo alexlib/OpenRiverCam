@@ -33,9 +33,29 @@ class UserModelView(ModelView):
         if not self.is_accessible():
             return redirect(url_for("security.login"))
 
+class FilterCameraConfigBySite(BaseSQLAFilter):
+    # Override to create an appropriate query and apply a filter to said query with the passed value from the filter UI
+    def apply(self, query, value, alias=None):
+        return query.join(CameraConfig.camera).join(Camera.site).filter(Site.id == value)
+
+    # readable operation name. This appears in the middle filter line drop-down
+    def operation(self):
+        return u'equals'
+
+    # Override to provide the options for the filter - in this case it's a list of the titles of the Client model
+    def get_options(self, view):
+        return [(site.id, site.name) for site in Site.query.order_by(Site.name)]
 
 class CameraConfigView(UserModelView):
     column_list = ("camera", CameraConfig.time_start, CameraConfig.time_end, CameraConfig.movie_setting_resolution, CameraConfig.movie_setting_fps)
+    column_filters = [FilterCameraConfigBySite(column=None, name='Site')]
+
+    # Need this so the filter options are always up-to-date.
+    @expose('/')
+    def index_view(self):
+        self._refresh_filters_cache()
+        return super(CameraConfigView, self).index_view()
+
 
 class FilterMovieBySite(BaseSQLAFilter):
     # Override to create an appropriate query and apply a filter to said query with the passed value from the filter UI
@@ -51,9 +71,18 @@ class FilterMovieBySite(BaseSQLAFilter):
         return [(site.id, site.name) for site in Site.query.order_by(Site.name)]
 
 class MovieView(UserModelView):
-    column_list = ("config.camera.site", Movie.file_name, Movie.timestamp, Movie.actual_water_level, Movie.discharge, Movie.status)
+    column_list = ("config.camera.site", Movie.file_name, Movie.timestamp, Movie.actual_water_level, Movie.discharge_q50, Movie.status)
     column_labels = {"config.camera.site": "Site"}
     column_filters = [FilterMovieBySite(column=None, name='Site')]
+    column_formatters = dict(
+        discharge_q05=lambda v, c, m, p: "{:.3f}".format(m.discharge_q05) if m.discharge_q05 else "",
+        discharge_q25=lambda v, c, m, p: "{:.3f}".format(m.discharge_q25) if m.discharge_q25 else "",
+        discharge_q50=lambda v, c, m, p: "{:.3f}".format(m.discharge_q50) if m.discharge_q50 else "",
+        discharge_q75=lambda v, c, m, p: "{:.3f}".format(m.discharge_q75) if m.discharge_q75 else "",
+        discharge_q95=lambda v, c, m, p: "{:.3f}".format(m.discharge_q95) if m.discharge_q95 else ""
+    )
+
+    form_columns = ( "config", Movie.timestamp, Movie.status, Movie.actual_water_level )
 
     # Need this so the filter options are always up-to-date.
     @expose('/')
