@@ -20,23 +20,27 @@ def processing_extract_frames(id):
 
 @processing_api.route("/api/processing/run/<id>", methods=["POST"])
 def processing_compute_piv(id):
-    # schema = {
-    #     "type": "object",
-    #     "properties": {
-    #         "discharge": {"type": "number"}
-    #     },
-    #     "minProperties": 1,
-    #     "additionalProperties": False
-    # }
-    #
-    # content = request.get_json(silent=True)
-    # validate(instance=content, schema=schema)
+    schema = {
+        "type": "object",
+        "properties": {
+            "discharge_q05": {"type": "number"},
+            "discharge_q25": {"type": "number"},
+            "discharge_q50": {"type": "number"},
+            "discharge_q75": {"type": "number"},
+            "discharge_q95": {"type": "number"}
+        },
+        "minProperties": 1,
+        "additionalProperties": False
+    }
+
+    content = request.get_json(silent=True)
+    validate(instance=content, schema=schema)
     movie = Movie.query.get(id)
     if not movie:
         raise ValueError("Invalid movie with identifier %s" % id)
 
-    # for key, value in content.items():
-    #     setattr(movie, key, value)
+    for key, value in content.items():
+        setattr(movie, key, value)
     movie.status = MovieStatus.MOVIE_STATUS_FINISHED
 
     db.commit()
