@@ -85,6 +85,7 @@ bbox = {
 # }
 
 camera_config = {
+    "id": 1,
     "camera_type": camera_type,  # dict, camera object, relational, because a camera configuration belongs to a certain camera.
     "site": site,  # dict, site object, relational because we need to know to whcih site a camera_config belongs. you can have multiple camera configs per site.
     "time_start": "2020-12-16T00:00:00",  # start time of valid range

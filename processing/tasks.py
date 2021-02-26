@@ -158,12 +158,13 @@ def get_aoi(camera_config, logger=logging):
     crs = f"EPSG:{camera_config['site']['crs']}"
     bbox = OpenRiverCam.cv.get_aoi(gcps["src"], gcps["dst"], corners)
     bbox_json = OpenRiverCam.io.to_geojson(bbox, crs=crs)
-    logger.debug("bbox: {bbox_json}")
-    if not "aoi" in camera_config:
-        camera_config["aoi"] = {}
-    camera_config["aoi"]["bbox"] = bbox_json
-    logger.info("Bounding box of aoi derived")
-    return camera_config
+    logger.debug(f"bbox: {bbox_json}")
+    requests.post(
+        "http://portal/api/processing/get_aoi/{:d}".format(camera_config["id"]),
+        json=bbox_json,
+    )
+    # return bbox in case called from direct request
+    return bbox_json
 
 
 def compute_piv(movie, prefix="proj", piv_kwargs={}, logger=logging):
@@ -292,7 +293,9 @@ def compute_piv(movie, prefix="proj", piv_kwargs={}, logger=logging):
     logger.info(f"velocity.nc successfully written in {bucket}")
 
 
-def compute_q(movie, v_corr=0.85, quantile=[0.05, 0.25, 0.5, 0.75, 0.95], logger=logging):
+def compute_q(
+    movie, v_corr=0.85, quantile=[0.05, 0.25, 0.5, 0.75, 0.95], logger=logging
+):
     """
     compute velocities over provided bathymetric cross section points, depth integrated velocities and river flow
     over several quantiles.
@@ -337,9 +340,10 @@ def compute_q(movie, v_corr=0.85, quantile=[0.05, 0.25, 0.5, 0.75, 0.95], logger
     Q = OpenRiverCam.piv.integrate_flow(ds_points["q"], quantile=quantile)
 
     # extract a callback from Q
-    Q_callback = {"discharge_q{:02d}".format(int(float(q)*100)): float(Q.sel(quantile=q)) for q in Q["quantile"]}
-    # integrate for only median, to return single value to database
-    # Q_callback = float(OpenRiverCam.piv.integrate_flow(ds_points["q"], quantile=0.5))
+    Q_dict = {
+        "discharge_q{:02d}".format(int(float(q) * 100)): float(Q.sel(quantile=q))
+        for q in Q["quantile"]
+    }
 
     # overwrite gridded netCDF with cross section netCDF
     ds_points.to_netcdf("temp.nc", encoding=encoding)
@@ -352,7 +356,8 @@ def compute_q(movie, v_corr=0.85, quantile=[0.05, 0.25, 0.5, 0.75, 0.95], logger
 
     os.remove("temp.nc")
     logger.info(f"Q.nc successfully written in {bucket}")
-    return Q_callback
+    return Q_dict
+
 
 def filter_piv(
     movie, filter_temporal_kwargs={}, filter_spatial_kwargs={}, logger=logging
@@ -433,12 +438,12 @@ def run(movie, piv_kwargs={}, logger=logging):
     extract_project_frames(movie, logger=logger)
     compute_piv(movie, piv_kwargs=piv_kwargs, logger=logger)
     filter_piv(movie, logger=logger)
-    Q_callback = compute_q(movie, logger=logger)
+    Q = compute_q(movie, logger=logger)
     # TODO: Return the discharge value in the processing callback to be stored in the database.
-    logger.debug(f"Performing callback with discharge value {Q_callback}")
+    logger.debug(f"Performing callback with discharge value {Q}")
     # API request to confirm movie run is finished.
     requests.post(
         "http://portal/api/processing/run/%s" % movie["id"],
-        json=Q_callback,
+        json=Q,
     )
     logger.info(f"Full run succesfull for movie {movie['id']}")
