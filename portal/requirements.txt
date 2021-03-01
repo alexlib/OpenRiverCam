@@ -2,6 +2,7 @@ Flask
 Flask-Admin
 Flask-Security
 Flask-SQLAlchemy
+wtforms
 psycopg2
 SQLAlchemy-serializer
 jsonschema

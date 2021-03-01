@@ -26,8 +26,8 @@ class Movie(Base, SerializerMixin):
     __tablename__ = "movie"
     id = Column(Integer, primary_key=True)
     config_id = Column(Integer, ForeignKey("configuration.id"))
-    file_bucket = Column(String, default="example")
-    file_name = Column(String, default="example_video.mp4")
+    file_bucket = Column(String)
+    file_name = Column(String)
     timestamp = Column(DateTime)
     type = Column(Enum(MovieType), default=MovieType.MOVIE_TYPE_NORMAL)
     actual_water_level = Column(Float)

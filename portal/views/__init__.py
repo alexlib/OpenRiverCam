@@ -1,10 +1,13 @@
 import flask_admin as admin
 from flask_security import current_user
 from flask_admin.menu import MenuLink
-from flask_admin import expose
+from flask_admin import expose, form
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.contrib.sqla.filters import BaseSQLAFilter
 from flask import redirect, url_for
+from wtforms import ValidationError
+import os
+import utils
 
 # Models for CRUD views.
 from models import db
@@ -70,6 +73,29 @@ class FilterMovieBySite(BaseSQLAFilter):
     def get_options(self, view):
         return [(site.id, site.name) for site in Site.query.order_by(Site.name)]
 
+class s3UploadField(form.FileUploadField):
+
+    def pre_validate(self, form):
+        if self._is_uploaded_file(self.data) and not self.is_file_allowed(self.data.filename):
+            raise ValidationError('Invalid file extension')
+
+    def _delete_file(self, filename):
+        return filename
+
+    def _save_file(self, data, filename):
+        s3 = utils.get_s3()
+        bucket = 'test'
+
+        filename, file_extension = os.path.splitext(self.data.filename)
+
+        # Create bucket if it doesn't exist yet.
+        if s3.Bucket(bucket) not in s3.buckets.all():
+            s3.create_bucket(Bucket=bucket)
+
+        s3.Bucket(bucket).Object('input{}'.format(file_extension)).put(Body=data.read())
+
+        return '{}{}'.format(filename, file_extension)
+
 class MovieView(UserModelView):
     column_list = ("config.camera.site", Movie.file_name, Movie.timestamp, Movie.actual_water_level, Movie.discharge_q50, Movie.status)
     column_labels = {"config.camera.site": "Site"}
@@ -82,7 +108,17 @@ class MovieView(UserModelView):
         discharge_q95=lambda v, c, m, p: "{:.3f}".format(m.discharge_q95) if m.discharge_q95 else ""
     )
 
-    form_columns = ( "config", Movie.timestamp, Movie.status, Movie.actual_water_level )
+    form_columns = ( "config", Movie.timestamp, 'file_name' )
+    # form_columns = ( "config", Movie.timestamp, Movie.status, Movie.actual_water_level )
+
+    form_extra_fields = {
+        'file_name': s3UploadField(
+            'File',
+            allowed_extensions=('mkv','mpeg'),
+            file_bucket='testabc'
+        ),
+        'file_bucket': 'testabc'
+    }
 
     # Need this so the filter options are always up-to-date.
     @expose('/')
