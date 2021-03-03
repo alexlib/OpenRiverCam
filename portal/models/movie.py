@@ -53,10 +53,10 @@ class Movie(Base, SerializerMixin):
 @event.listens_for(Movie, 'after_insert')
 @event.listens_for(Movie, 'after_update')
 def receive_after_update(mapper, connection, target):
-    if target.status == MovieStatus.MOVIE_STATUS_NEW.name:
+    if target.status == MovieStatus.MOVIE_STATUS_NEW:
         print('Queue extract task for movie {}'.format(target.id))
         queue_task("extract_frames", target)
-    elif target.status == MovieStatus.MOVIE_STATUS_READY.name and target.actual_water_level is not None:
+    elif target.status == MovieStatus.MOVIE_STATUS_READY and target.actual_water_level is not None:
         print('Queue run task for movie {}'.format(target.id))
         queue_task("run", target)
 
