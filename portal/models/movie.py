@@ -50,6 +50,12 @@ class Movie(Base, SerializerMixin):
         return "{}: {}".format(self.id, self.__str__())
 
 
+@event.listens_for(Movie, 'before_insert')
+@event.listens_for(Movie, 'before_update')
+def receive_before_insert(mapper, connection, target):
+    if target.status == MovieStatus.MOVIE_STATUS_EXTRACTED and target.actual_water_level is not None:
+        target.status = MovieStatus.MOVIE_STATUS_READY
+
 @event.listens_for(Movie, 'after_insert')
 @event.listens_for(Movie, 'after_update')
 def receive_after_update(mapper, connection, target):

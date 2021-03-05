@@ -120,9 +120,7 @@ class MovieView(UserModelView):
         discharge_q95=lambda v, c, m, p: "{:.3f}".format(m.discharge_q95) if m.discharge_q95 else ""
     )
 
-    form_columns = ( "config", Movie.timestamp, 'file_name' )
-    # form_columns = ( "config", Movie.timestamp, Movie.status, Movie.actual_water_level )
-
+    form_columns = ( "config", Movie.timestamp, 'file_name', Movie.actual_water_level )
     form_extra_fields = {
         'file_name': s3UploadField(
             'File',
@@ -130,6 +128,11 @@ class MovieView(UserModelView):
             base_path=uuid.uuid4().hex
         )
     }
+
+    form_create_rules = ('config', 'timestamp', 'file_name')
+
+    edit_template = 'movie/edit.html'
+    form_edit_rules = ('timestamp', 'actual_water_level')
 
     # Need this so the filter options are always up-to-date.
     @expose('/')
