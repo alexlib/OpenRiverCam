@@ -4,6 +4,7 @@ from flask_security import current_user
 from flask_admin.contrib.sqla import ModelView
 from flask import redirect, url_for
 
+
 class LoginMenuLink(MenuLink):
     def is_accessible(self):
         return not current_user.is_authenticated
@@ -23,6 +24,7 @@ class UserModelView(ModelView):
     def _handle_view(self, name):
         if not self.is_accessible():
             return redirect(url_for("security.login"))
+
 
 # Extend this view class for views which should only be available for logged in users.
 class UserView(admin.BaseView):

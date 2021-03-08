@@ -2,11 +2,13 @@ from flask_admin import form
 from wtforms import ValidationError
 import utils
 
-class s3UploadField(form.FileUploadField):
 
+class s3UploadField(form.FileUploadField):
     def pre_validate(self, form):
-        if self._is_uploaded_file(self.data) and not self.is_file_allowed(self.data.filename):
-            raise ValidationError('Invalid file extension')
+        if self._is_uploaded_file(self.data) and not self.is_file_allowed(
+            self.data.filename
+        ):
+            raise ValidationError("Invalid file extension")
 
     def _delete_file(self, filename):
         return filename
@@ -28,7 +30,7 @@ class s3UploadField(form.FileUploadField):
         if s3.Bucket(bucket) not in s3.buckets.all():
             s3.create_bucket(Bucket=bucket)
         else:
-            raise ValidationError('Bucket already exists')
+            raise ValidationError("Bucket already exists")
 
         s3.Bucket(bucket).Object(self.data.filename).put(Body=data.read())
 

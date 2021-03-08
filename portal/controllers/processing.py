@@ -27,10 +27,10 @@ def processing_compute_piv(id):
             "discharge_q25": {"type": "number"},
             "discharge_q50": {"type": "number"},
             "discharge_q75": {"type": "number"},
-            "discharge_q95": {"type": "number"}
+            "discharge_q95": {"type": "number"},
         },
         "minProperties": 1,
-        "additionalProperties": False
+        "additionalProperties": False,
     }
 
     content = request.get_json(silent=True)

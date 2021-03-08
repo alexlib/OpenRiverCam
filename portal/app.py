@@ -41,11 +41,13 @@ def security_context_processor():
         get_url=url_for,
     )
 
+
 # Resolve database session issues for the combination of Postgres/Sqlalchemy scoped session/Flask-admin.
 @app.teardown_appcontext
 def shutdown_session(exception=None):
     # load all expired attributes for the given instance
     db.expire_all()
+
 
 if __name__ == "__main__":
 

@@ -2,7 +2,17 @@ import os
 import pika
 import json
 import enum
-from sqlalchemy import event, Integer, ForeignKey, String, Column, DateTime, Enum, Float, Text
+from sqlalchemy import (
+    event,
+    Integer,
+    ForeignKey,
+    String,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    Text,
+)
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
@@ -50,19 +60,27 @@ class Movie(Base, SerializerMixin):
         return "{}: {}".format(self.id, self.__str__())
 
 
-@event.listens_for(Movie, 'before_insert')
-@event.listens_for(Movie, 'before_update')
+@event.listens_for(Movie, "before_insert")
+@event.listens_for(Movie, "before_update")
 def receive_before_insert(mapper, connection, target):
-    if target.status == MovieStatus.MOVIE_STATUS_EXTRACTED and target.actual_water_level is not None:
+    if (
+        target.status == MovieStatus.MOVIE_STATUS_EXTRACTED
+        and target.actual_water_level is not None
+    ):
         target.status = MovieStatus.MOVIE_STATUS_PROCESSING
 
-@event.listens_for(Movie, 'after_insert')
-@event.listens_for(Movie, 'after_update')
+
+@event.listens_for(Movie, "after_insert")
+@event.listens_for(Movie, "after_update")
 def receive_after_update(mapper, connection, target):
     if target.status == MovieStatus.MOVIE_STATUS_NEW:
         queue_task("extract_frames", target)
-    elif target.status == MovieStatus.MOVIE_STATUS_PROCESSING and target.actual_water_level is not None:
+    elif (
+        target.status == MovieStatus.MOVIE_STATUS_PROCESSING
+        and target.actual_water_level is not None
+    ):
         queue_task("run", target)
+
 
 def queue_task(type, movie):
     connection = pika.BlockingConnection(
@@ -73,13 +91,14 @@ def queue_task(type, movie):
     channel.basic_publish(
         exchange="",
         routing_key="processing",
-        body=json.dumps({"type": type, "kwargs": {"movie": get_task_json(movie)}})
+        body=json.dumps({"type": type, "kwargs": {"movie": get_task_json(movie)}}),
     )
     connection.close()
 
+
 def get_task_json(movie):
-    movie_example['id'] = movie.id
+    movie_example["id"] = movie.id
     if movie.actual_water_level is not None:
         # Decimal can't be JSON encoded with default encoder.
-        movie_example['h_a'] = float(movie.actual_water_level)
+        movie_example["h_a"] = float(movie.actual_water_level)
     return movie_example
