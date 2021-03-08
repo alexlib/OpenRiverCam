@@ -17,7 +17,7 @@ class MovieType(enum.Enum):
 class MovieStatus(enum.Enum):
     MOVIE_STATUS_NEW = 0
     MOVIE_STATUS_EXTRACTED = 1
-    MOVIE_STATUS_READY = 2
+    MOVIE_STATUS_PROCESSING = 2
     MOVIE_STATUS_FINISHED = 3
     MOVIE_STATUS_ERROR = 4
 
@@ -54,14 +54,14 @@ class Movie(Base, SerializerMixin):
 @event.listens_for(Movie, 'before_update')
 def receive_before_insert(mapper, connection, target):
     if target.status == MovieStatus.MOVIE_STATUS_EXTRACTED and target.actual_water_level is not None:
-        target.status = MovieStatus.MOVIE_STATUS_READY
+        target.status = MovieStatus.MOVIE_STATUS_PROCESSING
 
 @event.listens_for(Movie, 'after_insert')
 @event.listens_for(Movie, 'after_update')
 def receive_after_update(mapper, connection, target):
     if target.status == MovieStatus.MOVIE_STATUS_NEW:
         queue_task("extract_frames", target)
-    elif target.status == MovieStatus.MOVIE_STATUS_READY and target.actual_water_level is not None:
+    elif target.status == MovieStatus.MOVIE_STATUS_PROCESSING and target.actual_water_level is not None:
         queue_task("run", target)
 
 def queue_task(type, movie):
