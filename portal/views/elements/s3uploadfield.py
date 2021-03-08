@@ -1,7 +1,6 @@
 from flask_admin import form
 from wtforms import ValidationError
 import utils
-import os
 
 class s3UploadField(form.FileUploadField):
 
@@ -25,14 +24,12 @@ class s3UploadField(form.FileUploadField):
         s3 = utils.get_s3()
         bucket = self.base_path
 
-        filename, file_extension = os.path.splitext(self.data.filename)
-
         # Create bucket if it doesn't exist yet.
         if s3.Bucket(bucket) not in s3.buckets.all():
             s3.create_bucket(Bucket=bucket)
         else:
             raise ValidationError('Bucket already exists')
 
-        s3.Bucket(bucket).Object('input{}'.format(file_extension)).put(Body=data.read())
+        s3.Bucket(bucket).Object(self.data.filename).put(Body=data.read())
 
-        return '{}{}'.format(filename, file_extension)
+        return self.data.filename
