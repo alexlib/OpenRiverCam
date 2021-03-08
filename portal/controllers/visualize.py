@@ -36,6 +36,33 @@ def get_snapshot(id):
     response.headers['Content-Type'] = 'image/jpeg'
     return response
 
+@visualize_api.route("/api/visualize/get_projected_snapshot/<id>", methods=["GET"])
+def get_projected_snapshot(id):
+    movie = Movie.query.get(id)
+    if not movie:
+        raise ValueError("Invalid movie with identifier %s" % id)
+
+    if not movie.file_bucket:
+        raise ValueError("Movie does not have a S3 bucket assigned")
+
+    s3 = utils.get_s3()
+    bucket_name = movie.file_bucket
+    bucket_name = 'example' # TODO: Remove overwrite!
+
+    # Get all snapshots from bucket.
+    regex = re.compile('proj.*\.png')
+    file_objects = [ f for f in list(map(lambda f: f.key, s3.Bucket(bucket_name).objects.all())) if regex.match(f) ]
+    if not len(file_objects):
+        raise ValueError("Could not locate snapshot")
+
+    # Get first extracted frame of the movie.
+    file = s3.Object(bucket_name, sorted(file_objects)[0]).get()
+
+    # Return file with content headers.
+    response = make_response(file['Body'].read())
+    response.headers['Content-Type'] = 'image/png'
+    return response
+
 def xyla(u, v, res=0.01):
     """
     compute x, y, length and angle of vectors to plot with Highcharts.
