@@ -98,7 +98,11 @@ def queue_task(type, movie):
 
 def get_task_json(movie):
     movie_example["id"] = movie.id
+    movie_example["file"]["bucket"] = movie.file_bucket
+    movie_example["file"]["identifier"] = movie.file_name
+
     if movie.actual_water_level is not None:
         # Decimal can't be JSON encoded with default encoder.
         movie_example["h_a"] = float(movie.actual_water_level)
+
     return movie_example

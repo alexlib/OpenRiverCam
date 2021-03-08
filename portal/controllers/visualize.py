@@ -21,7 +21,6 @@ def get_snapshot(id):
 
     s3 = utils.get_s3()
     bucket_name = movie.file_bucket
-    bucket_name = "example"  # TODO: Remove overwrite!
 
     # Get all snapshots from bucket.
     regex = re.compile("frame.*\.jpg")
@@ -53,7 +52,6 @@ def get_projected_snapshot(id):
 
     s3 = utils.get_s3()
     bucket_name = movie.file_bucket
-    bucket_name = "example"  # TODO: Remove overwrite!
 
     # Get all snapshots from bucket.
     regex = re.compile("proj.*\.png")
@@ -118,7 +116,6 @@ def get_velocity_vectors(id):
 
     s3 = utils.get_s3()
     bucket_name = movie.file_bucket
-    bucket_name = "example"  # TODO: Remove overwrite!
 
     file_stream = io.BytesIO()
     s3.Object(bucket_name, "velocity_filter.nc").download_fileobj(file_stream)
