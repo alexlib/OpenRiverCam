@@ -46,6 +46,9 @@ class MovieView(UserModelView):
     edit_template = 'movie/edit.html'
     form_edit_rules = ('timestamp', 'actual_water_level')
 
+    details_template = 'movie/details.html'
+    column_details_list = ('config', 'timestamp', 'file_name', 'status', 'actual_water_level', 'discharge_q50')
+
     # Need this so the filter options are always up-to-date.
     @expose('/')
     def index_view(self):
