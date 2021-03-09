@@ -65,7 +65,7 @@ def process(ch, method, properties, body):
 
 
 connection = pika.BlockingConnection(
-    pika.URLParameters(os.getenv("AMQP_CONNECTION_STRING"))
+    pika.URLParameters('{}?heartbeat=600&blocked_connection_timeout=300'.format(os.getenv("AMQP_CONNECTION_STRING")))
 )
 channel = connection.channel()
 channel.queue_declare(queue="processing")

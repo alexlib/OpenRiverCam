@@ -1,0 +1,81 @@
+{% extends 'admin/master.html' %}
+{% import 'admin/lib.html' as lib with context %}
+
+{% block body %}
+  {% block navlinks %}
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link" href="{{ return_url }}">{{ _gettext('List') }}</a>
+    </li>
+    {%- if admin_view.can_create -%}
+    <li class="nav-item">
+        <a class="nav-link" href="{{ get_url('.create_view', url=return_url) }}">{{ _gettext('Create') }}</a>
+    </li>
+    {%- endif -%}
+    {%- if admin_view.can_edit -%}
+    <li class="nav-item">
+        <a class="nav-link" href="{{ get_url('.edit_view', id=request.args.get('id'), url=return_url) }}">{{ _gettext('Edit') }}</a>
+    </li>
+    {%- endif -%}
+    <li class="nav-item">
+        <a class="nav-link active disabled" href="javascript:void(0)">{{ _gettext('Details') }}</a>
+    </li>
+  </ul>
+  {% endblock %}
+
+  {% block details_table %}
+    <table class="table table-hover table-bordered searchable">
+    {% for c, name in details_columns %}
+      <tr>
+        <td>
+          <b>{{ name }}</b>
+        </td>
+        <td>
+        {{ get_value(model, c) }}
+        </td>
+      </tr>
+    {% endfor %}
+    {% if model.status.name == 'MOVIE_STATUS_ERROR' %}
+      <tr>
+        <td>
+          <b>Error</b>
+        </td>
+        <td>
+        {{ get_value(model, 'error_message') }}
+        </td>
+      </tr>
+    {% endif %}
+    </table>
+  {% endblock %}
+
+  {% if model.status.name != 'MOVIE_STATUS_NEW' and model.status.name != 'MOVIE_STATUS_ERROR' %}
+    <hr/>
+    <h4>Lens corrected snapshot</h4>
+    <img src="/api/visualize/get_snapshot/{{model.id}}"  style="width:100%;" />
+  {% endif %}
+  {% if model.status.name == 'MOVIE_STATUS_FINISHED' %}
+    <hr/>
+    <h4>PIV results</h4>
+    <figure class="highcharts-figure">
+        <div id="piv-plot"></div>
+    </figure>
+  {% endif %}
+{% endblock %}
+
+{% block tail %}
+  {{ super() }}
+  <script src="{{ admin_static.url(filename='admin/js/details_filter.js', v='1.0.0') }}"></script>
+  {% if model.status.name == 'MOVIE_STATUS_FINISHED' %}
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/vector.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="{{ url_for('static', filename='visualize.js') }}"></script>
+    <script>
+        $(function() {
+            $("#piv-plot").plotPIV({{ get_value(model, 'id') }}, {{ "`{}`".format(get_value(model, 'file_name')) }});
+        });
+    </script>
+  {% endif %}
+{% endblock %}
