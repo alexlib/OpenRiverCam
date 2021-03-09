@@ -127,6 +127,19 @@ def extract_project_frames(movie, prefix="proj", logger=logging):
         # Put file in bucket
         s3.Bucket(bucket).upload_file("temp.tif", dest_fn)
         n += 1
+    # finally write last frame as .jpg for front end and write geotransform as .csv
+    dest_fn = "{:s}_preview.jpg".format(prefix)
+    trans_fn = "{:s}_preview.transform".format(prefix)  # file name for geotransform
+    ret, im_en = cv2.imencode(".jpg", corr_img)
+    buf = io.BytesIO(im_en)
+    # Seek beginning of bytestream
+    buf.seek(0)
+    # Put file in bucket
+    s3.Object(bucket, dest_fn).put(Body=buf)
+    # write the geotransform
+    buf = io.BytesIO(str(transform).encode())
+    buf.seek(0)
+    s3.Object(bucket, trans_fn).put(Body=buf)
     # clean up of temp file
     os.remove(fn)
     logger.info(f"{fn} successfully reprojected into frames in {bucket}")
