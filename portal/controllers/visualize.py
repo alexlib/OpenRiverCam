@@ -44,7 +44,7 @@ def get_snapshot(id):
 
 @visualize_api.route("/api/visualize/get_projected_snapshot/<id>", methods=["GET"])
 def get_projected_snapshot(id):
-    return get_jpg_from_bucket(id, "proj.*\.jpg")
+    return get_jpg_from_bucket(id, "reprojection_preview.jpg")
 
 def xyla(u, v, res=0.01):
     """
