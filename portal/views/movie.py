@@ -59,7 +59,7 @@ class MovieView(UserModelView):
     form_columns = ("config", Movie.timestamp, "file_name", Movie.actual_water_level)
     form_extra_fields = {
         "file_name": s3UploadField(
-            "File", allowed_extensions=("mkv", "mpeg"), base_path=uuid.uuid4().hex
+            "File", allowed_extensions=("mkv", "mpeg", "mp4"), base_path=uuid.uuid4().hex
         )
     }
 
