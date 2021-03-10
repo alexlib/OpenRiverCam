@@ -5,7 +5,6 @@ from models.site import Site
 from models.camera import CameraConfig, Camera
 from views.general import UserModelView
 from views.elements.s3uploadfield import s3UploadField
-import uuid
 
 
 class FilterMovieBySite(BaseSQLAFilter):
@@ -59,7 +58,7 @@ class MovieView(UserModelView):
     form_columns = ("config", Movie.timestamp, "file_name", Movie.actual_water_level)
     form_extra_fields = {
         "file_name": s3UploadField(
-            "File", allowed_extensions=("mkv", "mpeg", "mp4"), base_path=uuid.uuid4().hex
+            "File", allowed_extensions=("mkv", "mpeg", "mp4")
         )
     }
 
