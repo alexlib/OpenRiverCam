@@ -1,0 +1,79 @@
+{% extends 'admin/model/list.html' %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+   crossorigin=""/>
+
+{% endblock %}
+{% block body %}
+    {{ super() }}
+    <!-- add a leaflet map -->
+    <div id="map" style="height: 420px; margin-top: 2em; margin-bottom: 2em;"></div>
+
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin="">
+    </script>
+    <script>
+        $(document).ready(function () {
+            // set maximum zoom level for auto zooming to the user available locs
+            var maxAutoZoom = 15;
+            var map = L.map('map').setView({lon: 0, lat: 0}, 2);
+            var osmLayer = L.tileLayer('https://osm.vtech.fr/hot/{z}/{x}/{y}.png?uuid=2fc148f4-7018-4fd0-ac34-6b626cdc97a1', {
+                maxZoom: 18,
+                attribution: '&copy; <a href="https://openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a> ' +
+                    '| <a href="https://cloud.empreintedigitale.fr" target="_blank">Empreinte digitale</a>',
+                tileSize: 256,
+            });
+            var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains:['mt0','mt1','mt2','mt3']
+            });
+            var googleTer = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains:['mt0','mt1','mt2','mt3']
+            });
+            var baseMaps = {
+                "OpenStreetMap": osmLayer,
+                "Google Satellite": googleSat,
+                "Google Terrain": googleTer
+
+            }
+            L.control.layers(baseMaps).addTo(map);
+            // add layers
+            //googleSat.addTo(map);
+            //googleTer.addTo(map);
+            osmLayer.addTo(map);
+            // add a scale at at your map.
+            var scale = L.control.scale().addTo(map);
+            // add markers (separate function)
+            var markers = L.featureGroup();
+            markers.addTo(map);
+            //var marker = L.marker([-6.7924, 39.2083]);
+            //marker.bindTooltip("tool tip is bound");
+            //markers.addLayer(marker);
+            //var marker = L.marker([-20.5, 20.5]);
+            //marker.bindTooltip("Another tool tip is bound");
+            //markers.addLayer(marker);
+
+            {% for row in data %}
+                var marker = L.marker([{{ get_value(row, 'position_y') }}, {{ get_value(row, 'position_x') }}]);
+                marker.bindTooltip("{{ get_value(row, 'name') }}");
+                markers.addLayer(marker);
+            {% endfor %}
+            map.fitBounds(markers.getBounds());
+            setZoomLevel = Math.min(map.getZoom(), maxAutoZoom);
+            console.log(setZoomLevel);
+            map.setZoom(setZoomLevel);
+            console.log(map.getZoom());
+
+
+        });
+
+    </script>
+{% endblock %}

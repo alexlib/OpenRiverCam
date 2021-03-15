@@ -10,7 +10,6 @@ class Site(Base, SerializerMixin):
     position_crs = Column(Integer)
     position_x = Column(Float)
     position_y = Column(Float)
-    position_z = Column(Float)
 
     def __str__(self):
         return "{}".format(self.name)
