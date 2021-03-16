@@ -28,19 +28,19 @@ sites, then the table will hold all those sites, and the map view will automatic
 all your existing sites in view. Below we provide a succinct explanation of the different columns that are used to
 describe sites:
 
-- Site ID: a number, automatically assigned to each site. The first site added will be given the number 1, the second
+- `Site ID`: a number, automatically assigned to each site. The first site added will be given the number 1, the second
   2, etc.
-- Site name: Your own name for the site. You can choose any recognizable name that works for your organisation.
-- EPSG code: an EPSG code is a number, representing a `Coordinate Reference System` (CRS). A CRS describes how
+- `Site name`: Your own name for the site. You can choose any recognizable name that works for your organisation.
+- `EPSG code`: an EPSG code is a number, representing a `Coordinate Reference System` (CRS). A CRS describes how
   coordinates should be mapped onto the planet. Because the Earth has a spherical shape, a CRS that measures
   coordinates in West-East and North-South metres distances from a reference point, typically has a limited area where
   it is valid. For OpenRiverCam, we therefore need a CRS that is consequently used for all projections of Ground
   Control Points, the camera location, and the stream cross section. With a new site setup, a suitable CRS is
   automatically computed so in most cases you do not have to worry about this, unless you wish to use a very typical
   locally used CRS. Then you have to supply this actively.
-- Latitude [deg]: the latitude location of a site measured in decimal degrees, measured from -90 degrees (South Pole)
+- `Latitude [deg]`: the latitude location of a site measured in decimal degrees, measured from -90 degrees (South Pole)
   to 90 degrees (North Pole).
-- Longitude [deg]: the longitude location of a site measured in decimal degrees, measured from -180 degrees (East) to
+- `Longitude [deg]`: the longitude location of a site measured in decimal degrees, measured from -180 degrees (East) to
   180 degrees (East).
 
 In the `List` tab, if you already have a site, you can view, edit or delete an individual site using the three icons
