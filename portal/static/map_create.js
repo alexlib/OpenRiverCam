@@ -80,14 +80,3 @@ $(document).ready(function () {
     }
 
 });
-
-//(function($) {
-//    $.fn.plotLoc = function(lon, lat) {
-//        console.log("Lon: " + lon + "Lat: " + lat);
-//    var markers;
-//    var marker = L.marker([lat, lon]);
-//    marker.bindTooltip("Whatever location");
-//    markers.addLayer(marker);
-//    }
-//
-//})(jQuery);
