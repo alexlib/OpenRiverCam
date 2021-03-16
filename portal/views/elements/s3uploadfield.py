@@ -1,6 +1,7 @@
 from flask_admin import form
 from wtforms import ValidationError
 import utils
+import uuid
 
 
 class s3UploadField(form.FileUploadField):
@@ -24,6 +25,7 @@ class s3UploadField(form.FileUploadField):
 
     def _save_file(self, data, filename):
         s3 = utils.get_s3()
+        self.base_path = uuid.uuid4().hex
         bucket = self.base_path
 
         # Create bucket if it doesn't exist yet.
