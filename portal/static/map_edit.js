@@ -2,9 +2,6 @@ $(document).ready(function () {
     pos_y = document.getElementById('position_y');
     pos_x = document.getElementById('position_x');
     crs = document.getElementById('position_crs');
-    pos_y.value = -6.8;
-    pos_x.value = 39.25;
-
     var maxAutoZoom = 15;
     var map = L.map('map').setView({lon: 0, lat: 0}, 2);
     var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -36,6 +33,7 @@ $(document).ready(function () {
     // update the marker so that it sets everything in the same way
     changeMarker(pos_y.value, pos_x.value);
     marker.addTo(map);
+    map.setView([pos_y.value, pos_x.value], maxAutoZoom);
 
     // add markers (separate function)
     map.on("click", function (e) {

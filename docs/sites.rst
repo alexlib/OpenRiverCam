@@ -31,6 +31,10 @@ describe sites:
 - `Site ID`: a number, automatically assigned to each site. The first site added will be given the number 1, the second
   2, etc.
 - `Site name`: Your own name for the site. You can choose any recognizable name that works for your organisation.
+- `Latitude [deg]`: the latitude location of a site measured in decimal degrees, measured from -90 degrees (South Pole)
+  to 90 degrees (North Pole).
+- `Longitude [deg]`: the longitude location of a site measured in decimal degrees, measured from -180 degrees (East) to
+  180 degrees (East).
 - `EPSG code`: an EPSG code is a number, representing a `Coordinate Reference System` (CRS). A CRS describes how
   coordinates should be mapped onto the planet. Because the Earth has a spherical shape, a CRS that measures
   coordinates in West-East and North-South metres distances from a reference point, typically has a limited area where
@@ -38,10 +42,6 @@ describe sites:
   Control Points, the camera location, and the stream cross section. With a new site setup, a suitable CRS is
   automatically computed so in most cases you do not have to worry about this, unless you wish to use a very typical
   locally used CRS. Then you have to supply this actively.
-- `Latitude [deg]`: the latitude location of a site measured in decimal degrees, measured from -90 degrees (South Pole)
-  to 90 degrees (North Pole).
-- `Longitude [deg]`: the longitude location of a site measured in decimal degrees, measured from -180 degrees (East) to
-  180 degrees (East).
 
 In the `List` tab, if you already have a site, you can view, edit or delete an individual site using the three icons
 shown on the left side of the row in the table, displaying that site. If there are already camera configurations and

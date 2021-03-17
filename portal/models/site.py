@@ -7,9 +7,9 @@ class Site(Base, SerializerMixin):
     __tablename__ = "site"
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    position_crs = Column(Integer)
     position_x = Column(Float)
     position_y = Column(Float)
+    position_crs = Column(Integer)
 
     def __str__(self):
         return "{}".format(self.name)
