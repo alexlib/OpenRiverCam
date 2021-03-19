@@ -55,19 +55,25 @@
             markers.addTo(map);
 
             {% for row in data %}
-                var marker = L.marker([{{ get_value(row, 'position_y') }}, {{ get_value(row, 'position_x') }}]);
+                var marker = L.marker([{{ get_value(row, 'position_y') }}, {{ get_value(row, 'position_x') }}], {id:
+                {{ get_value(row, 'id') }} });
                 toolTip = "<dl>" +
                     "<dt>ID: {{ get_value(row, 'id') }}</dt>" +
                     "<dt>Name: {{ get_value(row, 'name') }} </dt>" +
                     "</dl>"
                 marker.bindTooltip(toolTip);
+                marker.on("click", function (e) {
+                    // extract the id of the site from marker
+                    var id = e.target.options.id
+                    // construct a relative end point with filtered movies (flt1_0)
+                    location.href = '/portal/movies/?flt1_0=' + id
+                });
                 markers.addLayer(marker);
+
             {% endfor %}
             map.fitBounds(markers.getBounds());
             setZoomLevel = Math.min(map.getZoom(), maxAutoZoom);
-            console.log(setZoomLevel);
             map.setZoom(setZoomLevel);
-            console.log(map.getZoom());
         });
 
     </script>
