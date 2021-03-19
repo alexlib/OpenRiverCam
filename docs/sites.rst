@@ -48,6 +48,9 @@ shown on the left side of the row in the table, displaying that site. If there a
 movies that belong to a selected site, then you cannot delete it anymore as that would also result in removal of
 these movies and velocimetry results.
 
+If you click on a site in the map view, you will be redirected to the Movies page, where you will be presented with
+all movies available for the site you have clicked on.
+
 Create
 ------
 To create a new site, navigate to the `Create` tab. You always have to type a unique name for your site. A
