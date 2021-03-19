@@ -3,6 +3,7 @@ from flask_admin import expose
 from models.site import Site
 from models.camera import CameraConfig, Camera
 from views.general import UserModelView
+from views.elements.s3uploadfield import s3UploadFieldCameraConfig
 
 
 class FilterCameraConfigBySite(BaseSQLAFilter):
@@ -30,6 +31,16 @@ class CameraConfigView(UserModelView):
         CameraConfig.movie_setting_fps,
     )
     column_filters = [FilterCameraConfigBySite(column=None, name="Site")]
+
+    form_columns = ("camera", CameraConfig.time_start, CameraConfig.time_end, "file_name")
+    form_create_rules = ("camera",)
+    form_edit_rules = ("time_start", "time_end", "file_name")
+
+    form_extra_fields = {
+        "file_name": s3UploadFieldCameraConfig(
+            "File", allowed_extensions=("mkv", "mpeg", "mp4")
+        )
+    }
 
     # Need this so the filter options are always up-to-date.
     @expose("/")

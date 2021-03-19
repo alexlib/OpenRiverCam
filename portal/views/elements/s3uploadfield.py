@@ -1,5 +1,8 @@
 from flask_admin import form
 from wtforms import ValidationError
+from models.movie import Movie, MovieType
+from models import db
+from datetime import datetime
 import utils
 import uuid
 
@@ -37,3 +40,14 @@ class s3UploadField(form.FileUploadField):
         s3.Bucket(bucket).Object(self.data.filename).put(Body=data.read())
 
         return self.data.filename
+
+class s3UploadFieldCameraConfig(s3UploadField):
+    def populate_obj(self, obj, name):
+        if self._is_uploaded_file(self.data):
+            filename = self.generate_name(obj, self.data)
+            filename = self._save_file(self.data, filename)
+
+            # Create movie with a reference to the camera config.
+            movie = Movie(config_id=obj.id, file_bucket=self.base_path, file_name=filename, type=MovieType.MOVIE_TYPE_CONFIG, timestamp=datetime.now())
+            db.add(movie)
+            db.commit()
