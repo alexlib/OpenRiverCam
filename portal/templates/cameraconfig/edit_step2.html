@@ -1,0 +1,298 @@
+{% extends 'cameraconfig/edit.html' %}
+
+{% block body %}
+  {{ super() }}
+  {% block edit_form %}
+    {% call lib.form_tag(action=action) %}
+        <h4>Ground control points</h4>
+        <div style="position: relative">
+            <img id="snapshot-gcps" src="/api/visualize/get_snapshot/{{movie.id}}"  style="width:100%;" />
+            <canvas id="snapshot-gcps-canvas" width="100%" height="100%" style="width: 100%; height:100%; position: absolute; left: 0; top: 0;"></canvas>
+        </div>
+        <div style="margin: 20px 0">
+            <table id="gcps">
+                <tr>
+                    <th width="100">Color</th>
+                    <th width="50" style="text-align: center">Pixel X</th>
+                    <th width="50" style="text-align: center">Pixel Y</th>
+                    <th width="50" style="text-align: center">X</th>
+                    <th width="50" style="text-align: center">Y</th>
+                </tr>
+                <tr>
+                    <td>Red</td>
+                    <td><input name="gcps_src_0_x" id="gcps_src_0_x" readonly="readonly" value="{{model.gcps_src_0_x if model.gcps_src_0_x else '' }}" style="width: 100px" /></td>
+                    <td><input name="gcps_src_0_y" id="gcps_src_0_y" readonly="readonly" value="{{model.gcps_src_0_y if model.gcps_src_0_y else '' }}" style="width: 100px" /></td>
+                    <td><input name="gcps_dst_0_x" id="gcps_dst_0_x" value="{{model.gcps_dst_0_x if model.gcps_dst_0_x else '' }}" style="width: 100px" /></td>
+                    <td><input name="gcps_dst_0_y" id="gcps_dst_0_y" value="{{model.gcps_dst_0_y if model.gcps_dst_0_y else '' }}" style="width: 100px" /></td>
+                </tr>
+                <tr>
+                    <td>Green</td>
+                    <td><input name="gcps_src_1_x" id="gcps_src_1_x" readonly="readonly" value="{{model.gcps_src_1_x if model.gcps_src_1_x else '' }}" style="width: 100px" /></td>
+                    <td><input name="gcps_src_1_y" id="gcps_src_1_y" readonly="readonly" value="{{model.gcps_src_1_y if model.gcps_src_1_y else '' }}" style="width: 100px" /></td>
+                    <td><input name="gcps_dst_1_x" id="gcps_dst_1_x" value="{{model.gcps_dst_1_x if model.gcps_dst_1_x else '' }}" style="width: 100px" /></td>
+                    <td><input name="gcps_dst_1_y" id="gcps_dst_1_y" value="{{model.gcps_dst_1_y if model.gcps_dst_1_y else '' }}" style="width: 100px" /></td>
+                </tr>
+                <tr>
+                    <td>Blue</td>
+                    <td><input name="gcps_src_2_x" id="gcps_src_2_x" readonly="readonly" value="{{model.gcps_src_2_x if model.gcps_src_2_x else '' }}" style="width: 100px" /></td>
+                    <td><input name="gcps_src_2_y" id="gcps_src_2_y" readonly="readonly" value="{{model.gcps_src_2_y if model.gcps_src_2_y else '' }}" style="width: 100px" /></td>
+                    <td><input name="gcps_dst_2_x" id="gcps_dst_2_x" value="{{model.gcps_dst_2_x if model.gcps_dst_2_x else '' }}" style="width: 100px" /></td>
+                    <td><input name="gcps_dst_2_y" id="gcps_dst_2_y" value="{{model.gcps_dst_2_y if model.gcps_dst_2_y else '' }}" style="width: 100px" /></td>
+                </tr>
+                <tr>
+                    <td>Yellow</td>
+                    <td><input name="gcps_src_3_x" id="gcps_src_3_x" readonly="readonly" value="{{model.gcps_src_3_x if model.gcps_src_3_x else '' }}" style="width: 100px" /></td>
+                    <td><input name="gcps_src_3_y" id="gcps_src_3_y" readonly="readonly" value="{{model.gcps_src_3_y if model.gcps_src_3_y else '' }}" style="width: 100px" /></td>
+                    <td><input name="gcps_dst_3_x" id="gcps_dst_3_x" value="{{model.gcps_dst_3_x if model.gcps_dst_3_x else '' }}" style="width: 100px" /></td>
+                    <td><input name="gcps_dst_3_y" id="gcps_dst_3_y" value="{{model.gcps_dst_3_y if model.gcps_dst_3_y else '' }}" style="width: 100px" /></td>
+                </tr>
+            </table>
+        </div>
+
+        <h4>Water level</h4>
+        <div class="form-group ">
+            <label for="gcps_z_0" class="control-label">Reference height of zero water level
+                &nbsp;
+            </label>
+            <input class="form-control" id="gcps_z_0" name="gcps_z_0" type="text" value="{{model.gcps_z_0 if model.gcps_z_0 else '' }}">
+        </div>
+        <div class="form-group ">
+            <label for="gcps_h_ref" class="control-label">Actual water level during taking of the gcp points
+                &nbsp;
+            </label>
+            <input class="form-control" id="gcps_h_ref" name="gcps_h_ref" type="text" value="{{model.gcps_h_ref if model.gcps_h_ref else '' }}">
+        </div>
+
+        <h4>Corners</h4>
+        <div style="position: relative">
+            <img id="snapshot-corners" src="/api/visualize/get_snapshot/{{movie.id}}"  style="width:100%;" />
+            <canvas id="snapshot-corners-canvas" width="100%" height="100%" style="width: 100%; height:100%; position: absolute; left: 0; top: 0;"></canvas>
+        </div>
+        <div style="margin: 20px 0">
+            <table id="corners">
+                <tr>
+                    <th width="100">Color</th>
+                    <th width="150">Description</th>
+                    <th width="50" style="text-align: center">Pixel X</th>
+                    <th width="50" style="text-align: center">Pixel Y</th>
+                </tr>
+                <tr>
+                    <td>Red</td>
+                    <td>Upstream left</td>
+                    <td><input name="corner_up_left_x" id="corner_up_left_x" readonly="readonly" value="{{model.corner_up_left_x if model.corner_up_left_x else '' }}" style="width: 100px" /></td>
+                    <td><input name="corner_up_left_y" id="corner_up_left_y" readonly="readonly" value="{{model.corner_up_left_y if model.corner_up_left_y else '' }}" style="width: 100px" /></td>
+                </tr>
+                <tr>
+                    <td>Green</td>
+                    <td>Downstream left</td>
+                    <td><input name="corner_down_left_x" id="corner_down_left_x" readonly="readonly" value="{{model.corner_down_left_x if model.corner_down_left_x else '' }}" style="width: 100px" /></td>
+                    <td><input name="corner_down_left_y" id="corner_down_left_y" readonly="readonly" value="{{model.corner_down_left_y if model.corner_down_left_y else '' }}" style="width: 100px" /></td>
+                </tr>
+                <tr>
+                    <td>Blue</td>
+                    <td>Downstream right</td>
+                    <td><input name="corner_down_right_x" id="corner_down_right_x" readonly="readonly" value="{{model.corner_down_right_x if model.corner_down_right_x else '' }}" style="width: 100px" /></td>
+                    <td><input name="corner_down_right_y" id="corner_down_right_y" readonly="readonly" value="{{model.corner_down_right_y if model.corner_down_right_y else '' }}" style="width: 100px" /></td>
+                </tr>
+                <tr>
+                    <td>Yellow</td>
+                    <td>Upstream right</td>
+                    <td><input name="corner_up_right_x" id="corner_up_right_x" readonly="readonly" value="{{model.corner_up_right_x if model.corner_up_right_x else '' }}" style="width: 100px" /></td>
+                    <td><input name="corner_up_right_y" id="corner_up_right_y" readonly="readonly" value="{{model.corner_up_right_y if model.corner_up_right_y else '' }}" style="width: 100px" /></td>
+                </tr>
+            </table>
+        </div>
+
+        <h4>Camera lens position</h4>
+        <div class="form-group ">
+            <label for="lens_position_x" class="control-label">Lens position X
+                &nbsp;
+            </label>
+            <input class="form-control" id="lens_position_x" name="lens_position_x" type="text" value="{{model.lens_position_x if model.lens_position_x else '' }}">
+        </div>
+        <div class="form-group ">
+            <label for="lens_position_y" class="control-label">Lens position Y
+                &nbsp;
+            </label>
+            <input class="form-control" id="lens_position_y" name="lens_position_y" type="text" value="{{model.lens_position_y if model.lens_position_y else '' }}">
+        </div>
+        <div class="form-group ">
+            <label for="lens_position_z" class="control-label">Lens position Z
+                &nbsp;
+            </label>
+            <input class="form-control" id="lens_position_z" name="lens_position_z" type="text" value="{{model.lens_position_z if model.lens_position_z else '' }}">
+        </div>
+        <h4>Resolution</h4>
+        <div class="form-group ">
+            <label for="projection_pixel_size" class="control-label">Pixel size (m)
+                &nbsp;
+            </label>
+            <input class="form-control" id="projection_pixel_size" name="projection_pixel_size" type="text" value="{{model.projection_pixel_size if model.projection_pixel_size else '0.01' }}">
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10 submit-row">
+                <input name="_continue_editing" type="submit" class="btn btn-primary" value="{{ _gettext('Next') }}" />
+                <a href="{{ return_url }}" class="btn btn-danger" role="button">{{ _gettext('Cancel') }}</a>
+            </div>
+        </div>
+    {% endcall %}
+  {% endblock %}
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+    <script>
+        $(function() {
+            const controlPoints = [];
+            const corners = [];
+
+            function updatePoints(type, points) {
+                const colors = [ 'rgba(207, 0, 15, 0.7)', 'rgba(0, 230, 64, 0.7)', 'rgba(30, 139, 195, 0.7)', 'rgba(247, 202, 24, 0.7)' ];
+                const canvas = document.getElementById(`snapshot-${type}-canvas`);
+                const context = canvas.getContext('2d');
+
+                // Set canvas dimensions.
+                context.canvas.height = $(`#snapshot-${type}`)[0].height;
+                context.canvas.width = $(`#snapshot-${type}`)[0].width;
+                context.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Clear inputs.
+                $(`table#${type} input[readonly="readonly"]`).val('');
+
+                for (const point of points) {
+                    // Draw the circle on the canvas.
+                    context.save();
+                    context.beginPath();
+                    context.arc(point.relativeX, point.relativeY, 15, 0, 2 * Math.PI);
+                    context.lineWidth = 2;
+                    context.fillStyle = colors[point.i];
+                    context.stroke();
+                    context.fill();
+                    context.restore();
+
+                    // Update the inputs in the table.
+                    $(`table#${type} tr:eq(${point.i+1}) input:eq(0)`).val(point.absoluteX);
+                    $(`table#${type} tr:eq(${point.i+1}) input:eq(1)`).val(point.absoluteY);
+                }
+            }
+
+            $('#snapshot-gcps-canvas').on('click', (e) => {
+                if (controlPoints.length >= 4) {
+                    alert('You can only set 4 ground control points, use right mouse click to remove one');
+                    return false;
+                }
+                const relativeX = e.pageX - $('#snapshot-gcps-canvas').offset().left;
+                const relativeY = e.pageY - $('#snapshot-gcps-canvas').offset().top;
+                const pixelRatio = $('#snapshot-gcps')[0].naturalWidth / $('#snapshot-gcps')[0].width;
+                const absoluteX = Math.round(relativeX * pixelRatio);
+                const absoluteY = Math.round(relativeY * pixelRatio);
+
+                // Check first available gcps index.
+                let index = 0;
+                for (let i = 0; i <= 3; i++) {
+                    if (!controlPoints.find(cP => cP.i === i)) {
+                        index = i;
+                        break;
+                    }
+                }
+
+                controlPoints.push({relativeX, relativeY, absoluteX, absoluteY, i: index });
+                updatePoints('gcps', controlPoints);
+            });
+
+            $('#snapshot-gcps-canvas').on('contextmenu', (e) => {
+                const relativeX = e.pageX - $('#snapshot-gcps-canvas').offset().left;
+                const relativeY = e.pageY - $('#snapshot-gcps-canvas').offset().top;
+
+                let closest;
+                let closestIndex;
+                for (const [i, controlPoint] of Object.entries(controlPoints)) {
+                    if (!closest || (Math.pow(controlPoint.relativeX - relativeX, 2) + Math.pow(controlPoint.relativeY - relativeY, 2)) < (Math.pow(closest.relativeX - relativeX, 2) + Math.pow(closest.relativeY - relativeY, 2))) {
+                        closest = controlPoint;
+                        closestIndex = i;
+                    }
+                }
+                if (closest) {
+                    controlPoints.splice(closestIndex, 1);
+                    updatePoints('gcps', controlPoints);
+                }
+                return false;
+            });
+
+            $('#snapshot-gcps').on('load', () => {
+                const currentPoints = [];
+                {% for i in range(4) %}
+                    {% if model['gcps_src_{}_x'.format(i)] and model['gcps_src_{}_y'.format(i)] %}
+                        currentPoints.push({ i: {{ i }}, absoluteX: {{model['gcps_src_{}_x'.format(i)]}}, absoluteY: {{model['gcps_src_{}_y'.format(i)]}} })
+                    {% endif %}
+                {% endfor %}
+
+                const pixelRatio = $('#snapshot-gcps')[0].naturalWidth / $('#snapshot-gcps')[0].width;
+                for (const cP of currentPoints) {
+                    controlPoints.push({ i: cP.i, absoluteX: cP.absoluteX, absoluteY: cP.absoluteY, relativeX: Math.round(cP.absoluteX / pixelRatio), relativeY: Math.round(cP.absoluteY / pixelRatio) });
+                }
+                updatePoints('gcps', controlPoints);
+            });
+
+            $('#snapshot-corners-canvas').on('click', (e) => {
+                if (corners.length >= 4) {
+                    alert('You can only set 4 corner points, use right mouse click to remove one');
+                    return false;
+                }
+                const relativeX = e.pageX - $('#snapshot-corners-canvas').offset().left;
+                const relativeY = e.pageY - $('#snapshot-corners-canvas').offset().top;
+                const pixelRatio = $('#snapshot-corners')[0].naturalWidth / $('#snapshot-corners')[0].width;
+                const absoluteX = Math.round(relativeX * pixelRatio);
+                const absoluteY = Math.round(relativeY * pixelRatio);
+
+                // Check first available corner index.
+                let index = 0;
+                for (let i = 0; i <= 3; i++) {
+                    if (!corners.find(cP => cP.i === i)) {
+                        index = i;
+                        break;
+                    }
+                }
+
+                corners.push({relativeX, relativeY, absoluteX, absoluteY, i: index });
+                updatePoints('corners', corners);
+            });
+
+            $('#snapshot-corners-canvas').on('contextmenu', (e) => {
+                const relativeX = e.pageX - $('#snapshot-corners-canvas').offset().left;
+                const relativeY = e.pageY - $('#snapshot-corners-canvas').offset().top;
+
+                let closest;
+                let closestIndex;
+                for (const [i, cornerPoint] of Object.entries(corners)) {
+                    if (!closest || (Math.pow(cornerPoint.relativeX - relativeX, 2) + Math.pow(cornerPoint.relativeY - relativeY, 2)) < (Math.pow(closest.relativeX - relativeX, 2) + Math.pow(closest.relativeY - relativeY, 2))) {
+                        closest = cornerPoint;
+                        closestIndex = i;
+                    }
+                }
+                if (closest) {
+                    corners.splice(closestIndex, 1);
+                    updatePoints('corners', corners);
+                }
+                return false;
+            });
+
+            $('#snapshot-corners').on('load', () => {
+                const currentPoints = [];
+                {% set cornerDescription = ['up_left', 'down_left', 'down_right', 'up_right'] %}
+                {% for i in range(4) %}
+                    {% if model['corner_{}_x'.format(cornerDescription[i])] and model['corner_{}_y'.format(cornerDescription[i])] %}
+                        currentPoints.push({ i: {{ i }}, absoluteX: {{model['corner_{}_x'.format(cornerDescription[i])]}}, absoluteY: {{model['corner_{}_y'.format(cornerDescription[i])]}} })
+                    {% endif %}
+                {% endfor %}
+
+                const pixelRatio = $('#snapshot-corners')[0].naturalWidth / $('#snapshot-corners')[0].width;
+                for (const cP of currentPoints) {
+                    corners.push({ i: cP.i, absoluteX: cP.absoluteX, absoluteY: cP.absoluteY, relativeX: Math.round(cP.absoluteX / pixelRatio), relativeY: Math.round(cP.absoluteY / pixelRatio) });
+                }
+                updatePoints('corners', corners)
+            });
+        });
+    </script>
+{% endblock %}
