@@ -1,0 +1,22 @@
+{% extends 'admin/model/edit.html' %}
+
+{% block body %}
+    {{ super() }}
+    <hr/>
+    <h4>Rating curve</h4>
+    <figure class="highcharts-figure">
+        <div id="rating-curve"></div>
+    </figure>
+
+{% endblock %}
+{% block tail %}
+
+    {{ super() }}
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/vector.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="{{ url_for('static', filename='ratingcurve.js') }}"></script>
+
+{% endblock %}
