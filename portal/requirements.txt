@@ -11,5 +11,6 @@ bcrypt
 pika==1.1.0
 boto3==1.16.25
 numpy
+scipy
 xarray
 h5netcdf
