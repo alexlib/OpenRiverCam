@@ -16,7 +16,7 @@ from sqlalchemy import (
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
-from models.example_data import movie as movie_example
+from models.example_data import bathymetry
 
 
 class MovieType(enum.Enum):
@@ -59,6 +59,23 @@ class Movie(Base, SerializerMixin):
     def __repr__(self):
         return "{}: {}".format(self.id, self.__str__())
 
+    def get_task_json(self):
+        # Camera config relation might not have been loaded yet during the after_update event.
+        if not self.config and self.config_id:
+            movie = Movie.query.get(self.id)
+            self.config = movie.config
+
+        return {
+            "id": self.id,
+            "camera_config": self.config.get_task_json() if self.config else None,
+            "file": {
+                "bucket": self.file_bucket,
+                "identifier": self.file_name
+            },
+            "timestamp": '{}Z'.format(str(self.timestamp.isoformat())),
+            "bathymetry": bathymetry,
+            "h_a": float(self.actual_water_level) if self.actual_water_level else None
+        }
 
 @event.listens_for(Movie, "before_insert")
 @event.listens_for(Movie, "before_update")
@@ -91,18 +108,6 @@ def queue_task(type, movie):
     channel.basic_publish(
         exchange="",
         routing_key="processing",
-        body=json.dumps({"type": type, "kwargs": {"movie": get_task_json(movie)}}),
+        body=json.dumps({"type": type, "kwargs": {"movie": movie.get_task_json() }}),
     )
     connection.close()
-
-
-def get_task_json(movie):
-    movie_example["id"] = movie.id
-    movie_example["file"]["bucket"] = movie.file_bucket
-    movie_example["file"]["identifier"] = movie.file_name
-
-    if movie.actual_water_level is not None:
-        # Decimal can't be JSON encoded with default encoder.
-        movie_example["h_a"] = float(movie.actual_water_level)
-
-    return movie_example

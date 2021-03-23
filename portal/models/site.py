@@ -10,10 +10,17 @@ class Site(Base, SerializerMixin):
     position_crs = Column(Integer)
     position_x = Column(Float)
     position_y = Column(Float)
-    position_z = Column(Float)
 
     def __str__(self):
         return "{}".format(self.name)
 
     def __repr__(self):
         return "{}: {}".format(self.id, self.__str__())
+
+    def get_task_json(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "position": [self.position_x, self.position_y],
+            "crs": self.position_crs
+        }
