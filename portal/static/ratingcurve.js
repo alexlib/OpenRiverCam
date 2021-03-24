@@ -4,6 +4,7 @@ $(document).ready(function () {
     field_h0 = document.getElementById('h0');
 
     // prepare phony data, this needs to be replaced by h and Q estimates from filtered points
+    // ###### ALL DATA BELOW NEEDS TO BE DRAWN FROM THE DATABASE ############3
     var h = [
             0.3, 0.2, 0.3, 0.45, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0
         ];
@@ -14,11 +15,19 @@ $(document).ready(function () {
     var ids = [
             10, 9, 8, 7, 6, 5, 4, 3, 2, 1
         ];
+    var includes = [true, false, false, true, true, true, true, true, true, true]
+    // TODO: below the actual data structure is prepared, this needs to be done in a jinja2 for loop
+    var ratingpoints = h.map(function(e, i) {
+                              return {x: e, y: Q[i], name: ids[i], include: includes[i]};
+                          })
     var pars = {
             'h0': 0.05, 'a': 30, 'b': 1.67
         }
     var siteId = 1;
     var name = "Chuo Kikuu";
+    // ###### ALL DATA BELOW NEEDS TO BE DRAWN FROM THE DATABASE ############
+
+
     function getChart(){
         Chart = Highcharts.chart('rating-curve', {
             chart: {
@@ -87,15 +96,14 @@ $(document).ready(function () {
                             click: function () {
                                 if (this.include == true) {
                                     this.include = false;
-                                    this.color = 'rgba(0, 0, 0, 0.35)';
+//                                    this.color = 'rgba(0, 0, 0, 0.35)';
                                 }
                                 else {
                                     this.include = true;
-                                    this.color = 'rgba(210, 70, 90, 0.9)';
+//                                    this.color = 'rgba(210, 70, 90, 0.9)';
                                 }
                                 // refit on the data
-                                fitData();
-                                this.series.redraw();
+                                updateRatingCurve();
 
 
                             }
@@ -127,34 +135,11 @@ $(document).ready(function () {
                     type: 'scatter',
                     zoomType: 'xy',
                     name: 'Rating points',
-                    color: 'rgba(210, 70, 90, 0.9)',
-    //                data: h.map(function(e, i) {
-    //                          return [e, Q[i]];
-
-                    data: h.map(function(e, i) {
-                              return {x: e, y: Q[i], name: ids[i], include: true};
-                          }), //[[0.5, 0.5], [1, 1]],
+                    color: 'rgba(255, 70, 90, 1.0)',
+                    data: ratingpoints,
                     turboThreshold: 0, // Required for datasets covering more than 1k points.
                 }
-//                {
-//                    type: 'line',
-//                    hover: false,
-//                    zoomType: 'xy',
-//                    name: 'Rating curve fit',
-//                    color: 'rgba(200, 200, 200, 1)',
-//                    marker: {
-//                        enabled: false
-//                    },
-//                    data: data.h.map(function(e, i) {
-//                              return [e, data.Q[i]];
-//                          }), //[[0.5, 0.5], [1, 1]],
-//
-//                    turboThreshold: 0, // Required for datasets covering more than 1k points.
-//                    enableMouseTracking: false
-//                },
-
             ],
-
             exporting: {
                 buttons: {
                     contextButton: {
@@ -165,7 +150,22 @@ $(document).ready(function () {
         });
         return Chart;
     }
-    function fitChart (pars) {
+    function updateColorPoints() {
+        var series = Chart.series[0]
+        for ( var i = 0; i < series.points.length; i++ ) {
+            point = series.points[i]
+            if ( point.include == true ) {
+                point.color = 'rgba(255, 70, 90, 1.0)'
+            }
+            else {
+                point.color = 'rgba(0, 0, 0, 0.35)'
+            }
+            // color point according to color code
+        }
+        series.redraw();
+    }
+
+    function updateChart (pars) {
         // make a set of samples for h to plot the fit in
         var hmin = Math.min(...h);
         var hmax = Math.max(...h);
@@ -210,7 +210,7 @@ $(document).ready(function () {
         field_b.value = pars.b;
         field_h0.value = pars.h0;
     }
-    function fitData() {
+    function updateRatingCurve () {
         // read samples and their current state from the graph
         scatter = Chart.series[0].data;
         var samples = {water_level: [], discharge: [], include: []};
@@ -230,22 +230,13 @@ $(document).ready(function () {
             discharge: JSON.stringify(samples.discharge)
         },
         function(data){
-            console.log(data);
-            fitChart(data);
-        }
-    );
-
-//            samples.include.push(scatter[i].include)
-        return samples;
+            updateChart(data);  // redraw the rating curve fitted line
+            updateColorPoints();  // update the colors of scatter points
+        });
     }
-
+    // test the functions below
     Chart = getChart();
-
-    fitData();
-//    console.log(readSamples());
-//    console.log(Chart.series);
-    // get the scatter series
-//    scatter = Chart.series[1].data;
+    updateRatingCurve();
 
 });
 

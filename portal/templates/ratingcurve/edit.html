@@ -1,4 +1,7 @@
 {% extends 'admin/model/edit.html' %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
 
 {% block body %}
     {{ super() }}
@@ -18,5 +21,18 @@
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
     <script src="{{ url_for('static', filename='ratingcurve.js') }}"></script>
-
+    <script>
+        var data = []
+        {% for row in ratingpoints %}
+            data.push({
+                x: {{ row.movie.actual_water_level }},
+                y: {{ row.movie.discharge_q50 }},
+                name: {{ row.id }},
+                // TODO: add an "include"  boolean in the datamodel for rating points.
+            });
+        {% endfor %}
+        console.log(data);
+        // TODO: insert javascript code for charts and recomputation
+        // TODO: update state of rating points based on change in selections
+    </script>
 {% endblock %}
