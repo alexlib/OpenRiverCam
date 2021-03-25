@@ -20,6 +20,7 @@ $(document).ready(function () {
     var ratingpoints = h.map(function(e, i) {
                               return {x: e, y: Q[i], name: ids[i], include: includes[i]};
                           })
+    console.log(ratingpoints);
     var pars = {
             'h0': 0.05, 'a': 30, 'b': 1.67
         }
@@ -230,6 +231,7 @@ $(document).ready(function () {
             discharge: JSON.stringify(samples.discharge)
         },
         function(data){
+            console.log(data);
             updateChart(data);  // redraw the rating curve fitted line
             updateColorPoints();  // update the colors of scatter points
         });

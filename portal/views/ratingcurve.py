@@ -14,7 +14,9 @@ class RatingCurveView(UserModelView):
         RatingCurve.b,
         RatingCurve.h0,
     )
-    column_editable_list = (
+
+
+    form_columns = (
         RatingCurve.a,
         RatingCurve.b,
         RatingCurve.h0,
@@ -28,9 +30,9 @@ class RatingCurveView(UserModelView):
 
     column_descriptions = {
         "id": "Numbered identifier of the rating curve",
-        "a": "a: Multiplier in rating equation Q = a(h-h0)^b",
-        "b": "b: Power in rating equation Q = a(h-h0)^b",
-        "h0": "h0: level at which no flow occurs in rating equation Q = a(h-h0)^b",
+        "a": "Multiplier in rating equation Q = a(h-h0)^b",
+        "b": "Power in rating equation Q = a(h-h0)^b",
+        "h0": "Level at which no flow occurs in rating equation Q = a(h-h0)^b",
     }
 
     column_formatters = dict(
@@ -44,7 +46,8 @@ class RatingCurveView(UserModelView):
         if m.h0
         else "",
     )
-
+    # TODO: def update_modelself, form, model)
+    # Here make sure the "include" state of the ratingpoints is adequately stored
     # edit_template = "ratingcurve/edit.html"
 
     @expose('/edit/', methods=('GET', 'POST'))
