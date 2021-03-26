@@ -7,14 +7,16 @@ from models.ratingcurve import RatingCurve, RatingPoint
 
 
 class RatingCurveView(UserModelView):
+    can_create = False
+
     column_list = (
-        "config.camera.site",
+        "site",
         RatingCurve.id,
+        RatingCurve.name,
         RatingCurve.a,
         RatingCurve.b,
         RatingCurve.h0,
     )
-
 
     form_columns = (
         RatingCurve.a,
@@ -22,6 +24,7 @@ class RatingCurveView(UserModelView):
         RatingCurve.h0,
     )
     column_labels = {
+        "name": "Name",
         "id": "Rating curve ID",
         "a": "a [m3/s]",
         "b": "b [-]",
@@ -29,6 +32,7 @@ class RatingCurveView(UserModelView):
     }
 
     column_descriptions = {
+        "name": "Recognizeable name for rating curve",
         "id": "Numbered identifier of the rating curve",
         "a": "Multiplier in rating equation Q = a(h-h0)^b",
         "b": "Power in rating equation Q = a(h-h0)^b",
@@ -48,7 +52,6 @@ class RatingCurveView(UserModelView):
     )
     # TODO: def update_modelself, form, model)
     # Here make sure the "include" state of the ratingpoints is adequately stored
-    # edit_template = "ratingcurve/edit.html"
 
     @expose('/edit/', methods=('GET', 'POST'))
     def edit_view(self):
