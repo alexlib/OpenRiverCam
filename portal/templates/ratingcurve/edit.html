@@ -20,7 +20,7 @@
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-    <script src="{{ url_for('static', filename='ratingcurve.js') }}"></script>
+<!--    <script src="{{ url_for('static', filename='ratingcurve.js') }}"></script>-->
     <script>
     $(document).ready(function () {
         field_a = document.getElementById('a');
@@ -107,11 +107,9 @@
                                 click: function () {
                                     if (this.include == true) {
                                         this.include = false;
-    //                                    this.color = 'rgba(0, 0, 0, 0.35)';
                                     }
                                     else {
                                         this.include = true;
-    //                                    this.color = 'rgba(210, 70, 90, 0.9)';
                                     }
                                     // refit on the data
                                     updateRatingCurve();
