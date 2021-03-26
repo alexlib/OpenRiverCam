@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, ForeignKey, String, Column, DateTime, Enum, Float, Text
+from sqlalchemy import Integer, ForeignKey, String, Column, Float, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy_serializer import SerializerMixin
 from models.base import Base
@@ -7,6 +7,7 @@ from models.base import Base
 class RatingCurve(Base, SerializerMixin):
     __tablename__ = "ratingcurve"
     id = Column(Integer, primary_key=True)
+    name = Column(String)
     site_id = Column(Integer, ForeignKey("site.id"))
     ratingpoints = relationship("RatingPoint")
     # rating curve defined as Q = a(h-h0)**b
@@ -27,5 +28,6 @@ class RatingPoint(Base, SerializerMixin):
     id = Column(Integer, primary_key=True)
     ratingcurve_id = Column(Integer, ForeignKey("ratingcurve.id"))
     movie_id = Column(Integer, ForeignKey("movie.id"))
+    include = Column(Boolean)
     ratingcurve = relationship("RatingCurve")
     movie = relationship("Movie")
