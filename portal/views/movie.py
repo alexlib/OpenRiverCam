@@ -1,4 +1,4 @@
-from flask import flash
+from flask import flash, url_for, redirect
 from flask_admin.contrib.sqla.filters import BaseSQLAFilter
 from flask_admin import expose
 from flask_admin.actions import action
@@ -103,7 +103,7 @@ class MovieView(UserModelView):
             )
         print(rating_points)
         # fit rating curve and add curve and points to database
-        if len(rating_points["h"]) > 3:
+        if len(rating_points["h"]) > 4:
             # get the rating curve
             params = optimize_rating(**rating_points)
             # put parameters into rating table
@@ -121,10 +121,10 @@ class MovieView(UserModelView):
                 db.add(rating_point)
             db.commit()
             db.refresh(rating_curve)
-            print(f"RATING CURVE: {rating_point.ratingcurve.h0}")
             flash(f"Rating curve with ID {rating_curve.id} stored")
+            return redirect(url_for('ratingcurve.edit_view', id=rating_curve.id))
 
         else:
-            flash("There are not enough rating points. Minimum 4 points are required to construct a rating curve")
+            flash("There are not enough rating points. Minimum 5 points are required to construct a rating curve")
 
 
