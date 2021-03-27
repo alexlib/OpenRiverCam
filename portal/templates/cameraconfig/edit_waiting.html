@@ -9,3 +9,10 @@
     </form>
   {% endblock %}
 {% endblock %}
+
+{% block tail %}
+    {{ super() }}
+    <script>
+        setTimeout(function () { window.location.reload(1); }, 10000);
+    </script>
+{% endblock %}
