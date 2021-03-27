@@ -1,6 +1,6 @@
 from flask_admin.contrib.sqla.filters import BaseSQLAFilter
 from flask_admin import expose
-from models.movie import Movie
+from models.movie import Movie, MovieType
 from models.site import Site
 from models.camera import CameraConfig, Camera
 from views.general import UserModelView
@@ -76,6 +76,10 @@ class MovieView(UserModelView):
         "actual_water_level",
         "discharge_q50",
     )
+
+    # Don't show movies which are uploaded specifically for the camera config.
+    def get_query(self):
+        return super(MovieView, self).get_query().filter(Movie.type == MovieType.MOVIE_TYPE_NORMAL)
 
     # Need this so the filter options are always up-to-date.
     @expose("/")
