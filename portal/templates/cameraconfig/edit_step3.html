@@ -1,0 +1,53 @@
+{% extends 'cameraconfig/edit.html' %}
+
+{% block body %}
+  {{ super() }}
+  {% block edit_form %}
+    {% call lib.form_tag(action=action) %}
+        <div style="position: relative">
+            <img id="snapshot-aoi" src="/api/visualize/get_projected_snapshot/{{movie.id}}"  style="width:100%;" />
+            <canvas id="snapshot-aoi-canvas" width="100%" height="100%" style="width: 100%; height:100%; position: absolute; left: 0; top: 0;"></canvas>
+        </div>
+        {{ lib.render_form_fields(form, form_opts=form_opts) }}
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10 submit-row">
+                <input name="_continue_editing" type="submit" class="btn btn-primary" value="{{ _gettext('Save') }}" />
+                <a href="{{ return_url }}" class="btn btn-danger" role="button">{{ _gettext('Cancel') }}</a>
+            </div>
+        </div>
+    {% endcall %}
+  {% endblock %}
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+    <script>
+        $(function() {
+            const canvas = document.getElementById(`snapshot-aoi-canvas`);
+            const context = canvas.getContext('2d');
+
+            $('input#aoi_window_size').on('keyup change', function() {
+                const pixelRatio = $('#snapshot-aoi')[0].naturalWidth / $('#snapshot-aoi')[0].width;
+                const size = Math.round(this.value / pixelRatio);
+                const left = Math.round(($('#snapshot-aoi')[0].width - size) / 2);
+                const top = Math.round(($('#snapshot-aoi')[0].height - size) / 2);
+
+                context.canvas.height = $(`#snapshot-aoi`)[0].height;
+                context.canvas.width = $(`#snapshot-aoi`)[0].width;
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.save();
+                context.beginPath();
+                context.lineWidth = 2;
+                context.strokeRect(left, top, size, size);
+                context.stroke();
+                context.fill();
+                context.restore();
+            });
+
+            // Trigger onchange event after load.
+            $('#snapshot-aoi').on('load', () => {
+                $('input#aoi_window_size').trigger('change');
+            });
+        });
+    </script>
+{% endblock %}

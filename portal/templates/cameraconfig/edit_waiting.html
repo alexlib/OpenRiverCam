@@ -1,0 +1,18 @@
+{% extends 'cameraconfig/edit.html' %}
+
+{% block body %}
+  {{ super() }}
+  {% block edit_form %}
+    <form class="admin-form">
+        <h2>Please wait</h2>
+        <p>Your data is being processed.</p>
+    </form>
+  {% endblock %}
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+    <script>
+        setTimeout(function () { window.location.reload(1); }, 10000);
+    </script>
+{% endblock %}

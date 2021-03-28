@@ -16,3 +16,11 @@ class Site(Base, SerializerMixin):
 
     def __repr__(self):
         return "{}: {}".format(self.id, self.__str__())
+
+    def get_task_json(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "position": [self.position_x, self.position_y],
+            "crs": self.position_crs
+        }

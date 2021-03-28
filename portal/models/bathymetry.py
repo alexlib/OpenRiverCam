@@ -8,8 +8,11 @@ class Bathymetry(Base, SerializerMixin):
     __tablename__ = "bathymetry"
     id = Column(Integer, primary_key=True)
     site_id = Column(Integer, ForeignKey("site.id"))
+    timestamp = Column(DateTime)
     crs = Column(Integer)
+
     coordinates = relationship("BathymetryCoordinate")
+    site = relationship("Site")
 
     def __str__(self):
         return "{}".format(self.id)
