@@ -1,0 +1,80 @@
+{% extends 'admin/model/details.html' %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+   crossorigin=""/>
+
+{% endblock %}
+{% block body %}
+    {{ super() }}
+    <!-- add a leaflet map -->
+    <div id="map" style="height: 420px; margin-top: 2em; margin-bottom: 2em;"></div> <!--; margin-top: 2em; margin-bottom: 2em;"></div>-->
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin="">
+    </script>
+    <script>
+        $(document).ready(function () {
+            var maxAutoZoom = 18;
+            {% for c, name in details_columns %}
+                {% if 'Longitude' in name %}
+                pos_x = {{ get_value(model, c) }};
+                {% elif 'Latitude' in name %}
+                pos_y = {{ get_value(model, c) }};
+                {% elif 'Site' in name %}
+                name = "{{ get_value(model, c) }}";
+                {% endif %}
+            {% endfor %}
+
+            //pos_y = -15.42985331;
+            //pos_x = 28.31623077;
+            //id = 2;
+            //name = "check";
+            var maxAutoZoom = 15;
+            var map = L.map('map').setView({lon: 0, lat: 0}, 2);
+            var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '&copy; <a href="https://openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors' +
+                    '</a> ',
+                tileSize: 256,
+            });
+            var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains:['mt0','mt1','mt2','mt3']
+            });
+            var googleTer = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains:['mt0','mt1','mt2','mt3']
+            });
+            var baseMaps = {
+                "OpenStreetMap": osmLayer,
+                "Google Satellite": googleSat,
+                "Google Terrain": googleTer
+
+            }
+            L.control.layers(baseMaps).addTo(map);
+        //    L.control.layers(baseMaps).addTo(map);
+
+            osmLayer.addTo(map);
+            // add a scale at at your map.
+            var scale = L.control.scale().addTo(map);
+            marker = new L.marker([pos_y, pos_x]);
+            toolTip = "<dl>" +
+                "<dt>Name: " + name + "</dt>" +
+                "</dl>"
+            marker.bindTooltip(toolTip);
+            // update the marker so that it sets everything in the same way
+            marker.addTo(map);
+            // zoom to marker
+            pos = marker.getLatLng();
+            map.setView([pos.lat, pos.lng], maxAutoZoom);
+
+        });
+
+    </script>
+{% endblock %}
