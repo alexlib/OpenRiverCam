@@ -81,7 +81,7 @@ class Movie(Base, SerializerMixin):
 @event.listens_for(Movie, "before_update")
 def receive_before_insert(mapper, connection, target):
     # Select most recent bathymetry for target site.
-    if not target.bathymetry_id:
+    if not target.bathymetry_id and target.config:
         bathymetry = Bathymetry.query.filter(Bathymetry.site_id == target.config.camera.site_id).order_by(Bathymetry.id.desc()).first()
         if bathymetry:
             target.bathymetry_id = bathymetry.id

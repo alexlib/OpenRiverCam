@@ -9,6 +9,7 @@ engine = create_engine("postgresql://postgres:password@db:5432/openrivercam")
 from models import bathymetry
 from models import camera
 from models import movie
+from models import ratingcurve
 from models import polygon
 from models import site
 from models import user
