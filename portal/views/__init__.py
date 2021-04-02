@@ -10,6 +10,7 @@ from models.movie import Movie
 from views.camera import CameraConfigView
 from views.movie import MovieView
 from views.bathymetry import BathymetryView
+from views.site import SiteView
 from views.ratingcurve import RatingCurveView
 from views.general import LogoutMenuLink, LoginMenuLink, UserModelView
 from views.help import HelpView
@@ -21,7 +22,11 @@ admin.add_link(LogoutMenuLink(name="Logout", category="", url="/logout"))
 admin.add_link(LoginMenuLink(name="Login", category="", url="/login"))
 
 # Setup views.
-admin.add_view(UserModelView(Site, db, name="Sites", url="sites", category="Setup"))
+# Generic CRUD views.
+# admin.add_view(UserModelView(Site, db, name="Sites", url="sites", category="Setup"))
+
+# Specific Site view
+admin.add_view(SiteView(Site, db, name="Sites", url="sites", category="Setup"))
 admin.add_view(
     BathymetryView(Bathymetry, db, name="Bathymetry", url="bathymetry", category="Setup")
 )
