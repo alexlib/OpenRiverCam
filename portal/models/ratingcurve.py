@@ -28,6 +28,5 @@ class RatingPoint(Base, SerializerMixin):
     id = Column(Integer, primary_key=True)
     ratingcurve_id = Column(Integer, ForeignKey("ratingcurve.id"))
     movie_id = Column(Integer, ForeignKey("movie.id"))
-    include = Column(Boolean)
-    ratingcurve = relationship("RatingCurve")
+    include = Column(Boolean, default=True)
     movie = relationship("Movie")
