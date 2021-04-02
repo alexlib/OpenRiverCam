@@ -7,6 +7,6 @@ class BathymetryView(UserModelView):
         "site",
         Bathymetry.timestamp
     )
-    form_columns = ("site", Bathymetry.timestamp, Bathymetry.crs)
+    form_columns = ("site", Bathymetry.timestamp)
     create_template = "bathymetry/create.html"
     edit_template = "bathymetry/edit.html"
