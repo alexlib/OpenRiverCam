@@ -13,10 +13,10 @@
             <table id="gcps">
                 <tr>
                     <th width="100">Color</th>
-                    <th width="50" style="text-align: center">Pixel X</th>
-                    <th width="50" style="text-align: center">Pixel Y</th>
-                    <th width="50" style="text-align: center">X</th>
-                    <th width="50" style="text-align: center">Y</th>
+                    <th width="50" style="text-align: center">Pixel X [column]</th>
+                    <th width="50" style="text-align: center">Pixel Y [row]</th>
+                    <th width="50" style="text-align: center">Coordinate X [m]</th>
+                    <th width="50" style="text-align: center">Coordinate Y [m]</th>
                 </tr>
                 <tr>
                     <td>Red</td>
@@ -51,13 +51,13 @@
 
         <h4>Water level</h4>
         <div class="form-group ">
-            <label for="gcps_z_0" class="control-label">Reference height of zero water level
+            <label for="gcps_z_0" class="control-label">Height of water level in coordinate system [m]
                 &nbsp;
             </label>
             <input class="form-control" id="gcps_z_0" name="gcps_z_0" type="text" value="{{model.gcps_z_0 if model.gcps_z_0 else '' }}">
         </div>
         <div class="form-group ">
-            <label for="gcps_h_ref" class="control-label">Actual water level during taking of the gcp points
+            <label for="gcps_h_ref" class="control-label">Staff gauge water level during taking of the gcp points [m]
                 &nbsp;
             </label>
             <input class="form-control" id="gcps_h_ref" name="gcps_h_ref" type="text" value="{{model.gcps_h_ref if model.gcps_h_ref else '' }}">
@@ -73,8 +73,8 @@
                 <tr>
                     <th width="100">Color</th>
                     <th width="150">Description</th>
-                    <th width="50" style="text-align: center">Pixel X</th>
-                    <th width="50" style="text-align: center">Pixel Y</th>
+                    <th width="50" style="text-align: center">Pixel X [column]</th>
+                    <th width="50" style="text-align: center">Pixel Y [column]</th>
                 </tr>
                 <tr>
                     <td>Red</td>
@@ -105,26 +105,26 @@
 
         <h4>Camera lens position</h4>
         <div class="form-group ">
-            <label for="lens_position_x" class="control-label">Lens position X
+            <label for="lens_position_x" class="control-label">Lens coordinate X [m]
                 &nbsp;
             </label>
             <input class="form-control" id="lens_position_x" name="lens_position_x" type="text" value="{{model.lens_position_x if model.lens_position_x else '' }}">
         </div>
         <div class="form-group ">
-            <label for="lens_position_y" class="control-label">Lens position Y
+            <label for="lens_position_y" class="control-label">Lens coordinate Y [m]
                 &nbsp;
             </label>
             <input class="form-control" id="lens_position_y" name="lens_position_y" type="text" value="{{model.lens_position_y if model.lens_position_y else '' }}">
         </div>
         <div class="form-group ">
-            <label for="lens_position_z" class="control-label">Lens position Z
+            <label for="lens_position_z" class="control-label">Lens coordinate height [m]
                 &nbsp;
             </label>
             <input class="form-control" id="lens_position_z" name="lens_position_z" type="text" value="{{model.lens_position_z if model.lens_position_z else '' }}">
         </div>
         <h4>Resolution</h4>
         <div class="form-group ">
-            <label for="projection_pixel_size" class="control-label">Pixel size (m)
+            <label for="projection_pixel_size" class="control-label">Pixel size [m]
                 &nbsp;
             </label>
             <input class="form-control" id="projection_pixel_size" name="projection_pixel_size" type="text" value="{{model.projection_pixel_size if model.projection_pixel_size else '0.01' }}">
