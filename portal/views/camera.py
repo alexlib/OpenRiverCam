@@ -5,7 +5,7 @@ from flask_admin.model.helpers import get_mdict_item_or_list
 from flask_admin.form import rules
 from models.site import Site
 from models.movie import Movie, MovieStatus
-from models.camera import CameraConfig, Camera
+from models.camera import CameraConfig, CameraType, Camera
 from views.general import UserModelView
 from views.elements.s3uploadfield import s3UploadFieldCameraConfig
 
@@ -24,6 +24,30 @@ class FilterCameraConfigBySite(BaseSQLAFilter):
     # Override to provide the options for the filter - in this case it's a list of the titles of the Client model
     def get_options(self, view):
         return [(site.id, site.name) for site in Site.query.order_by(Site.name)]
+
+class CameraTypeView(UserModelView):
+    column_list = (
+        CameraType.id,
+        CameraType.name,
+        CameraType.lens_k1,
+        CameraType.lens_c,
+        CameraType.lens_f,
+    )
+    column_labels = {
+        "id": "Camera type ID",
+        "name": "Camera name",
+        "lens_k1": "k1 Barrel distortion [-]",
+        "lens_c": "c Optical center [-]",
+        "lens_f": "f Focal length [mm]",
+    }
+    column_descriptions = {
+        "id": "Numbered identifier of the camera type",
+        "name": "Name of your camera type",
+        "lens_k1": "describes the lens curvature",
+        "lens_c": "describes optical center of lens (middle: 2)",
+        "lens_f": "Focal length of lens, e.g. 2.8mm or 4mm",
+    }
+
 
 
 class CameraConfigView(UserModelView):
