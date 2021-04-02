@@ -8,6 +8,8 @@ from models.ratingcurve import RatingCurve, RatingPoint
 
 class RatingCurveView(UserModelView):
     can_create = False
+    can_view_details = False
+    edit_template = "ratingcurve/edit.html"
 
     column_list = (
         "site",
@@ -50,17 +52,7 @@ class RatingCurveView(UserModelView):
         if m.h0
         else "",
     )
-    # TODO: def update_modelself, form, model)
-    # Here make sure the "include" state of the ratingpoints is adequately stored
 
-    @expose('/edit/', methods=('GET', 'POST'))
-    def edit_view(self):
-        self.edit_template = "ratingcurve/edit.html"
-        id = get_mdict_item_or_list(request.args, "id")
-        rating_points = RatingPoint.query.filter(RatingPoint.ratingcurve_id == id).all()
-        self._template_args["ratingpoints"] = rating_points
-        return super(RatingCurveView, self).edit_view()
-    # Need this so the filter options are always up-to-date.
     @expose("/")
     def index_view(self):
         self._refresh_filters_cache()
