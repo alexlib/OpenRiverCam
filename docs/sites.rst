@@ -82,8 +82,6 @@ Zambia.
 
 .. image:: img/site_create.gif
 
-
-
 With selected
 -------------
 The `With selected` tab is meant to perform operations on a set of selected sites. At this moment, the only
