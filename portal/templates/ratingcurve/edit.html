@@ -7,6 +7,7 @@
     {{ super() }}
     <hr/>
     <h4>Rating curve</h4>
+    <input type="hidden" id="ratingcurve_id" value="{{model.id}}" />
     <figure class="highcharts-figure">
         <div id="rating-curve"></div>
     </figure>
@@ -27,17 +28,17 @@
         field_b = document.getElementById('b');
         field_h0 = document.getElementById('h0');
         var ratingpoints = []
-        {% for row in ratingpoints %}
+        {% for row in model.ratingpoints %}
             ratingpoints.push({
                 x: {{ row.movie.actual_water_level }},
                 y: {{ row.movie.discharge_q50 }},
-                name: {{ row.id }},
-                include: true
+                name: {{ row.movie_id }},
+                include: {{ 'true' if row.include else 'false' }}
                 // TODO: add an "include"  boolean in the datamodel for rating points.
             });
         {% endfor %}
-        var siteId = {{ ratingpoints[0].movie.config.camera.site.id }}
-        var name = "{{ ratingpoints[0].movie.config.camera.site.name }}"
+        var siteId = {{ model.ratingpoints[0].movie.config.camera.site.id }}
+        var name = "{{ model.ratingpoints[0].movie.config.camera.site.name }}"
         // below, all plotting functions are defined
         function getChart(){
             Chart = Highcharts.chart('rating-curve', {
@@ -137,7 +138,6 @@
                                     ' m3/s<br>';
                                 string += 'Click <a href="/portal/movies/details/?id=' + this.name +
                                     '&url=%2Fportal%2Fmovies%2F" target="_blank">here</a> to inspect';
-    //                            string += '<a href="http://www.google.com">check!</a><br>';
                                 return string;
                             }
                         },
@@ -236,7 +236,7 @@
             }
             // fit new rating curve parameters
             $.getJSON(
-            '/api/visualize/get_rating_curve/${siteId}',
+            `/api/visualize/get_rating_curve/${siteId}`,
             {
 
                 water_level: JSON.stringify(samples.water_level),
@@ -251,8 +251,34 @@
         Chart = getChart();
         updateRatingCurve();
 
+        $('form.admin-form').submit(function( event ) {
+            // Prevent submit.
+            event.preventDefault();
+            // Prevent double actions.
+            $('button[type=submit], input[type=submit]').prop('disabled',true);
+
+            const id = $('input#ratingcurve_id').val();
+            const form = this;
+            const ratingpoints = [];
+
+            scatter = Chart.series[0].data;
+            for (var i = 0; i < scatter.length; i++) {
+                ratingpoints.push({ movie_id: scatter[i].name, include: !!scatter[i].include });
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: `/api/ratingpoints/${id}`,
+                data: JSON.stringify({ "ratingpoints": ratingpoints }),
+                contentType: "application/json",
+                dataType: 'json',
+                // Submit parent form on success.
+                success: function() { form.submit(); },
+                // Enable save button again.
+                error: function() { $('button[type=submit], input[type=submit]').prop('disabled',false); }
+            });
+        });
+
     });
-        // TODO: insert javascript code for charts and recomputation
-        // TODO: update state of rating points based on change in selections
     </script>
 {% endblock %}
