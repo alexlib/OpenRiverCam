@@ -1,6 +1,8 @@
 from flask import flash, url_for, redirect
 from flask_admin.contrib.sqla.filters import BaseSQLAFilter
 from flask_admin import expose
+from flask_admin.actions import action
+from models import db
 from models.movie import Movie, MovieType
 from models.site import Site
 from models.camera import CameraConfig, Camera
