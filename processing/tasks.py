@@ -172,10 +172,6 @@ def get_aoi(camera_config, logger=logging):
     bbox = OpenRiverCam.cv.get_aoi(gcps["src"], gcps["dst"], corners)
     bbox_json = OpenRiverCam.io.to_geojson(bbox, crs=crs)
     logger.debug(f"bbox: {bbox_json}")
-    requests.post(
-        "http://portal/api/processing/get_aoi/{:d}".format(camera_config["id"]),
-        json=bbox_json,
-    )
     # return bbox in case called from direct request
     return bbox_json
 
@@ -460,3 +456,23 @@ def run(movie, piv_kwargs={}, logger=logging):
         json=Q,
     )
     logger.info(f"Full run succesfull for movie {movie['id']}")
+
+
+def run_camera_config(movie, logger=logging):
+    """
+    Execute steps of get_aoi and extract_project_frames.
+
+    :param movie: dict, movie information
+    :param logger=logging: logger-object
+    :return: None
+    """
+
+    bbox_json = get_aoi(movie['camera_config'], logger=logger)
+    movie['camera_config']['aoi']['bbox'] = bbox_json
+    extract_project_frames(movie, logger=logger)
+
+    requests.post(
+        "http://portal/api/processing/get_aoi/{:d}".format(movie['camera_config']["id"]),
+        json=bbox_json,
+    )
+    logger.info(f"Camera config run succesfull for configuration {movie['camera_config']['id']}")

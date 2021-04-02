@@ -1,7 +1,9 @@
 from flask import Blueprint, jsonify, request
 from models.movie import Movie, MovieStatus
+from models.camera import CameraConfig
 from models import db
 from jsonschema import validate, ValidationError
+import json
 
 processing_api = Blueprint("processing_api", __name__)
 
@@ -29,7 +31,7 @@ def processing_compute_piv(id):
             "discharge_q75": {"type": "number"},
             "discharge_q95": {"type": "number"},
         },
-        "minProperties": 1,
+        "minProperties": 5,
         "additionalProperties": False,
     }
 
@@ -46,6 +48,30 @@ def processing_compute_piv(id):
     db.commit()
     return jsonify(movie.to_dict())
 
+@processing_api.route("/api/processing/get_aoi/<id>", methods=["POST"])
+def processing_get_aoi(id):
+    schema = {
+        "type": "object",
+        "properties": {
+            "crs": {"type": "object"},
+            "features": {"type": "array"},
+            "type": {"type": "string"},
+        },
+        "minProperties": 3,
+        "additionalProperties": False,
+    }
+
+    content = request.get_json(silent=True)
+    print(content)
+    validate(instance=content, schema=schema)
+    camera_config = CameraConfig.query.get(id)
+    if not camera_config:
+        raise ValueError("Invalid camera config with identifier %s" % id)
+
+    camera_config.aoi_bbox = json.dumps(content)
+
+    db.commit()
+    return jsonify(camera_config.to_dict())
 
 @processing_api.route("/api/processing/error/<id>", methods=["POST"])
 def processing_error(id):
