@@ -90,13 +90,13 @@ class CameraConfig(Base, SerializerMixin):
             "gcps": {
                 "src": [ [self.gcps_src_0_x, self.gcps_src_0_y], [self.gcps_src_1_x, self.gcps_src_1_y ], [self.gcps_src_2_x, self.gcps_src_2_y ], [self.gcps_src_3_x, self.gcps_src_3_y ] ],
                 "dst": [
-                    [float(self.gcps_dst_0_x) if self.gcps_dst_0_x else None, float(self.gcps_dst_0_y) if self.gcps_dst_0_y else None],
-                    [float(self.gcps_dst_1_x) if self.gcps_dst_1_x else None, float(self.gcps_dst_1_y) if self.gcps_dst_1_y else None],
-                    [float(self.gcps_dst_2_x) if self.gcps_dst_2_x else None, float(self.gcps_dst_2_y) if self.gcps_dst_2_y else None],
-                    [float(self.gcps_dst_3_x) if self.gcps_dst_3_x else None, float(self.gcps_dst_3_y) if self.gcps_dst_3_y else None]
+                    [float(self.gcps_dst_0_x) if self.gcps_dst_0_x is not None else None, float(self.gcps_dst_0_y) if self.gcps_dst_0_y is not None else None],
+                    [float(self.gcps_dst_1_x) if self.gcps_dst_1_x is not None else None, float(self.gcps_dst_1_y) if self.gcps_dst_1_y is not None else None],
+                    [float(self.gcps_dst_2_x) if self.gcps_dst_2_x is not None else None, float(self.gcps_dst_2_y) if self.gcps_dst_2_y is not None else None],
+                    [float(self.gcps_dst_3_x) if self.gcps_dst_3_x is not None else None, float(self.gcps_dst_3_y) if self.gcps_dst_3_y is not None else None]
                 ],
-                "z_0": float(self.gcps_z_0) if self.gcps_z_0 else None,
-                "h_ref": float(self.gcps_h_ref) if self.gcps_h_ref else None
+                "z_0": float(self.gcps_z_0) if self.gcps_z_0 is not None else None,
+                "h_ref": float(self.gcps_h_ref) if self.gcps_h_ref is not None else None
             },
             "corners": {
                 "up_left": [ self.corner_up_left_x, self.corner_up_left_y ],
@@ -106,9 +106,9 @@ class CameraConfig(Base, SerializerMixin):
             },
             "resolution": float(self.projection_pixel_size) if self.projection_pixel_size else None,
             "lensPosition": [
-                float(self.lens_position_x) if self.lens_position_x else None,
-                float(self.lens_position_y) if self.lens_position_y else None,
-                float(self.lens_position_z) if self.lens_position_z else None
+                float(self.lens_position_x) if self.lens_position_x is not None else None,
+                float(self.lens_position_y) if self.lens_position_y is not None else None,
+                float(self.lens_position_z) if self.lens_position_z is not None else None
             ],
             "aoi": { "bbox": json.loads(self.aoi_bbox) if self.aoi_bbox else {} }
         }
@@ -155,8 +155,8 @@ class CameraType(Base, SerializerMixin):
         return {
             "name": self.name,
             "lensParameters": {
-                "k1": float(self.lens_k1),
-                "c": float(self.lens_c),
-                "f": float(self.lens_f)
+                "k1": float(self.lens_k1) if self.lens_k1 is not None else None,
+                "c": float(self.lens_c) if self.lens_c is not None else None,
+                "f": float(self.lens_f) if self.lens_f is not None else None
             }
         }

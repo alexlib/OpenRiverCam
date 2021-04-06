@@ -9,7 +9,6 @@ class Bathymetry(Base, SerializerMixin):
     id = Column(Integer, primary_key=True)
     site_id = Column(Integer, ForeignKey("site.id"))
     timestamp = Column(DateTime)
-    crs = Column(Integer)
 
     coordinates = relationship("BathymetryCoordinate")
     site = relationship("Site")
@@ -20,6 +19,10 @@ class Bathymetry(Base, SerializerMixin):
     def __repr__(self):
         return "{}".format(self.__str__())
 
+    def get_task_json(self):
+        return {
+            "coords": list(map(lambda c: [c.x, c.y, c.z], self.coordinates))
+        }
 
 class BathymetryCoordinate(Base, SerializerMixin):
     __tablename__ = "bathymetrycoordinate"

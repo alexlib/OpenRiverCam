@@ -3,11 +3,42 @@ import xarray as xr
 import numpy as np
 import utils
 import re
+import json
+from scipy.optimize import curve_fit
 
 from flask import Blueprint, jsonify, request, make_response
 from models.movie import Movie, MovieStatus
 
 visualize_api = Blueprint("visualize_api", __name__)
+
+def cleanopts(optsin):
+    """Takes a multidict from a flask form, returns cleaned dict of options"""
+    opts = {}
+    d = optsin
+    for key in d:
+        opts[key] = optsin[key].replace(" ", "_")
+    return opts
+
+
+def rating_relation(h, h0, a, b):
+    return a*np.maximum(h - h0, 0)**b
+
+def optimize_rating(h, Q):
+    """
+    optimize rating parameters of Q=a*(h-h0)**b
+    :param h: list of water levels
+    :param Q: list of flows
+    :return: {h0, a, b}
+    """
+    print(f"h = {h}")
+    print(f"Q = {Q}")
+
+    result = curve_fit(rating_relation, np.array(h), np.array(Q), bounds=([np.array(h).min()-5., 0.001, 1.], [100.,
+                                                                                                            10000.,
+                                                                                                       3]),
+                       p0=[np.array(h).min(), 10., 1.67])
+    h0, a, b = result[0]
+    return {"h0": h0, "a": a, "b": b}
 
 def get_jpg_from_bucket(id, regex_string):
     movie = Movie.query.get(id)
@@ -41,6 +72,14 @@ def get_jpg_from_bucket(id, regex_string):
 @visualize_api.route("/api/visualize/get_snapshot/<id>", methods=["GET"])
 def get_snapshot(id):
     return get_jpg_from_bucket(id, "frame.*\.jpg")
+
+@visualize_api.route("/api/visualize/get_rating_curve/<id>", methods=["GET"])
+def get_rating_curve(id):
+    args = cleanopts(request.args)
+    h = json.loads(args["water_level"])
+    Q = json.loads(args["discharge"])
+    pars = optimize_rating(h, Q)
+    return jsonify(pars)
 
 @visualize_api.route("/api/visualize/get_projected_snapshot/<id>", methods=["GET"])
 def get_projected_snapshot(id):

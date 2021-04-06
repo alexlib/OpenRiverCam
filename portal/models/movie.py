@@ -16,7 +16,7 @@ from sqlalchemy import (
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
-from models.example_data import bathymetry
+from models.bathymetry import Bathymetry
 
 
 class MovieType(enum.Enum):
@@ -73,13 +73,20 @@ class Movie(Base, SerializerMixin):
                 "identifier": self.file_name
             },
             "timestamp": '{}Z'.format(str(self.timestamp.isoformat())),
-            "bathymetry": bathymetry,
+            "bathymetry": self.bathymetry.get_task_json() if self.bathymetry else None,
             "h_a": float(self.actual_water_level) if self.actual_water_level else None
         }
 
 @event.listens_for(Movie, "before_insert")
 @event.listens_for(Movie, "before_update")
 def receive_before_insert(mapper, connection, target):
+    # Select most recent bathymetry for target site.
+    if not target.bathymetry_id and target.config:
+        bathymetry = Bathymetry.query.filter(Bathymetry.site_id == target.config.camera.site_id).order_by(Bathymetry.id.desc()).first()
+        if bathymetry:
+            target.bathymetry_id = bathymetry.id
+        else:
+            raise Exception('Could not find bathymetry for site')
     if (
         target.status == MovieStatus.MOVIE_STATUS_EXTRACTED
         and target.actual_water_level is not None

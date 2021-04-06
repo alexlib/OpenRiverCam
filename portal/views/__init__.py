@@ -6,6 +6,7 @@ from models.camera import CameraType, Camera, CameraConfig
 from models.bathymetry import Bathymetry
 from models.site import Site
 from models.movie import Movie
+from models.ratingcurve import RatingCurve
 
 from views.camera import CameraTypeView, CameraConfigView
 from views.movie import MovieView
@@ -52,7 +53,7 @@ admin.add_view(
 admin.add_view(MovieView(Movie, db, name="Movies", url="movies"))
 
 # Custom user views.
-admin.add_view(RatingCurveView(name="Rating curves", url="ratingcurves"))
+admin.add_view(RatingCurveView(RatingCurve, db, name="Rating curves", url="ratingcurves"))
 
 # Publicly visible pages.
 admin.add_view(HelpView(name="Help", url="help"))
