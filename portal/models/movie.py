@@ -2,6 +2,7 @@ import os
 import pika
 import json
 import enum
+import utils
 from sqlalchemy import (
     event,
     Integer,
@@ -118,3 +119,12 @@ def queue_task(type, movie):
         body=json.dumps({"type": type, "kwargs": {"movie": movie.get_task_json() }}),
     )
     connection.close()
+
+@event.listens_for(Movie, 'after_delete')
+def receive_after_update(mapper, connection, target):
+    if target.file_bucket:
+        s3 = utils.get_s3()
+        if s3.Bucket(target.file_bucket) in s3.buckets.all():
+            s3.Bucket(target.file_bucket).objects.delete()
+            s3.Bucket(target.file_bucket).delete()
+
