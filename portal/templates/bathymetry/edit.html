@@ -71,9 +71,17 @@
             <a id="add" style="color: #089de3; cursor: pointer;">Add another coordinate</a>
         </p>
         <hr />
+      <h4>Insert CSV</h4>
+        <textarea id="csv_area" name="csv_area" value="Check" rows="10" cols="80">EPSG:43265633
+5.9137, 50.80705, 136.7
+5.9139, 50.80706, 135.6
+        </textarea>
+        <hr />
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10 submit-row">
                 <input name="_continue_editing" type="submit" class="btn btn-primary" value="{{ _gettext('Save') }}" />
+                <input name="_store_csv" id="_store_csv" type="button" class="btn btn-primary" value="Store CSV")
+                }}" />
                 <a href="{{ return_url }}" class="btn btn-danger" role="button">{{ _gettext('Cancel') }}</a>
             </div>
         </div>
