@@ -17,9 +17,9 @@ class CameraStatus(enum.Enum):
 class Camera(Base, SerializerMixin):
     __tablename__ = "camera"
     id = Column(Integer, primary_key=True)
-    camera_type_id = Column(Integer, ForeignKey("cameratype.id"))
-    site_id = Column(Integer, ForeignKey("site.id"))
-    status = Column(Enum(CameraStatus))
+    camera_type_id = Column(Integer, ForeignKey("cameratype.id"), nullable=False)
+    site_id = Column(Integer, ForeignKey("site.id"), nullable=False)
+    status = Column(Enum(CameraStatus), nullable=False)
 
     site = relationship("Site")
     camera_type = relationship("CameraType")
@@ -34,7 +34,7 @@ class Camera(Base, SerializerMixin):
 class CameraConfig(Base, SerializerMixin):
     __tablename__ = "configuration"
     id = Column(Integer, primary_key=True)
-    camera_id = Column(Integer, ForeignKey("camera.id"))
+    camera_id = Column(Integer, ForeignKey("camera.id"), nullable=False)
     time_start = Column(DateTime)
     time_end = Column(DateTime)
     movie_setting_resolution = Column(String)
@@ -140,10 +140,10 @@ def queue_task(type, camera_config):
 class CameraType(Base, SerializerMixin):
     __tablename__ = "cameratype"
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    lens_k1 = Column(Float)
-    lens_c = Column(Float)
-    lens_f = Column(Float)
+    name = Column(String, nullable=False)
+    lens_k1 = Column(Float, nullable=False)
+    lens_c = Column(Float, nullable=False)
+    lens_f = Column(Float, nullable=False)
 
     def __str__(self):
         return "{}".format(self.name)

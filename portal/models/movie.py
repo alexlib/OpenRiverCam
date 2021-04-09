@@ -36,10 +36,10 @@ class MovieStatus(enum.Enum):
 class Movie(Base, SerializerMixin):
     __tablename__ = "movie"
     id = Column(Integer, primary_key=True)
-    config_id = Column(Integer, ForeignKey("configuration.id"))
+    config_id = Column(Integer, ForeignKey("configuration.id"), nullable=False)
     file_bucket = Column(String)
     file_name = Column(String)
-    timestamp = Column(DateTime)
+    timestamp = Column(DateTime, nullable=False)
     type = Column(Enum(MovieType), default=MovieType.MOVIE_TYPE_NORMAL)
     actual_water_level = Column(Float)
     bathymetry_id = Column(Integer, ForeignKey("bathymetry.id"))
