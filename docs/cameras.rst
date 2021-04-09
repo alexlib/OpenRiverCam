@@ -4,7 +4,7 @@ Camera configurations
 =====================
 In OpenRiverCam, for each site that you wish to monitor, a camera needs to be installed. This camera is of a specific
 type, and will be installed at a certain position, looking at the stream at a certain angle. Furthermore, the camera
-will record videos with a certain resolution and framerate. This may differ per site. In order to have OpenRiverCam
+will record videos with a certain resolution and frame rate. This may differ per site. In order to have OpenRiverCam
 be able to extract frames from a video, understand how to orthoproject them on a geographical surface, and understand
 at what spatial scale it should look for traceable patterns on the water surface, a camera configuration is needed.
 Configuring a camera for a given site entails the following parts:
@@ -12,6 +12,7 @@ Configuring a camera for a given site entails the following parts:
 - adding the camera type and its lens characteristics to your database, the same camera type may be used for
   different sites.
 - Choosing a camera type for the site you are configuring.
+- Provide a bathymetry for the site.
 - Prepare the orthoprojection settings. This entails: a) Assigning an exact number of 4 ground control points, that
   match 4 pixel locations on the water surface, as well as the water vertical level and lens position; b) choosing an
   area of interest that you wish to reproject; c) choosing a pixel size (typically in the order of one or more
@@ -101,6 +102,107 @@ inactive, because you have installed a new camera, of a new type on that given s
    shots, and another for afternoon shots. This can be useful in case lighting conditions in different parts of days
    negatively affect the results from either one of the cameras.
 
+Bathymetry
+----------
+Similar to selecting a camera for a site, you also need to provide a bathymetry for that site. You may be familiar
+with so-called `Y-Z tables`, that essentially describe a profile from left to right bank with a coordinate `Y`
+measured from a starting location on the left bank with Y-coordinate zero, and ending at some location on the right
+bank with a Y-coordinate having an offset in meters from the left bank. The Z-coordinate is then the vertical
+coordinate of the bottom of the stream. This works well if the cross section under consideration is used to integrate
+information on velocities that is not geographically referenced.
+
+In OpenRiverCam, we use 2-dimensional velocity information, and require this to have a geographical reference.
+Therefore, we also need to provide, rather than Y-coordinates, X and Y coordinates that are in a geographical space.
+The X-Y coordinates must be provided in the geographical coordinate reference system (crs) that applies to the site.
+The preferred option is to use the crs that has been provided with your site while setting it up. If you need to look
+it up, please first go to the list view of your sites, and look up the EPSG code for your site. You can then convert
+the bathymetry coordinates, recorded on-site into this coordinate reference system.
+
+To establish a new bathymetry, navigate to `Setup`, and then `Bathymetry`. Similar to setting up a new site, click on
+`Create` and then select the site for which you wish to establish a bathymetry, and the time at which the bathymetry
+was recorded. The time is important, as this may give a better understanding of changing conditions of the
+bathymetry on that site. Once you have created a new bathymetry, you can start adding bathymetry points to it, as
+shown in the animation below. Add as many points as you want. Only make sure that they are ordered from left to right
+entirely. Once you are done, click `Save` to store the results in the database. You can always edit the points by
+selecting the `Edit` button left of the bathymetry.
+
+.. image:: img/bathymetry_edit.gif
+
+An alternative way to providing bathymetry is to paste a list of coordinates in comma-separated-values (CSV) format.
+This format should have as header the EPSG code in which the eastern (x) and northern (y) oriented coordinates are
+given. The content is a simple set of rows, with `X, Y, Z` where X is the Eastern oriented coordinate (or longitude),
+Y is the Northern oriented coordinate (or latitude) and Z is the elevation, in the reference system you used, or your
+GPS device used. If you use CSV inputs, you are free to use the CRS, represented as EPSG code, of your choice
+to feed in coordinates. They will be automatically converted into the CRS of the site with which the coordinates are
+used. This is ideal if you use an RTK GPS device, as these mostly give coordinates in latitude and longitude. Note that
+if you provide latitude and longitude coordinates, also the order should be the Eastern oriented coordinates first,
+and then the Northern oriented coordinates. An example of a set of latitude longitude points with
+bathymetry is given below. This is a bathymetry used for our site in The Netherlands, Limburg. It will be automatically
+converted to the local EPSG code 32631 (UTM zone 31 North) when fed into the bathymetry editor.
+
+.. code-block::
+
+    EPSG:4326
+    5.91330733, 50.80720217, 141.100
+    5.91331467, 50.80720417, 141.000
+    5.91332283, 50.80720633, 140.800
+    5.91333167, 50.80720800, 140.600
+    5.91333717, 50.80720900, 140.500
+    5.91334283, 50.80721133, 140.100
+    5.91334933, 50.80721217, 139.700
+    5.91335933, 50.80721433, 139.400
+    5.91336650, 50.80721633, 139.300
+    5.91337250, 50.80721750, 139.200
+    5.91337900, 50.80721950, 138.800
+    5.91338550, 50.80722150, 138.800
+    5.91339217, 50.80722317, 138.700
+    5.91339833, 50.80722500, 138.700
+    5.91340317, 50.80722600, 138.400
+    5.91340917, 50.80722750, 138.400
+    5.91341600, 50.80722900, 138.300
+    5.91342367, 50.80723083, 138.300
+    5.91343117, 50.80723250, 138.300
+    5.91344117, 50.80723367, 138.300
+    5.91345283, 50.80723517, 138.400
+    5.91346467, 50.80723733, 138.400
+    5.91347567, 50.80723917, 138.400
+    5.91347550, 50.80723900, 138.300
+    5.91348533, 50.80724033, 138.400
+    5.91350017, 50.80724317, 138.300
+    5.91351133, 50.80724550, 138.300
+    5.91352417, 50.80724733, 138.300
+    5.91353433, 50.80724867, 138.300
+    5.91354583, 50.80724950, 138.300
+    5.91355567, 50.80725017, 138.300
+    5.91356517, 50.80725150, 138.400
+    5.91357917, 50.80725733, 138.400
+    5.91358317, 50.80725817, 138.800
+    5.91358783, 50.80725900, 139.100
+    5.91359150, 50.80725917, 139.400
+    5.91359600, 50.80726017, 139.600
+    5.91359933, 50.80726067, 139.800
+    5.91360650, 50.80726100, 139.900
+    5.91361367, 50.80726183, 140.000
+    5.91361867, 50.80726267, 140.200
+    5.91362383, 50.80726350, 140.400
+    5.91362933, 50.80726367, 140.600
+    5.91363650, 50.80726417, 140.700
+    5.91364400, 50.80726450, 140.800
+    5.91365100, 50.80726500, 141.000
+    5.91365650, 50.80726567, 141.100
+    5.91366483, 50.80726717, 141.100
+
+
+.. caution:: make sure that you start with the left-bank coordinate. If you do not so this, you will still get a
+   discharge estimate but it will be the discharge estimated as if flow is from downstream to upstream. Therefore you
+   will get a negative number instead of positive.
+
+Once you are satisfied, click `Store CSV` to save the comma-separated text values. In the animation below, you can
+see how the process works.
+
+.. image:: img/bathymetry_edit_csv.gif
+
+
 Camera configuration
 --------------------
 
@@ -163,6 +265,8 @@ In the next configuration step, you are required to provide the following inform
   system, e.g. when you have used a dumpy spirit level for surveying, then you can still enter these coordinates, but
   bear in mind that you can then not plot the resulting projected frames on a GIS environment.
 
+  .. image:: img/gcps_edit.gif
+
 - Second, you will have to provide 4 corner points that identify your area of interest. Starting with the most
   upstream left, then the downstream left, then the downstream right, and finally the upstream right coordinate. The
   order is very important, as this order ensures that in your projected end result, water always flows from left to
@@ -182,7 +286,7 @@ In the next configuration step, you are required to provide the following inform
   - the water level as read from the staff gauge in place on the site. This is because for any new movie, you will
     read the staff gauge to interpret the water level.
   - the coordinates (X, Y and height) of the position of the lens, as measured in the coordinate reference system you
-    have used throughout your entire survey, whether RTK or dumy spirit level.
+    have used throughout your entire survey, whether RTK or dumpy spirit level.
 
 TODO: ANIMATION
 
