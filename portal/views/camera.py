@@ -62,7 +62,7 @@ class CameraConfigView(UserModelView):
                         prevent_submit = True
 
             # Check for max distance between ground control points.
-            if hasattr(form, "gcps_dst_0_x") and not prevent_submit:
+            if hasattr(form, "gcps_dst_0_x") and getattr(form, "gcps_dst_0_x") is not None and not prevent_submit:
                 gcps = []
                 for i in range(4):
                     if hasattr(form, "gcps_dst_{}_x".format(i)) and hasattr(form, "gcps_dst_{}_y".format(i)):
