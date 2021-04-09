@@ -10,6 +10,7 @@ from models.camera import CameraConfig, Camera
 from views.general import UserModelView
 from views.elements.s3uploadfield import s3UploadFieldCameraConfig
 from sqlalchemy import inspect
+from math import sqrt
 
 
 class FilterCameraConfigBySite(BaseSQLAFilter):
@@ -49,12 +50,29 @@ class CameraConfigView(UserModelView):
     def validate_form(self, form):
         if is_form_submitted():
             prevent_submit = False
+            # Get list of all model attributes.
             mapper = inspect(CameraConfig)
             for column in mapper.attrs:
+                # Check if model attribute is present in this form.
                 if column.key != "time_end" and hasattr(form, column.key) and getattr(form, column.key) is not None:
+                    # Check if data is set for this form field.
                     if getattr(form, column.key).data is None:
                         getattr(form, column.key).errors = ['Required']
                         prevent_submit = True
+
+            # Check for max distance between ground control points.
+            if hasattr(form, "gcps_dst_0_x") and not prevent_submit:
+                gcps = []
+                for i in range(4):
+                    if hasattr(form, "gcps_dst_{}_x".format(i)) and hasattr(form, "gcps_dst_{}_y".format(i)):
+                        gcps.append([float(getattr(form, "gcps_dst_{}_x".format(i)).data), float(getattr(form, "gcps_dst_{}_y".format(i)).data)])
+
+                for i in range(len(gcps)):
+                    for j in range(i + 1, len(gcps)):
+                        distance = sqrt(pow(gcps[i][0] - gcps[j][0],2) + pow(gcps[i][1] - gcps[j][1],2))
+                        if distance > 25:
+                            flash("Distance between ground control points {} and {} is {:.1f} meters.".format(i+1, j+1, distance), "error")
+                            return False
 
             if prevent_submit:
                 return False
