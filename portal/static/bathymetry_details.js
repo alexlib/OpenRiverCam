@@ -8,12 +8,71 @@ $(document).ready(function () {
         success: function(data) {
             console.log(data);
             map_bathymetry(data);
+            cross_section(data);
         },
 
         error: function() {console.log("Something went wrong")}
     });
 });
 
+cross_section = function(data) {
+    // add a highchart of the bathymetry profile
+    Highcharts.chart('cross_section', {
+        chart: {
+        },
+        title: {
+            text: `Bathymetry at site ${data.site_id} - ${data.site_name}`
+        },
+        subtitle: {
+            text: 'YZ profile (left bank is zero)'
+        },
+        xAxis: {
+            reversed: false,
+            title: {
+                enabled: true,
+                text: 'Distance from left-bank'
+            },
+            labels: {
+                format: '{value} m'
+            },
+//            accessibility: {
+//                rangeDescription: 'Range: 0 to 80 m.'
+//            },
+            maxPadding: 0.05,
+            showLastLabel: true
+        },
+        yAxis: {
+            title: {
+                text: 'Elevation above reference level'
+            },
+            labels: {
+                format: '{value} m'
+            },
+//            accessibility: {
+//                rangeDescription: 'Range: -90°C to 20°C.'
+//            },
+            lineWidth: 2
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            headerFormat: '<b>{series.name}</b><br/>',
+            pointFormat: 'Distance: {point.x} m, Elevation: {point.y} m'
+        },
+        plotOptions: {
+            spline: {
+                marker: {
+                    enable: false
+                }
+            }
+        },
+        series: [{
+            name: 'Bathymetry',
+            data: data.bathym_yz,
+        }]
+    });
+}
 map_bathymetry = function(data) {
    // make a nice geospatial map
     var maxAutoZoom = 15;

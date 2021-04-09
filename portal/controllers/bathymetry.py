@@ -115,31 +115,32 @@ def bathymetry_coordinates_txt(id):
 
 @bathymetry_api.route("/api/bathymetry_details/<id>", methods=["POST"])
 def bathymetry_details(id):
-    print(id)
     bathymetry = Bathymetry.query.get(id)
     coordinates = BathymetryCoordinate.query.filter(BathymetryCoordinate.bathymetry_id == bathymetry.id).all()
     bathym_positions = [(c.x, c.y) for c in coordinates]
-    # project to EPSG:4326 (WGS84 lat lon)
+
+    # left-bank to right-bank distances from point to point, for plotting in Highchart
+    pos_0 = coordinates[0]
+    bathym_yz = [[((c.x-pos_0.x)**2+(c.y-pos_0.y)**2)**0.5, c.z] for c in coordinates]
+
+    # project to EPSG:4326 (WGS84 lat lon) and make into geojson for plotting in leaflet
     crs_site = pyproj.CRS.from_epsg(bathymetry.site.position_crs)
-    print(crs_site)
     crs_latlon = pyproj.CRS.from_epsg(4326)
     transform = pyproj.Transformer.from_crs(crs_site, crs_latlon, always_xy=True)
     bathym_positions_latlon = [transform.transform(*c) for c in bathym_positions]
-    print("#############################")
-    print(bathym_positions_latlon)
-    print("#############################")
+
+    # retrieve site in lat-long position, for plotting in leaflet
     site_position = [bathymetry.site.position_y, bathymetry.site.position_x]
+
 
     data = dict(
         site_position=site_position,
         site_id=bathymetry.site.id,
         site_name=bathymetry.site.name,
-        bathym=bathym_positions,
+        bathym_yz=bathym_yz,
         bathym_geojson=geojson_linestring(bathym_positions_latlon, props={"bathymetry_id": id})
 
     )
-
-    print(coordinates)
     return jsonify(data)
 
 
