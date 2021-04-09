@@ -72,10 +72,8 @@
         </p>
         <hr />
       <h4>Insert CSV</h4>
-        <textarea id="csv_area" name="csv_area" value="Check" rows="10" cols="80">EPSG:43265633
-5.9137, 50.80705, 136.7
-5.9139, 50.80706, 135.6
-        </textarea>
+        <textarea id="csv_area" name="csv_area" value="Check" rows="10" cols="80"
+                  placeholder='EPSG:4326&#10;5.9137, 50.807056, 136.7&#10;5.9139, 50.807061, 135.6&#10;...insert more coordinates in x, y, z format&#10;...&#10;5.9141, 50.807073, 135.5'></textarea>
         <hr />
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10 submit-row">
@@ -92,5 +90,5 @@
 
 {% block tail %}
     {{ super() }}
-    <script src="{{ url_for('static', filename='bathymetry.js') }}"></script>
+    <script src="{{ url_for('static', filename='bathymetry_edit.js') }}"></script>
 {% endblock %}

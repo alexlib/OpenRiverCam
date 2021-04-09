@@ -6,6 +6,25 @@ from io import StringIO
 import csv
 import pyproj
 
+def geojson_linestring(lon_lat, props):
+    """
+
+    :param lon_lat: list of (x, y) tuples
+    :param props: dictionary of properties belonging to LineString feature
+    equal in length as amount of features
+    :return:
+    """
+    return {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {"type": "LineString", "coordinates": lon_lat},
+                "properties": props,
+            }
+        ],
+    }
+
 def read_epsg(f):
     line = f.readline()
     if "EPSG:" in line.upper():
@@ -77,13 +96,11 @@ def bathymetry_coordinates_txt(id):
     if crs_csv is None:
         raise ValueError("No EPSG code found in header")
     result = read_coords(f)
-    print(f"EPSG code is: {crs_csv}")
-    print(result)
     validate(instance=result, schema=schema)
     bathymetry = Bathymetry.query.get(id)
     # convert to site's EPSG code
     crs_site = pyproj.CRS.from_epsg(bathymetry.site.position_crs)
-    transform = pyproj.Transformer.from_crs(crs_csv, crs_site)
+    transform = pyproj.Transformer.from_crs(crs_csv, crs_site,always_xy=True)
     if not bathymetry:
         raise ValueError("Invalid bathymetry with identifier %s" % id)
 
@@ -91,10 +108,40 @@ def bathymetry_coordinates_txt(id):
     for coordinate in result["coordinates"]:
         x, y = transform.transform(coordinate['x'], coordinate['y'])
         z = coordinate['z']
-        db.add(BathymetryCoordinate(x=x,y=y,z=z,bathymetry_id=bathymetry.id));
+        db.add(BathymetryCoordinate(x=x,y=y,z=z,bathymetry_id=bathymetry.id))
 
     db.commit()
     return jsonify(bathymetry.to_dict())
+
+@bathymetry_api.route("/api/bathymetry_details/<id>", methods=["POST"])
+def bathymetry_details(id):
+    print(id)
+    bathymetry = Bathymetry.query.get(id)
+    coordinates = BathymetryCoordinate.query.filter(BathymetryCoordinate.bathymetry_id == bathymetry.id).all()
+    bathym_positions = [(c.x, c.y) for c in coordinates]
+    # project to EPSG:4326 (WGS84 lat lon)
+    crs_site = pyproj.CRS.from_epsg(bathymetry.site.position_crs)
+    print(crs_site)
+    crs_latlon = pyproj.CRS.from_epsg(4326)
+    transform = pyproj.Transformer.from_crs(crs_site, crs_latlon, always_xy=True)
+    bathym_positions_latlon = [transform.transform(*c) for c in bathym_positions]
+    print("#############################")
+    print(bathym_positions_latlon)
+    print("#############################")
+    site_position = [bathymetry.site.position_y, bathymetry.site.position_x]
+
+    data = dict(
+        site_position=site_position,
+        site_id=bathymetry.site.id,
+        site_name=bathymetry.site.name,
+        bathym=bathym_positions,
+        bathym_geojson=geojson_linestring(bathym_positions_latlon, props={"bathymetry_id": id})
+
+    )
+
+    print(coordinates)
+    return jsonify(data)
+
 
 
 @bathymetry_api.errorhandler(ValidationError)

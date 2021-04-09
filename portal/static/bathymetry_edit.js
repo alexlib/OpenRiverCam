@@ -16,19 +16,24 @@ $(function() {
         lastRow.after(newRow);
     });
     $('input#_store_csv').on('click', () => {
-        $('input#_store_csv').prop('disabled',true);
-        const text_area = $('textarea#csv_area');
-        const id = $('input#bathymetry_id').val();
-        const url_redirect = `/portal/bathymetry`; //details/?id=${id}`
-        $.ajax({
-            type: 'POST',
-            url: `/api/bathymetry_txt/${id}`,
-            data: JSON.stringify(text_area.val()),
-            contentType: "application/json",
-            dataType: 'json',
-            success: function() { window.location.href = url_redirect },
-            error: function() { $('input#_store_csv').prop('disabled',false);}
-        });
+        if (confirm('Do you want to replace any existing bathymetry points with your text inputs?')) {
+            $('input#_store_csv').prop('disabled',true);
+            const text_area = $('textarea#csv_area');
+            const id = $('input#bathymetry_id').val();
+            const url_redirect = `/portal/bathymetry/details/?id=${id}`; //details/?id=${id}`
+            $.ajax({
+                type: 'POST',
+                url: `/api/bathymetry_txt/${id}`,
+                data: JSON.stringify(text_area.val()),
+                contentType: "application/json",
+                dataType: 'json',
+                success: function() { window.location.href = url_redirect },
+                error: function() { $('input#_store_csv').prop('disabled',false);}
+            });
+        } else {
+          // Do nothing!
+            console.log('User did not confirm');
+        }
     });
 
     $('#bathymetry-form').submit(function( event ) {
