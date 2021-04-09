@@ -75,7 +75,7 @@ cross_section = function(data) {
 }
 map_bathymetry = function(data) {
    // make a nice geospatial map
-    var maxAutoZoom = 15;
+    var maxAutoZoom = 19;
     var map = L.map('map').setView({lon: 0, lat: 0}, 2);
     var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 20,
