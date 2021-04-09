@@ -121,7 +121,7 @@ def bathymetry_details(id):
 
     # left-bank to right-bank distances from point to point, for plotting in Highchart
     pos_0 = coordinates[0]
-    bathym_yz = [[((c.x-pos_0.x)**2+(c.y-pos_0.y)**2)**0.5, c.z] for c in coordinates]
+    bathym_yz = [[round(((c.x-pos_0.x)**2+(c.y-pos_0.y)**2)**0.5, 2), round(c.z, 2)] for c in coordinates]
 
     # project to EPSG:4326 (WGS84 lat lon) and make into geojson for plotting in leaflet
     crs_site = pyproj.CRS.from_epsg(bathymetry.site.position_crs)
