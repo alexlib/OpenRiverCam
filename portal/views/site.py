@@ -1,6 +1,6 @@
 from models.site import Site
 from views.general import UserModelView
-
+from flask_security import current_user
 
 class SiteView(UserModelView):
     column_list = (
@@ -44,3 +44,7 @@ class SiteView(UserModelView):
     create_template = "site/create.html"
     edit_template = "site/edit.html"
     details_template = "site/details.html"
+
+    def on_model_change(self, form, model, is_created):
+        if is_created:
+            model.user_id = current_user.id

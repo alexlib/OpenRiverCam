@@ -6,6 +6,7 @@ from models.base import Base
 class Site(Base, SerializerMixin):
     __tablename__ = "site"
     id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     name = Column(String, nullable=False)
     position_x = Column(Float, nullable=False)
     position_y = Column(Float, nullable=False)

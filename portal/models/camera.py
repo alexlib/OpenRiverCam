@@ -140,6 +140,7 @@ def queue_task(type, camera_config):
 class CameraType(Base, SerializerMixin):
     __tablename__ = "cameratype"
     id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     name = Column(String, nullable=False)
     lens_k1 = Column(Float, nullable=False)
     lens_c = Column(Float, nullable=False)

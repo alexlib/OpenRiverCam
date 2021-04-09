@@ -4,6 +4,7 @@ from flask_admin import expose
 from flask_admin.model.helpers import get_mdict_item_or_list
 from flask_admin.form import rules
 from flask_admin.helpers import is_form_submitted, validate_form_on_submit
+from flask_security import current_user
 from models.site import Site
 from models.movie import Movie, MovieStatus
 from models.camera import CameraConfig, Camera
@@ -144,3 +145,8 @@ class CameraConfigView(UserModelView):
     def index_view(self):
         self._refresh_filters_cache()
         return super(CameraConfigView, self).index_view()
+
+class CameraTypeView(UserModelView):
+    def on_model_change(self, form, model, is_created):
+        if is_created:
+            model.user_id = current_user.id

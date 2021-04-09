@@ -8,7 +8,7 @@ from models.site import Site
 from models.movie import Movie
 from models.ratingcurve import RatingCurve
 
-from views.camera import CameraConfigView
+from views.camera import CameraConfigView, CameraTypeView
 from views.movie import MovieView
 from views.bathymetry import BathymetryView
 from views.site import SiteView
@@ -32,7 +32,7 @@ admin.add_view(
     BathymetryView(Bathymetry, db, name="Bathymetry", url="bathymetry", category="Setup")
 )
 admin.add_view(
-    UserModelView(
+    CameraTypeView(
         CameraType, db, name="Camera types", url="camera-types", category="Setup"
     )
 )
