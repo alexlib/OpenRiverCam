@@ -3,11 +3,13 @@ from flask_admin.contrib.sqla.filters import BaseSQLAFilter
 from flask_admin import expose
 from flask_admin.model.helpers import get_mdict_item_or_list
 from flask_admin.form import rules
+from flask_admin.helpers import is_form_submitted, validate_form_on_submit
 from models.site import Site
 from models.movie import Movie, MovieStatus
 from models.camera import CameraConfig, Camera
 from views.general import UserModelView
 from views.elements.s3uploadfield import s3UploadFieldCameraConfig
+from sqlalchemy import inspect
 
 
 class FilterCameraConfigBySite(BaseSQLAFilter):
@@ -27,6 +29,7 @@ class FilterCameraConfigBySite(BaseSQLAFilter):
 
 
 class CameraConfigView(UserModelView):
+    create_template = "cameraconfig/create.html"
     column_list = (
         "camera",
         CameraConfig.time_start,
@@ -44,8 +47,18 @@ class CameraConfigView(UserModelView):
     }
 
     def validate_form(self, form):
-        # flash("Custom form validation", "error")
-        # return False
+        if is_form_submitted():
+            prevent_submit = False
+            mapper = inspect(CameraConfig)
+            for column in mapper.attrs:
+                if column.key != "time_end" and hasattr(form, column.key) and getattr(form, column.key) is not None:
+                    if getattr(form, column.key).data is None:
+                        getattr(form, column.key).errors = ['Required']
+                        prevent_submit = True
+
+            if prevent_submit:
+                return False
+
         return super(CameraConfigView, self).validate_form(form)
 
     @expose('/edit/', methods=('GET', 'POST'))
@@ -56,7 +69,7 @@ class CameraConfigView(UserModelView):
         if movie:
             self._template_args['movie'] = movie
 
-            if movie.status == MovieStatus.MOVIE_STATUS_NEW or (model.projection_pixel_size and not model.aoi_bbox):
+            if movie.status == MovieStatus.MOVIE_STATUS_NEW or (model.gcps_src_0_x and not model.aoi_bbox):
                 self.edit_template = 'cameraconfig/edit_waiting.html'
             elif model.aoi_bbox:
                 self.form_edit_rules = (
