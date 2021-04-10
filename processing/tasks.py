@@ -72,8 +72,8 @@ def extract_frames(movie, prefix="frame", start_frame=0, end_frame=0, logger=log
     os.remove(fn)
 
     # API request to confirm frame extraction is finished.
-    # requests.post("http://portal/api/processing/extract_frames/%s" % movie["id"])
-    requests.post("http://localhost/api/processing/extract_frames/%s" % movie["id"])
+    requests.post("http://portal/api/processing/extract_frames/%s" % movie["id"])
+    # requests.post("http://localhost/api/processing/extract_frames/%s" % movie["id"])
 
 
 def extract_project_frames(movie, prefix="proj", logger=logging):
@@ -453,14 +453,14 @@ def run(movie, piv_kwargs={}, logger=logging):
     # TODO: Return the discharge value in the processing callback to be stored in the database.
     logger.debug(f"Performing callback with discharge value {Q}")
     # API request to confirm movie run is finished.
-    # requests.post(
-    #     "http://portal/api/processing/run/%s" % movie["id"],
-    #     json=Q,
-    # )
     requests.post(
-        "http://localhost/api/processing/run/%s" % movie["id"],
+        "http://portal/api/processing/run/%s" % movie["id"],
         json=Q,
     )
+    # requests.post(
+    #     "http://localhost/api/processing/run/%s" % movie["id"],
+    #     json=Q,
+    # )
     logger.info(f"Full run succesfull for movie {movie['id']}")
 
 
@@ -477,12 +477,12 @@ def run_camera_config(movie, logger=logging):
     movie['camera_config']['aoi']['bbox'] = bbox_json
     extract_project_frames(movie, logger=logger)
 
-    # requests.post(
-    #     "http://portal/api/processing/get_aoi/{:d}".format(movie['camera_config']["id"]),
-    #     json=bbox_json,
-    # )
     requests.post(
-        "http://localhost/api/processing/get_aoi/{:d}".format(movie['camera_config']["id"]),
+        "http://portal/api/processing/get_aoi/{:d}".format(movie['camera_config']["id"]),
         json=bbox_json,
     )
+    # requests.post(
+    #     "http://localhost/api/processing/get_aoi/{:d}".format(movie['camera_config']["id"]),
+    #     json=bbox_json,
+    # )
     logger.info(f"Camera config run succesfull for configuration {movie['camera_config']['id']}")
