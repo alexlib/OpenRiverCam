@@ -1,4 +1,3 @@
-// TEMPORARY DOCUMENT READY FUNCTION
 $(function() {
     // Add extra rows for bathymetry coordinates.
     $('#add').on('click', () => {

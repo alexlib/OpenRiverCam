@@ -1,7 +1,7 @@
 $(document).ready(function () {
     const id = $('input#bathymetry_id').val();
     $.ajax({
-        type: 'POST',
+        type: 'GET',
         url: `/api/bathymetry_details/${id}`,
         contentType: "application/json",
         dataType: 'json',

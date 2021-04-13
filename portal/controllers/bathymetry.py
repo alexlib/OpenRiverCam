@@ -98,12 +98,11 @@ def bathymetry_coordinates_txt(id):
     result = read_coords(f)
     validate(instance=result, schema=schema)
     bathymetry = Bathymetry.query.get(id)
+    if not bathymetry:
+        raise ValueError("Invalid bathymetry with identifier %s" % id)
     # convert to site's EPSG code
     crs_site = pyproj.CRS.from_epsg(bathymetry.site.position_crs)
     transform = pyproj.Transformer.from_crs(crs_csv, crs_site,always_xy=True)
-    if not bathymetry:
-        raise ValueError("Invalid bathymetry with identifier %s" % id)
-
     BathymetryCoordinate.query.filter(BathymetryCoordinate.bathymetry_id == bathymetry.id).delete()
     for coordinate in result["coordinates"]:
         x, y = transform.transform(coordinate['x'], coordinate['y'])
@@ -113,7 +112,7 @@ def bathymetry_coordinates_txt(id):
     db.commit()
     return jsonify(bathymetry.to_dict())
 
-@bathymetry_api.route("/api/bathymetry_details/<id>", methods=["POST"])
+@bathymetry_api.route("/api/bathymetry_details/<id>", methods=["GET"])
 def bathymetry_details(id):
     bathymetry = Bathymetry.query.get(id)
     coordinates = BathymetryCoordinate.query.filter(BathymetryCoordinate.bathymetry_id == bathymetry.id).all()
@@ -131,7 +130,6 @@ def bathymetry_details(id):
 
     # retrieve site in lat-long position, for plotting in leaflet
     site_position = [bathymetry.site.position_y, bathymetry.site.position_x]
-
 
     data = dict(
         site_position=site_position,
