@@ -32,7 +32,7 @@ def upload_file(fn, bucket, dest=None, logger=logging):
     logger.info(f"{fn} uploaded in {bucket}")
 
 
-def extract_frames(movie, prefix="frame", logger=logging):
+def extract_frames(movie, prefix="frame", start_frame=0, end_frame=0, logger=logging):
     """
     Extract raw frames, only lens correct using camera lensParameters, and store in RGB photos
 
@@ -54,7 +54,8 @@ def extract_frames(movie, prefix="frame", logger=logging):
     # make a temporary file
     s3.Bucket(bucket).download_file(fn, fn)
     for _t, img in OpenRiverCam.io.frames(
-        fn, lens_pars=movie["camera_config"]["camera_type"]["lensParameters"]
+        fn, start_frame=start_frame, end_frame=end_frame,
+            lens_pars=movie["camera_config"]["camera_type"]["lensParameters"]
     ):
         # filename in bucket, following template frame_{4-digit_framenumber}_{time_in_milliseconds}.jpg
         dest_fn = "{:s}_{:04d}_{:06d}.jpg".format(prefix, n, int(_t * 1000))
@@ -72,6 +73,7 @@ def extract_frames(movie, prefix="frame", logger=logging):
 
     # API request to confirm frame extraction is finished.
     requests.post("http://portal/api/processing/extract_frames/%s" % movie["id"])
+    # requests.post("http://localhost/api/processing/extract_frames/%s" % movie["id"])
 
 
 def extract_project_frames(movie, prefix="proj", logger=logging):
@@ -97,7 +99,7 @@ def extract_project_frames(movie, prefix="proj", logger=logging):
     # make a temporary file
     s3.Bucket(bucket).download_file(fn, fn)
     for _t, img in OpenRiverCam.io.frames(
-        fn, lens_pars=camera_config["camera_type"]["lensParameters"]
+        fn, grayscale=True, lens_pars=camera_config["camera_type"]["lensParameters"]
     ):
         # filename in bucket, following template frame_{4-digit_framenumber}_{time_in_milliseconds}.jpg
         dest_fn = "{:s}_{:04d}_{:06d}.tif".format(prefix, n, int(_t * 1000))
@@ -112,7 +114,7 @@ def extract_project_frames(movie, prefix="proj", logger=logging):
             lensPosition=camera_config["lensPosition"],
             h_a=movie["h_a"],
             bbox=bbox,
-            resolution=0.01,
+            resolution=camera_config["projection_pixel_size"],
             **camera_config["gcps"],
         )
         raster = reshape_as_raster(corr_img)
@@ -455,6 +457,10 @@ def run(movie, piv_kwargs={}, logger=logging):
         "http://portal/api/processing/run/%s" % movie["id"],
         json=Q,
     )
+    # requests.post(
+    #     "http://localhost/api/processing/run/%s" % movie["id"],
+    #     json=Q,
+    # )
     logger.info(f"Full run succesfull for movie {movie['id']}")
 
 
@@ -475,4 +481,8 @@ def run_camera_config(movie, logger=logging):
         "http://portal/api/processing/get_aoi/{:d}".format(movie['camera_config']["id"]),
         json=bbox_json,
     )
+    # requests.post(
+    #     "http://localhost/api/processing/get_aoi/{:d}".format(movie['camera_config']["id"]),
+    #     json=bbox_json,
+    # )
     logger.info(f"Camera config run succesfull for configuration {movie['camera_config']['id']}")

@@ -22,7 +22,7 @@ browser.
    Installation <installation>
    Quick start <tutorial/index>
    User administration <admin>
-   Site location management <sites>
+   Site management <sites>
    Camera configurations <cameras>
    Movie management <movies/index>
    Rating curve development <rating>
