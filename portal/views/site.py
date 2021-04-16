@@ -45,6 +45,14 @@ class SiteView(UserModelView):
     edit_template = "site/edit.html"
     details_template = "site/details.html"
 
+    # Only show sites from this user.
+    def get_query(self):
+        return super(SiteView, self).get_query().filter(Site.user_id == current_user.id)
+
+    # Don't allow to access a specific site if it's not from this user.
+    def get_one(self, id):
+        return super(SiteView, self).get_query().filter_by(id=id).filter(Site.user_id == current_user.id).one()
+
     def on_model_change(self, form, model, is_created):
         if is_created:
             model.user_id = current_user.id
