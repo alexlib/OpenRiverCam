@@ -7,7 +7,7 @@ from flask_admin.helpers import is_form_submitted, validate_form_on_submit
 from flask_security import current_user
 from models.site import Site
 from models.movie import Movie, MovieStatus
-from models.camera import CameraConfig, Camera
+from models.camera import CameraConfig, Camera, CameraType
 from views.general import UserModelView
 from views.elements.s3uploadfield import s3UploadFieldCameraConfig
 from sqlalchemy import inspect
@@ -18,7 +18,9 @@ class FilterCameraConfigBySite(BaseSQLAFilter):
     # Override to create an appropriate query and apply a filter to said query with the passed value from the filter UI
     def apply(self, query, value, alias=None):
         return (
-            query.join(CameraConfig.camera).join(Camera.site).filter(Site.id == value)
+            query
+                .filter(Site.id == value)
+                .filter(Site.user_id == current_user.id)
         )
 
     # readable operation name. This appears in the middle filter line drop-down
@@ -27,7 +29,7 @@ class FilterCameraConfigBySite(BaseSQLAFilter):
 
     # Override to provide the options for the filter - in this case it's a list of the titles of the Client model
     def get_options(self, view):
-        return [(site.id, site.name) for site in Site.query.order_by(Site.name)]
+        return [(site.id, site.name) for site in (Site.query.filter_by(user_id=current_user.id).order_by(Site.name) if current_user else [])]
 
 
 class CameraConfigView(UserModelView):
@@ -41,11 +43,17 @@ class CameraConfigView(UserModelView):
     )
     column_filters = [FilterCameraConfigBySite(column=None, name="Site")]
     form_create_rules = ("camera",)
-
     form_extra_fields = {
         "file_name": s3UploadFieldCameraConfig(
             "File", allowed_extensions=("mkv", "mpeg", "mp4")
         )
+    }
+    form_args = {
+        "camera": {
+            "query_factory": lambda: Camera.query.join(Site).filter_by(
+                user_id=current_user.id
+            )
+        }
     }
 
     def validate_form(self, form):
@@ -146,7 +154,45 @@ class CameraConfigView(UserModelView):
         self._refresh_filters_cache()
         return super(CameraConfigView, self).index_view()
 
+    # Don't show config for sites which are not from this user.
+    def get_query(self):
+        return super(CameraConfigView, self).get_query().join(Camera).join(Site).filter_by(user_id=current_user.id)
+
+    # Don't allow to access a specific config if it's not from this user.
+    def get_one(self, id):
+        return super(CameraConfigView, self).get_query().filter_by(id=id).join(Camera).join(Site).filter_by(user_id=current_user.id).one()
+
 class CameraTypeView(UserModelView):
+    # Don't show camera types which are not from this user.
+    def get_query(self):
+        return super(CameraTypeView, self).get_query().filter_by(user_id=current_user.id)
+
+    # Don't allow to access a specific camera type if it's not from this user.
+    def get_one(self, id):
+        return super(CameraTypeView, self).get_query().filter_by(id=id).filter_by(user_id=current_user.id).one()
+
     def on_model_change(self, form, model, is_created):
         if is_created:
             model.user_id = current_user.id
+
+class CameraView(UserModelView):
+    form_args = {
+        "site": {
+            "query_factory": lambda: Site.query.filter_by(
+                user_id=current_user.id
+            )
+        },
+        "camera_type": {
+            "query_factory": lambda: CameraType.query.filter_by(
+                user_id=current_user.id
+            )
+        }
+    }
+
+    # Don't show cameras for sites which are not from this user.
+    def get_query(self):
+        return super(CameraView, self).get_query().join(Site).filter_by(user_id=current_user.id)
+
+    # Don't allow to access a specific camera if it's not from this user.
+    def get_one(self, id):
+        return super(CameraView, self).get_query().filter_by(id=id).join(Site).filter_by(user_id=current_user.id).one()
