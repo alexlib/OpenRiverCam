@@ -1,6 +1,6 @@
-from flask import request
 from flask_admin import expose
-from flask_admin.model.helpers import get_mdict_item_or_list
+from models.site import Site
+from flask_security import current_user
 
 from views.general import UserModelView
 from models.ratingcurve import RatingCurve, RatingPoint
@@ -52,6 +52,14 @@ class RatingCurveView(UserModelView):
         if m.h0
         else "",
     )
+
+    # Don't show rating curves for sites which are not from this user.
+    def get_query(self):
+        return super(RatingCurveView, self).get_query().join(Site).filter_by(user_id=current_user.id)
+
+    # Don't allow to access a rating curves if it's not from this user.
+    def get_one(self, id):
+        return super(RatingCurveView, self).get_query().filter_by(id=id).join(Site).filter_by(user_id=current_user.id).one()
 
     @expose("/")
     def index_view(self):

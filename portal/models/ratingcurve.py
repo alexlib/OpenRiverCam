@@ -14,7 +14,7 @@ class RatingCurve(Base, SerializerMixin):
     a = Column(Float)
     b = Column(Float)
     h0 = Column(Float)
-    site = relationship("Site")
+    site = relationship("Site", foreign_keys=[site_id])
 
     def __str__(self):
         return "{}".format(self.id)
@@ -29,4 +29,4 @@ class RatingPoint(Base, SerializerMixin):
     ratingcurve_id = Column(Integer, ForeignKey("ratingcurve.id"))
     movie_id = Column(Integer, ForeignKey("movie.id"))
     include = Column(Boolean, default=True)
-    movie = relationship("Movie")
+    movie = relationship("Movie", foreign_keys=[movie_id])
