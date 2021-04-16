@@ -51,8 +51,8 @@ class Movie(Base, SerializerMixin):
     discharge_q75 = Column(Float)
     discharge_q95 = Column(Float)
 
-    config = relationship("CameraConfig")
-    bathymetry = relationship("Bathymetry")
+    config = relationship("CameraConfig", foreign_keys=[config_id])
+    bathymetry = relationship("Bathymetry", foreign_keys=[bathymetry_id])
 
     def __str__(self):
         return "{}/{}".format(self.file_bucket, self.file_name)

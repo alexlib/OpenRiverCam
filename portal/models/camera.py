@@ -21,8 +21,8 @@ class Camera(Base, SerializerMixin):
     site_id = Column(Integer, ForeignKey("site.id"), nullable=False)
     status = Column(Enum(CameraStatus), nullable=False)
 
-    site = relationship("Site")
-    camera_type = relationship("CameraType")
+    site = relationship("Site", foreign_keys=[site_id])
+    camera_type = relationship("CameraType", foreign_keys=[camera_type_id])
 
     def __str__(self):
         return "{}({}) at {}".format(self.camera_type.name, self.id, self.site.name)
@@ -72,7 +72,7 @@ class CameraConfig(Base, SerializerMixin):
     aoi_bbox = Column(Text)
     aoi_window_size = Column(Integer)
 
-    camera = relationship("Camera")
+    camera = relationship("Camera", foreign_keys=[camera_id])
 
     def __str__(self):
         return "{} - configuration {}".format(self.camera.__str__(), self.id)
