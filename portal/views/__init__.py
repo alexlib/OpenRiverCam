@@ -37,7 +37,7 @@ admin.add_view(
     )
 )
 admin.add_view(
-    CameraView(Camera, db, name="Cameras", url="cameras", category="Setup")
+    CameraView(Camera, db, name="Cameras on sites", url="cameras", category="Setup")
 )
 admin.add_view(
     CameraConfigView(

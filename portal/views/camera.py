@@ -7,7 +7,7 @@ from flask_admin.helpers import is_form_submitted, validate_form_on_submit
 from flask_security import current_user
 from models.site import Site
 from models.movie import Movie, MovieStatus
-from models.camera import CameraConfig, Camera, CameraType
+from models.camera import CameraConfig, CameraType, Camera
 from views.general import UserModelView
 from views.elements.s3uploadfield import s3UploadFieldCameraConfig
 from sqlalchemy import inspect
@@ -163,6 +163,28 @@ class CameraConfigView(UserModelView):
         return super(CameraConfigView, self).get_query().filter_by(id=id).join(Camera).join(Site).filter_by(user_id=current_user.id).one()
 
 class CameraTypeView(UserModelView):
+    column_list = (
+        CameraType.id,
+        CameraType.name,
+        CameraType.lens_k1,
+        CameraType.lens_c,
+        CameraType.lens_f,
+    )
+    column_labels = {
+        "id": "Camera type ID",
+        "name": "Camera name",
+        "lens_k1": "k1 Barrel distortion [-]",
+        "lens_c": "c Optical center [-]",
+        "lens_f": "f Focal length [mm]",
+    }
+    column_descriptions = {
+        "id": "Numbered identifier of the camera type",
+        "name": "Name of your camera type",
+        "lens_k1": "describes the lens curvature",
+        "lens_c": "describes optical center of lens (middle: 2)",
+        "lens_f": "Focal length of lens, e.g. 2.8mm or 4mm",
+    }
+
     # Don't show camera types which are not from this user.
     def get_query(self):
         return super(CameraTypeView, self).get_query().filter_by(user_id=current_user.id)

@@ -20,6 +20,8 @@ class BathymetryView(UserModelView):
 
     create_template = "bathymetry/create.html"
     edit_template = "bathymetry/edit.html"
+    details_template = "bathymetry/details.html"
+
 
     # Don't show bathymetry for sites which are not from this user.
     def get_query(self):
