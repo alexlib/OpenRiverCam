@@ -37,32 +37,22 @@ class MovieView(UserModelView):
         Movie.file_name,
         Movie.timestamp,
         Movie.actual_water_level,
-        Movie.discharge_q05,
-        Movie.discharge_q25,
         Movie.discharge_q50,
-        Movie.discharge_q75,
-        Movie.discharge_q95,
         Movie.status,
     )
 
 
     column_descriptions = {
-        "timestamp": "Time stamp",
-        "discharge_q05": "Discharge [m3/s] 5%",
-        "discharge_q25": "Discharge [m3/s] 25%",
-        "discharge_q50": "Discharge [m3/s] 50%",
-        "discharge_q75": "Discharge [m3/s] 75%",
-        "discharge_q95": "Discharge [m3/s] 95%",
-        "status": "Movie status",
+        "timestamp": "User selected time stamp of movie",
+        "discharge_q50": "Discharge based on frame-to-frame median velocities",
+        "actual_water_level": "Water level as measured on staff gauge in view",
+        "status": "Status indicator on level of processing performed",
     }
 
     column_labels = {"config.camera.site": "Site",
                      "timestamp": "Time stamp",
-                     "discharge_q05": "Discharge [m3/s] 5%",
-                     "discharge_q25": "Discharge [m3/s] 25%",
-                     "discharge_q50": "Discharge [m3/s] 50%",
-                     "discharge_q75": "Discharge [m3/s] 75%",
-                     "discharge_q95": "Discharge [m3/s] 95%",
+                     "actual_water_level": "Water level [m]",
+                     "discharge_q50": "Median discharge [m3/s]",
                      "status": "Movie status",
                      }
     column_filters = [FilterMovieBySite(column=None, name="Site")]
