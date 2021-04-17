@@ -2,6 +2,7 @@ from flask import flash, url_for, redirect
 from flask_admin.contrib.sqla.filters import BaseSQLAFilter
 from flask_admin import expose
 from flask_admin.actions import action
+from flask_security import current_user
 from models import db
 from models.movie import Movie, MovieType
 from models.site import Site
@@ -16,10 +17,9 @@ class FilterMovieBySite(BaseSQLAFilter):
     # Override to create an appropriate query and apply a filter to said query with the passed value from the filter UI
     def apply(self, query, value, alias=None):
         return (
-            query.join(Movie.config)
-            .join(CameraConfig.camera)
-            .join(Camera.site)
-            .filter(Site.id == value)
+            query
+                .filter(Site.id == value)
+                .filter(Site.user_id == current_user.id)
         )
 
     # readable operation name. This appears in the middle filter line drop-down
@@ -28,8 +28,7 @@ class FilterMovieBySite(BaseSQLAFilter):
 
     # Override to provide the options for the filter - in this case it's a list of the titles of the Client model
     def get_options(self, view):
-        return [(site.id, site.name) for site in Site.query.order_by(Site.name)]
-
+        return [(site.id, site.name) for site in (Site.query.filter_by(user_id=current_user.id).order_by(Site.name) if current_user else [])]
 
 class MovieView(UserModelView):
     column_list = (
@@ -66,7 +65,13 @@ class MovieView(UserModelView):
             "File", allowed_extensions=("mkv", "mpeg", "mp4")
         )
     }
-
+    form_args = {
+        "config": {
+            "query_factory": lambda: CameraConfig.query.join(Camera).join(Site).filter_by(
+                user_id=current_user.id
+            )
+        }
+    }
     form_create_rules = ("config", "timestamp", "file_name")
 
     edit_template = "movie/edit.html"
@@ -82,9 +87,13 @@ class MovieView(UserModelView):
         "discharge_q50",
     )
 
-    # Don't show movies which are uploaded specifically for the camera config.
+    # Don't show movies which are uploaded specifically for the camera config or movies not from this user.
     def get_query(self):
-        return super(MovieView, self).get_query().filter(Movie.type == MovieType.MOVIE_TYPE_NORMAL)
+        return super(MovieView, self).get_query().filter_by(type=MovieType.MOVIE_TYPE_NORMAL).join(CameraConfig).join(Camera).join(Site).filter_by(user_id=current_user.id)
+
+    # Don't allow to access a specific movie if it's not from this user.
+    def get_one(self, id):
+        return super(MovieView, self).get_query().filter_by(id=id).join(CameraConfig).join(Camera).join(Site).filter_by(user_id=current_user.id).one()
 
     # Need this so the filter options are always up-to-date.
     @expose("/")

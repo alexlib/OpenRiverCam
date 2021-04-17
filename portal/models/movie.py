@@ -2,6 +2,7 @@ import os
 import pika
 import json
 import enum
+import utils
 from sqlalchemy import (
     event,
     Integer,
@@ -35,10 +36,10 @@ class MovieStatus(enum.Enum):
 class Movie(Base, SerializerMixin):
     __tablename__ = "movie"
     id = Column(Integer, primary_key=True)
-    config_id = Column(Integer, ForeignKey("configuration.id"))
+    config_id = Column(Integer, ForeignKey("configuration.id"), nullable=False)
     file_bucket = Column(String)
     file_name = Column(String)
-    timestamp = Column(DateTime)
+    timestamp = Column(DateTime, nullable=False)
     type = Column(Enum(MovieType), default=MovieType.MOVIE_TYPE_NORMAL)
     actual_water_level = Column(Float)
     bathymetry_id = Column(Integer, ForeignKey("bathymetry.id"))
@@ -50,8 +51,8 @@ class Movie(Base, SerializerMixin):
     discharge_q75 = Column(Float)
     discharge_q95 = Column(Float)
 
-    config = relationship("CameraConfig")
-    bathymetry = relationship("Bathymetry")
+    config = relationship("CameraConfig", foreign_keys=[config_id])
+    bathymetry = relationship("Bathymetry", foreign_keys=[bathymetry_id])
 
     def __str__(self):
         return "{}/{}".format(self.file_bucket, self.file_name)
@@ -81,7 +82,7 @@ class Movie(Base, SerializerMixin):
 @event.listens_for(Movie, "before_update")
 def receive_before_insert(mapper, connection, target):
     # Select most recent bathymetry for target site.
-    if not target.bathymetry_id and target.config:
+    if not target.bathymetry_id and target.config and target.type == MovieType.MOVIE_TYPE_NORMAL:
         bathymetry = Bathymetry.query.filter(Bathymetry.site_id == target.config.camera.site_id).order_by(Bathymetry.id.desc()).first()
         if bathymetry:
             target.bathymetry_id = bathymetry.id
@@ -118,3 +119,12 @@ def queue_task(type, movie):
         body=json.dumps({"type": type, "kwargs": {"movie": movie.get_task_json() }}),
     )
     connection.close()
+
+@event.listens_for(Movie, 'after_delete')
+def receive_after_update(mapper, connection, target):
+    if target.file_bucket:
+        s3 = utils.get_s3()
+        if s3.Bucket(target.file_bucket) in s3.buckets.all():
+            s3.Bucket(target.file_bucket).objects.delete()
+            s3.Bucket(target.file_bucket).delete()
+

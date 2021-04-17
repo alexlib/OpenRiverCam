@@ -7,8 +7,8 @@ from models.base import Base
 class Bathymetry(Base, SerializerMixin):
     __tablename__ = "bathymetry"
     id = Column(Integer, primary_key=True)
-    site_id = Column(Integer, ForeignKey("site.id"))
-    timestamp = Column(DateTime)
+    site_id = Column(Integer, ForeignKey("site.id"), nullable=False)
+    timestamp = Column(DateTime, nullable=False)
 
     coordinates = relationship("BathymetryCoordinate")
     site = relationship("Site")
@@ -27,7 +27,7 @@ class Bathymetry(Base, SerializerMixin):
 class BathymetryCoordinate(Base, SerializerMixin):
     __tablename__ = "bathymetrycoordinate"
     id = Column(Integer, primary_key=True)
-    bathymetry_id = Column(Integer, ForeignKey("bathymetry.id"))
+    bathymetry_id = Column(Integer, ForeignKey("bathymetry.id"), nullable=False)
     x = Column(Float)
     y = Column(Float)
     z = Column(Float)

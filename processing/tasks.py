@@ -114,7 +114,7 @@ def extract_project_frames(movie, prefix="proj", logger=logging):
             lensPosition=camera_config["lensPosition"],
             h_a=movie["h_a"],
             bbox=bbox,
-            resolution=camera_config["projection_pixel_size"],
+            resolution=camera_config["resolution"],
             **camera_config["gcps"],
         )
         raster = reshape_as_raster(corr_img)

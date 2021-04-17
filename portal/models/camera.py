@@ -17,12 +17,12 @@ class CameraStatus(enum.Enum):
 class Camera(Base, SerializerMixin):
     __tablename__ = "camera"
     id = Column(Integer, primary_key=True)
-    camera_type_id = Column(Integer, ForeignKey("cameratype.id"))
-    site_id = Column(Integer, ForeignKey("site.id"))
-    status = Column(Enum(CameraStatus))
+    camera_type_id = Column(Integer, ForeignKey("cameratype.id"), nullable=False)
+    site_id = Column(Integer, ForeignKey("site.id"), nullable=False)
+    status = Column(Enum(CameraStatus), nullable=False)
 
-    site = relationship("Site")
-    camera_type = relationship("CameraType")
+    site = relationship("Site", foreign_keys=[site_id])
+    camera_type = relationship("CameraType", foreign_keys=[camera_type_id])
 
     def __str__(self):
         return "{}({}) at {}".format(self.camera_type.name, self.id, self.site.name)
@@ -34,7 +34,7 @@ class Camera(Base, SerializerMixin):
 class CameraConfig(Base, SerializerMixin):
     __tablename__ = "configuration"
     id = Column(Integer, primary_key=True)
-    camera_id = Column(Integer, ForeignKey("camera.id"))
+    camera_id = Column(Integer, ForeignKey("camera.id"), nullable=False)
     time_start = Column(DateTime)
     time_end = Column(DateTime)
     movie_setting_resolution = Column(String)
@@ -68,11 +68,11 @@ class CameraConfig(Base, SerializerMixin):
     lens_position_x = Column(Float)
     lens_position_y = Column(Float)
     lens_position_z = Column(Float)
-    projection_pixel_size = Column(Float)
+    projection_pixel_size = Column(Float, default=0.01)
     aoi_bbox = Column(Text)
     aoi_window_size = Column(Integer)
 
-    camera = relationship("Camera")
+    camera = relationship("Camera", foreign_keys=[camera_id])
 
     def __str__(self):
         return "{} - configuration {}".format(self.camera.__str__(), self.id)
@@ -86,7 +86,7 @@ class CameraConfig(Base, SerializerMixin):
             "camera_type": self.camera.camera_type.get_task_json(),
             "site": self.camera.site.get_task_json(),
             "time_start": str(self.time_start.isoformat()),
-            "time_end": str(self.time_end.isoformat()),
+            "time_end": str(self.time_end.isoformat()) if self.time_end else None,
             "gcps": {
                 "src": [ [self.gcps_src_0_x, self.gcps_src_0_y], [self.gcps_src_1_x, self.gcps_src_1_y ], [self.gcps_src_2_x, self.gcps_src_2_y ], [self.gcps_src_3_x, self.gcps_src_3_y ] ],
                 "dst": [
@@ -140,10 +140,11 @@ def queue_task(type, camera_config):
 class CameraType(Base, SerializerMixin):
     __tablename__ = "cameratype"
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    lens_k1 = Column(Float)
-    lens_c = Column(Float)
-    lens_f = Column(Float)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    name = Column(String, nullable=False)
+    lens_k1 = Column(Float, nullable=False)
+    lens_c = Column(Float, nullable=False)
+    lens_f = Column(Float, nullable=False)
 
     def __str__(self):
         return "{}".format(self.name)
