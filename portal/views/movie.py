@@ -37,10 +37,34 @@ class MovieView(UserModelView):
         Movie.file_name,
         Movie.timestamp,
         Movie.actual_water_level,
+        Movie.discharge_q05,
+        Movie.discharge_q25,
         Movie.discharge_q50,
+        Movie.discharge_q75,
+        Movie.discharge_q95,
         Movie.status,
     )
-    column_labels = {"config.camera.site": "Site"}
+
+
+    column_descriptions = {
+        "timestamp": "Time stamp",
+        "discharge_q05": "Discharge [m3/s] 5%",
+        "discharge_q25": "Discharge [m3/s] 25%",
+        "discharge_q50": "Discharge [m3/s] 50%",
+        "discharge_q75": "Discharge [m3/s] 75%",
+        "discharge_q95": "Discharge [m3/s] 95%",
+        "status": "Movie status",
+    }
+
+    column_labels = {"config.camera.site": "Site",
+                     "timestamp": "Time stamp",
+                     "discharge_q05": "Discharge [m3/s] 5%",
+                     "discharge_q25": "Discharge [m3/s] 25%",
+                     "discharge_q50": "Discharge [m3/s] 50%",
+                     "discharge_q75": "Discharge [m3/s] 75%",
+                     "discharge_q95": "Discharge [m3/s] 95%",
+                     "status": "Movie status",
+                     }
     column_filters = [FilterMovieBySite(column=None, name="Site")]
     column_formatters = dict(
         discharge_q05=lambda v, c, m, p: "{:.3f}".format(m.discharge_q05)

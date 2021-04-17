@@ -30,10 +30,7 @@ def optimize_rating(h, Q):
     :param Q: list of flows
     :return: {h0, a, b}
     """
-    print(f"h = {h}")
-    print(f"Q = {Q}")
-
-    result = curve_fit(rating_relation, np.array(h), np.array(Q), bounds=([np.array(h).min()-5., 0.001, 1.], [100.,
+    result = curve_fit(rating_relation, np.array(h), np.array(Q), bounds=([np.array(h).min()-5., 0.001, 1.5], [100.,
                                                                                                             10000.,
                                                                                                        3]),
                        p0=[np.array(h).min(), 10., 1.67])
