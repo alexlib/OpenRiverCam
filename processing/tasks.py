@@ -72,8 +72,8 @@ def extract_frames(movie, prefix="frame", start_frame=0, end_frame=0, logger=log
     os.remove(fn)
 
     # API request to confirm frame extraction is finished.
-    # requests.post("http://portal/api/processing/extract_frames/%s" % movie["id"])
-    requests.post("http://localhost/api/processing/extract_frames/%s" % movie["id"])
+    requests.post("http://portal/api/processing/extract_frames/%s" % movie["id"])
+    #requests.post("http://localhost/api/processing/extract_frames/%s" % movie["id"])
 
 
 def extract_project_frames(movie, prefix="proj", logger=logging):
@@ -194,7 +194,6 @@ def compute_piv(movie, prefix="proj", piv_kwargs={}, logger=logging):
     :param logger: logger object
     :return: None
     """
-    camera_config = movie["camera_config"]
     var_names = ["v_x", "v_y", "s2n", "corr"]
     var_attrs = [
         {
