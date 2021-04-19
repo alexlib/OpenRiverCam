@@ -6,7 +6,7 @@ from flask_admin.form import rules
 from flask_admin.helpers import is_form_submitted, validate_form_on_submit
 from flask_security import current_user
 from models.site import Site
-from models.movie import Movie, MovieStatus
+from models.movie import Movie, MovieStatus, MovieType
 from models.camera import CameraConfig, CameraType, Camera
 from views.general import UserModelView
 from views.elements.s3uploadfield import s3UploadFieldCameraConfig
@@ -92,7 +92,7 @@ class CameraConfigView(UserModelView):
     def edit_view(self):
         id = get_mdict_item_or_list(request.args, 'id')
         model = self.get_one(id)
-        movie = Movie.query.filter(Movie.config_id == model.id).order_by(Movie.id.desc()).first()
+        movie = Movie.query.filter(Movie.config_id == model.id).filter(Movie.type == MovieType.MOVIE_TYPE_CONFIG).order_by(Movie.id.desc()).first()
         if movie:
             self._template_args['movie'] = movie
 

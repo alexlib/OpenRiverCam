@@ -110,7 +110,8 @@ class CameraConfig(Base, SerializerMixin):
                 float(self.lens_position_y) if self.lens_position_y is not None else None,
                 float(self.lens_position_z) if self.lens_position_z is not None else None
             ],
-            "aoi": { "bbox": json.loads(self.aoi_bbox) if self.aoi_bbox else {} }
+            "aoi": { "bbox": json.loads(self.aoi_bbox) if self.aoi_bbox else {} },
+            "aoi_window_size": self.aoi_window_size,
         }
 
 @event.listens_for(CameraConfig, "after_update")

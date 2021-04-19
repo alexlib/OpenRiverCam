@@ -73,7 +73,7 @@ def extract_frames(movie, prefix="frame", start_frame=0, end_frame=0, logger=log
 
     # API request to confirm frame extraction is finished.
     requests.post("http://portal/api/processing/extract_frames/%s" % movie["id"])
-    # requests.post("http://localhost/api/processing/extract_frames/%s" % movie["id"])
+    #requests.post("http://localhost/api/processing/extract_frames/%s" % movie["id"])
 
 
 def extract_project_frames(movie, prefix="proj", logger=logging):
@@ -117,7 +117,12 @@ def extract_project_frames(movie, prefix="proj", logger=logging):
             resolution=camera_config["resolution"],
             **camera_config["gcps"],
         )
-        raster = reshape_as_raster(corr_img)
+        if len(corr_img.shape) == 3:
+            # RGB image
+            raster = np.int8(reshape_as_raster(corr_img))
+        else:
+            # b-w image (0-255) just add an axis
+            raster = np.int8(np.expand_dims(corr_img, axis=0))
         # write to temporary file
         OpenRiverCam.io.to_geotiff(
             "temp.tif",
@@ -219,8 +224,8 @@ def compute_piv(movie, prefix="proj", piv_kwargs={}, logger=logging):
     encoding = {var: {"zlib": True} for var in var_names}
     start_time = datetime.strptime(movie["timestamp"], "%Y-%m-%dT%H:%M:%SZ")
     resolution = movie["camera_config"]["resolution"]
+    aoi_window_size = movie["camera_config"]["aoi_window_size"]
     # open S3 bucket
-    camera_config = movie["camera_config"]
     s3 = utils.get_s3()
     n = 0
     logger.info(
@@ -233,17 +238,16 @@ def compute_piv(movie, prefix="proj", piv_kwargs={}, logger=logging):
     frame_b = None
     ms = None
     time, v_x, v_y, s2n, corr = [], [], [], [], []
-
     for n, fn in enumerate(fns):
         # store previous time offset
         _ms = ms
         # determine time offset of frame from filename
         ms = timedelta(milliseconds=int(fn.key[-10:-4]))
         frame_a = frame_b
-        buf = io.BytesIO()
-        fn.Object().download_fileobj(buf)
-        buf.seek(0)
-        frame_b = OpenRiverCam.piv.imread(buf)
+        # buf = io.BytesIO()
+        fn.Object().download_file("temp.tif")
+        # buf.seek(0)
+        frame_b = OpenRiverCam.piv.imread("temp.tif")
         # rewind to beginning of file
         if (frame_a is not None) and (frame_b is not None):
             # we have two frames in memory, now estimate velocity
@@ -256,10 +260,12 @@ def compute_piv(movie, prefix="proj", piv_kwargs={}, logger=logging):
                 res_x=resolution,
                 res_y=resolution,
                 dt=dt,
+                search_area_size=aoi_window_size,
                 **piv_kwargs,
             )
             v_x.append(_v_x), v_y.append(_v_y), s2n.append(_s2n), corr.append(_corr)
             time.append(start_time + ms)
+            os.remove("temp.tif")
     # finally read GeoTiff transform from the first file
     for fn in fns.limit(1):
         logger.info(f"Retrieving coordinates of grid from {fn.key}")
@@ -338,17 +344,27 @@ def compute_q(
         ds_points["v_x"], ds_points["v_y"]
     )
 
+    # get the required quantiles
+    ds_points = ds_points.quantile(quantile, dim="time")
+
+    # fill missing velocities with logarithmic profile fit
+    ds_points["v_eff_fill"] = OpenRiverCam.piv.velocity_fill(ds_points["zcoords"],
+                                                             ds_points["v_eff"],
+                                                             movie["camera_config"]["gcps"]["z_0"],
+                                                             movie["h_a"]
+                                                             )
+
     # integrate over depth with vertical correction
     ds_points["q"] = OpenRiverCam.piv.depth_integrate(
         ds_points["zcoords"],
-        ds_points["v_eff"],
+        ds_points["v_eff_fill"],
         movie["camera_config"]["gcps"]["z_0"],
         movie["h_a"],
         v_corr=v_corr,
     )
 
     # integrate over the width of the cross-section
-    Q = OpenRiverCam.piv.integrate_flow(ds_points["q"], quantile=quantile)
+    Q = OpenRiverCam.piv.integrate_flow(ds_points["q"])
 
     # extract a callback from Q
     Q_dict = {
