@@ -86,7 +86,7 @@ class CameraConfig(Base, SerializerMixin):
             "camera_type": self.camera.camera_type.get_task_json(),
             "site": self.camera.site.get_task_json(),
             "time_start": str(self.time_start.isoformat()),
-            "time_end": str(self.time_end.isoformat()),
+            "time_end": str(self.time_end.isoformat()) if self.time_end else None,
             "gcps": {
                 "src": [ [self.gcps_src_0_x, self.gcps_src_0_y], [self.gcps_src_1_x, self.gcps_src_1_y ], [self.gcps_src_2_x, self.gcps_src_2_y ], [self.gcps_src_3_x, self.gcps_src_3_y ] ],
                 "dst": [
