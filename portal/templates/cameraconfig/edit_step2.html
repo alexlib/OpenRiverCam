@@ -3,8 +3,15 @@
 {% block body %}
   {{ super() }}
   {% block edit_form %}
+
     {% call lib.form_tag(action=action) %}
         <h4>Ground control points</h4>
+    <p>
+        <i class="fa fa-info-circle"></i><br>
+        Select 4 ground control points in the frame. Provide the X and Y coordinate of each ground control point. Use
+        the colors to identify which marker belongs to which coordinate.
+    </p>
+
         <div style="position: relative">
             <img id="snapshot-gcps" src="/api/visualize/get_snapshot/{{movie.id}}"  style="width:100%;" />
             <canvas id="snapshot-gcps-canvas" width="100%" height="100%" style="width: 100%; height:100%; position: absolute; left: 0; top: 0;"></canvas>
@@ -50,6 +57,13 @@
         </div>
 
         <h4>Water level</h4>
+        <p>
+            <i class="fa fa-info-circle"></i><br>
+            Provide the water level as measured within the chosen coordinate reference system (CRS). Then provide the
+            water level as read from the staff gauge or other device used to measure water levels. Make sure you use
+            meters as unit.
+        </p>
+
         <div class="form-group ">
             <label for="gcps_z_0" class="control-label">Height of water level in coordinate system [m]
                 &nbsp;
@@ -68,6 +82,15 @@
             <img id="snapshot-corners" src="/api/visualize/get_snapshot/{{movie.id}}"  style="width:100%;" />
             <canvas id="snapshot-corners-canvas" width="100%" height="100%" style="width: 100%; height:100%; position: absolute; left: 0; top: 0;"></canvas>
         </div>
+        <p>
+            <i class="fa fa-info-circle"></i><br>
+            Select 4 corners for the Area of Interest (AOI). The points need to be widely spaced so that the bathymetry
+            is within the AOI. It is very important that you first click on the point on the upstream left bank, then
+            the downstream left bank, then the downstream right bank, and finally the upstream right bank. In this
+            way the reprojection will be done such that in the end result water will flow from left to right on your
+            screen.
+        </p>
+
         <div style="margin: 20px 0">
             <table id="corners">
                 <tr>
@@ -104,6 +127,11 @@
         </div>
 
         <h4>Camera lens position</h4>
+        <p>
+            <i class="fa fa-info-circle"></i><br>
+            Provide the coordinates of the camera lens, expressed in the local CRS.
+        </p>
+
         <div class="form-group ">
             <label for="lens_position_x" class="control-label">Lens coordinate X [m]
                 &nbsp;
@@ -123,6 +151,10 @@
             {{ form.lens_position_z(**{'class': 'form-control is-invalid' if h.is_field_error(form.lens_position_z.errors) else 'form-control'})|safe }}
         </div>
         <h4>Resolution</h4>
+        <p>
+            <i class="fa fa-info-circle"></i><br>
+            Choose a pixel size in meters for orthoprojection. Typical pixel sizes are 0.01 m.
+        </p>
         <div class="form-group ">
             <label for="projection_pixel_size" class="control-label">Pixel size [m]
                 &nbsp;

@@ -3,6 +3,13 @@
 {% block body %}
   {{ super() }}
   {% block edit_form %}
+    <p>
+        <i class="fa fa-info-circle"></i><br>
+        Provide a size of the interrogation window for the Particle Image Velocimetry analysis. Note that this is
+        currently in pixels. The size in meters is your selected resolution (e.g. 0.01m) multiplied by the value
+        given here. In a later update, we will support providing this value in unit meters.
+    </p>
+
     {% call lib.form_tag(action=action) %}
         <div style="position: relative">
             <img id="snapshot-aoi" src="/api/visualize/get_projected_snapshot/{{movie.id}}"  style="width:100%;" />
@@ -37,7 +44,8 @@
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 context.save();
                 context.beginPath();
-                context.lineWidth = 2;
+                context.lineWidth = 4;
+                context.strokeStyle = "#FF0000";
                 context.strokeRect(left, top, size, size);
                 context.stroke();
                 context.fill();
