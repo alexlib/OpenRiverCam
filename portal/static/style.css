@@ -1,3 +1,34 @@
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+}
+
 nav.navbar {
     background-color: steelblue!important;
+}
+
+.navbar-nav .nav-link.active {
+    font-weight-bold;
+}
+
+.info-text {
+    font-size: 20px;
+    color: Dodgerblue;
+    position: relative;
+    line-height: 40px;
+}
+
+.info {
+    data-toggle: "tooltip";
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: 20px;
+    text-rendering: auto;
+    right: 1;
+    color: Dodgerblue;
+    margin-left: 10px;
+}
+.info:before {
+    content: "\f05a";
 }
