@@ -5,7 +5,6 @@
 {% block head %}
   {{ super() }}
   {{ lib.form_css() }}
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 {% endblock %}
 
 {% block body %}
@@ -21,12 +20,11 @@
   {% endblock %}
 
   {% block create_form %}
-  <p>
-      <i class="fa fa-info-circle"></i><br>
-      Select for which combination of Site and Camera type you wish to make a
+  <span class="info-text">Create new configuration<span class="info fa-info-circle fa-sm"
+                  title="Select for which combination of Site and Camera type you wish to make a
       new camera configuration. If your Site and Camera type combination is not yet available, then please go to
-      "Setup" - "Cameras on sites".
-  </p>
+      'Setup' - 'Cameras on sites'."></span>
+  </span>
     {% call lib.form_tag(action=action) %}
         {{ lib.render_form_fields(form, form_opts=form_opts) }}
         <div class="form-group">
