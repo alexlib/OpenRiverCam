@@ -88,6 +88,7 @@ class MovieView(UserModelView):
     }
     form_create_rules = ("config", "timestamp", "file_name")
 
+    create_template = "movie/create.html"
     edit_template = "movie/edit.html"
     form_edit_rules = ("timestamp", "actual_water_level")
 
