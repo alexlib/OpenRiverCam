@@ -42,7 +42,7 @@ class CameraConfigView(UserModelView):
         CameraConfig.movie_setting_fps,
     )
     column_labels = {
-        "aoi_window_size": "PIV Window size [pixels]"
+        "aoi_window_size": "Window size [pixels]"
 
     }
     column_filters = [FilterCameraConfigBySite(column=None, name="Site")]

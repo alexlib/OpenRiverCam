@@ -114,12 +114,9 @@
                 </tr>
             </table>
         </div>
-
-        <h4>Camera lens position</h4>
-        <p>
-            <i class="fa fa-info-circle"></i><br>
-            Provide the coordinates of the camera lens, expressed in the local CRS.
-        </p>
+        <span class="info-text">Camera lens position<span class="info fa-info-circle fa-sm"
+            title="Provide the coordinates of the camera lens, expressed in the local CRS"></span>
+        </span>
 
         <div class="form-group ">
             <label for="lens_position_x" class="control-label">Lens coordinate X [m]
@@ -139,11 +136,9 @@
             </label>
             {{ form.lens_position_z(**{'class': 'form-control is-invalid' if h.is_field_error(form.lens_position_z.errors) else 'form-control'})|safe }}
         </div>
-        <h4>Resolution</h4>
-        <p>
-            <i class="fa fa-info-circle"></i><br>
-            Choose a pixel size in meters for orthoprojection. Typical pixel sizes are 0.01 m.
-        </p>
+        <span class="info-text">Resolution<span class="info fa-info-circle fa-sm"
+            title="Choose a pixel size in meters for orthoprojection. Typical pixel sizes are 0.01 m"></span>
+        </span>
         <div class="form-group ">
             <label for="projection_pixel_size" class="control-label">Pixel size [m]
                 &nbsp;
