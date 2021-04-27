@@ -12,9 +12,13 @@ $(document).ready(function () {
                 Chart = Highcharts.chart(container.attr('id'), {
                     chart: {
                         plotBackgroundImage: `/api/visualize/get_projected_snapshot/${movieId}`,
-                        height: 1110 * ((response["ymax"] - response["ymin"]) / (response["xmax"] - response["xmin"])),
-                        width: 1110,
-                        margin: 0
+                        height: 1500 * ((response["ymax"] - response["ymin"]) / (response["xmax"] - response["xmin"])),
+                        width: 1500,
+                        margin: 0,
+//                        scrollbar: {
+//                            enabled: true
+//                        }
+
                     },
                     legend: {
                         enabled: false
@@ -26,7 +30,7 @@ $(document).ready(function () {
                         min: response["xmin"],
                         max: response["xmax"],
                         gridLineWidth: 0,
-                        visible: false
+                        visible: true
                     },
                     yAxis: {
                         min: response["ymin"],
@@ -38,7 +42,7 @@ $(document).ready(function () {
                         type: 'vector',
                         name: serieTitle,
                         color: Highcharts.getOptions().colors[6],
-                        vectorLength: 10,
+                        vectorLength: 20,
                         data: response["data"],
                         turboThreshold: 0, // Required for datasets covering more than 1k points.
                         tooltip: {

@@ -71,9 +71,11 @@
   {% if model.status.name == 'MOVIE_STATUS_FINISHED' %}
     <hr/>
 <!--    <h4>PIV results</h4>-->
+    <div class="container" style="overflow: scroll">
     <figure class="highcharts-figure">
-        <div id="piv-plot"></div>
+        <div id="piv-plot" style="overflow: scroll"></div>
     </figure>
+    </div>
   {% endif %}
     </div>
 {% endblock %}
