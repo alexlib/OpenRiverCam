@@ -1,6 +1,6 @@
 import boto3
 import os
-
+import pyproj
 
 def get_s3():
     return boto3.resource(
@@ -10,3 +10,15 @@ def get_s3():
         aws_secret_access_key=os.getenv("S3_ACCESS_SECRET"),
         config=boto3.session.Config(signature_version="s3v4"),
     )
+
+def get_projs():
+    """
+    Retrieve a serializable list of pyproj supported codes. Currently supported are all UTM zones and Latitude-longitude
+
+    """
+    utm = range(32601, 32661) + range(32701, 32761)
+    latlong = [4326]
+    others = [28992, ]  # dutch Rijksdriehoek
+    all_codes = utm + latlong + others
+    crs_list = [{"epsg": code, "name": pyproj.CRS.from_epsg(code).name} for code in all_codes]
+    return crs_list
