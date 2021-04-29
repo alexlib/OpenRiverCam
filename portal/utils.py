@@ -11,14 +11,14 @@ def get_s3():
         config=boto3.session.Config(signature_version="s3v4"),
     )
 
-def get_projs():
+def get_projs(user_projs=[]):
     """
     Retrieve a serializable list of pyproj supported codes. Currently supported are all UTM zones and Latitude-longitude
-
+    user_projs are additional projections requested by user in epsg code integer format
     """
     utm = range(32601, 32661) + range(32701, 32761)
     latlong = [4326]
     others = [28992, ]  # dutch Rijksdriehoek
-    all_codes = utm + latlong + others
+    all_codes = user_projs + latlong + utm + others
     crs_list = [{"epsg": code, "name": pyproj.CRS.from_epsg(code).name} for code in all_codes]
     return crs_list
