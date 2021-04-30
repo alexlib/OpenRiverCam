@@ -11,6 +11,8 @@ services:
       S3_ENDPOINT_URL: "${MINIO_ACCESS_URL}"
       S3_ACCESS_KEY: "${MINIO_ACCESS_KEY}"
       S3_ACCESS_SECRET: "${MINIO_SECRET_KEY}"
+      APP_SECRET_KEY: "${APP_SECRET_KEY}"
+      SECURITY_PASSWORD_SALT: "${SECURITY_PASSWORD_SALT}"
     volumes:
       - type: bind
         source: ./portal
