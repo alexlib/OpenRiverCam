@@ -1,3 +1,4 @@
+import os
 from flask import Flask, redirect, jsonify, url_for
 from flask_admin import helpers as admin_helpers
 from flask_security import Security, login_required, SQLAlchemySessionUserDatastore
@@ -52,6 +53,6 @@ def shutdown_session(exception=None):
 
 
 if __name__ == "__main__":
-
     # Start app
-    app.run()
+    port = int(os.getenv("PORT", 80))
+    app.run(host='0.0.0.0', port=port)
