@@ -13,7 +13,6 @@ class SiteView(UserModelView):
         Site.position_crs,
     )
 
-    print(f"Check site name {str(Site.name)}")
     column_labels = {
         "id": "Site ID",
         "name": "Site name",
@@ -47,19 +46,41 @@ class SiteView(UserModelView):
     edit_template = "site/edit.html"
     details_template = "site/details.html"
 
-    # Only show sites from this user.
     def get_query(self):
+        """
+        Only show sites from this user.
+
+        :return:
+        """
         return super(SiteView, self).get_query().filter(Site.user_id == current_user.id)
 
-    # Don't allow to access a specific site if it's not from this user.
     def get_one(self, id):
+        """
+        Don't allow to access a specific site if it's not from this user.
+
+        :param id:
+        :return:
+        """
         return super(SiteView, self).get_query().filter_by(id=id).filter(Site.user_id == current_user.id).one()
 
     def on_model_change(self, form, model, is_created):
+        """
+        Link site to the current logged in user on creation.
+
+        :param form:
+        :param model:
+        :param is_created:
+        """
         if is_created:
             model.user_id = current_user.id
 
     def handle_view_exception(self, e):
+        """
+        Human readable error message for database integrity errors.
+
+        :param e:
+        :return:
+        """
         if isinstance(e, IntegrityError):
             if e.orig.diag.message_detail.find("bathymetry") != -1:
                 flash(

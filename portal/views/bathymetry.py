@@ -25,15 +25,30 @@ class BathymetryView(UserModelView):
     details_template = "bathymetry/details.html"
 
 
-    # Don't show bathymetry for sites which are not from this user.
     def get_query(self):
+        """
+        Don't show bathymetry for sites which are not from this user.
+
+        :return: sqlalchemy query
+        """
         return super(BathymetryView, self).get_query().join(Site).filter_by(user_id=current_user.id)
 
-    # Don't allow to access a specific movie if it's not from this user.
     def get_one(self, id):
+        """
+        Don't allow to access a specific movie if it's not from this user.
+
+        :param id:
+        :return: sqlalchemy query
+        """
         return super(BathymetryView, self).get_query().filter_by(id=id).join(Site).filter_by(user_id=current_user.id).one()
 
     def handle_view_exception(self, e):
+        """
+        Human readable error message for database integrity errors.
+
+        :param e:
+        :return:
+        """
         if isinstance(e, IntegrityError):
             flash("Bathymetry can\'t be deleted since it\'s being used by a movie. You\'ll need to delete that movie first.", "error")
             return True

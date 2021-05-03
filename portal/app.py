@@ -27,15 +27,24 @@ security = Security(app, user_datastore)
 # Alternative routes
 @app.route("/")
 def index():
+    """
+    Redirect requests on the root path towards the portal directory.
+
+    :return:
+    """
     return redirect("/portal", code=302)
 
 
 # Create admin interface
 admin.init_app(app)
 
-# Provide necessary vars to flask-admin views.
 @security.context_processor
 def security_context_processor():
+    """
+    Provide necessary vars to flask-admin views.
+
+    :return:
+    """
     return dict(
         admin_base_template=admin.base_template,
         admin_view=admin.index_view,
@@ -44,9 +53,13 @@ def security_context_processor():
     )
 
 
-# Resolve database session issues for the combination of Postgres/Sqlalchemy scoped session/Flask-admin.
 @app.teardown_appcontext
 def shutdown_session(exception=None):
+    """
+    Resolve database session issues for the combination of Postgres/Sqlalchemy scoped session/Flask-admin.
+
+    :param exception:
+    """
     # load all expired attributes for the given instance
     db.expire_all()
 
