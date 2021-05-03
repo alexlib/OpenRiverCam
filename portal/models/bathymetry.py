@@ -10,7 +10,7 @@ class Bathymetry(Base, SerializerMixin):
     site_id = Column(Integer, ForeignKey("site.id"), nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
-    coordinates = relationship("BathymetryCoordinate")
+    coordinates = relationship("BathymetryCoordinate", cascade="all, delete")
     site = relationship("Site")
 
     def __str__(self):

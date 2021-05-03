@@ -9,7 +9,7 @@ class RatingCurve(Base, SerializerMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     site_id = Column(Integer, ForeignKey("site.id"))
-    ratingpoints = relationship("RatingPoint")
+    ratingpoints = relationship("RatingPoint", cascade="all, delete")
     # rating curve defined as Q = a(h-h0)**b
     a = Column(Float)
     b = Column(Float)

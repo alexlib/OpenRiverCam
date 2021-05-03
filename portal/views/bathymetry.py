@@ -1,6 +1,8 @@
+from flask import flash
 from models.bathymetry import Bathymetry, BathymetryCoordinate
 from models.site import Site
 from flask_security import current_user
+from sqlalchemy.exc import IntegrityError
 from views.general import UserModelView
 
 
@@ -31,3 +33,9 @@ class BathymetryView(UserModelView):
     def get_one(self, id):
         return super(BathymetryView, self).get_query().filter_by(id=id).join(Site).filter_by(user_id=current_user.id).one()
 
+    def handle_view_exception(self, e):
+        if isinstance(e, IntegrityError):
+            flash("Bathymetry can\'t be deleted since it\'s being used by a movie. You\'ll need to delete that movie first.", "error")
+            return True
+
+        return super(ModelView, self).handle_view_exception(exc)

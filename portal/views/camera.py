@@ -5,6 +5,7 @@ from flask_admin.model.helpers import get_mdict_item_or_list
 from flask_admin.form import rules
 from flask_admin.helpers import is_form_submitted, validate_form_on_submit
 from flask_security import current_user
+from sqlalchemy.exc import IntegrityError
 from models.site import Site
 from models.movie import Movie, MovieStatus, MovieType
 from models.camera import CameraConfig, CameraType, Camera
@@ -197,6 +198,13 @@ class CameraTypeView(UserModelView):
         if is_created:
             model.user_id = current_user.id
 
+    def handle_view_exception(self, e):
+        if isinstance(e, IntegrityError):
+            flash("Camera type can\'t be deleted since it\'s being used by a camera. You\'ll need to delete that camera first.", "error")
+            return True
+
+        return super(ModelView, self).handle_view_exception(exc)
+
 class CameraView(UserModelView):
     form_args = {
         "site": {
@@ -218,3 +226,10 @@ class CameraView(UserModelView):
     # Don't allow to access a specific camera if it's not from this user.
     def get_one(self, id):
         return super(CameraView, self).get_query().filter_by(id=id).join(Site).filter_by(user_id=current_user.id).one()
+
+    def handle_view_exception(self, e):
+        if isinstance(e, IntegrityError):
+            flash("Camera can\'t be deleted since it\'s being used in a camera configuration. You\'ll need to delete that camera configuration first.", "error")
+            return True
+
+        return super(ModelView, self).handle_view_exception(exc)

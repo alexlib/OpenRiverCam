@@ -19,7 +19,7 @@ class Camera(Base, SerializerMixin):
     id = Column(Integer, primary_key=True)
     camera_type_id = Column(Integer, ForeignKey("cameratype.id"), nullable=False)
     site_id = Column(Integer, ForeignKey("site.id"), nullable=False)
-    status = Column(Enum(CameraStatus), nullable=False)
+    status = Column(Enum(CameraStatus), nullable=False, default=CameraStatus.CAMERA_STATUS_ACTIVE)
 
     site = relationship("Site", foreign_keys=[site_id])
     camera_type = relationship("CameraType", foreign_keys=[camera_type_id])

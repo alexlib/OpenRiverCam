@@ -3,6 +3,7 @@ from flask_admin.contrib.sqla.filters import BaseSQLAFilter
 from flask_admin import expose
 from flask_admin.actions import action
 from flask_security import current_user
+from sqlalchemy.exc import IntegrityError
 from models import db
 from models.movie import Movie, MovieType
 from models.site import Site
@@ -152,6 +153,11 @@ class MovieView(UserModelView):
             return redirect(url_for('ratingcurve.edit_view', id=rating_curve.id))
 
         else:
-            flash("There are not enough rating points. Minimum 5 points are required to construct a rating curve")
+            flash("There are not enough rating points. Minimum 5 points are required to construct a rating curve", "error")
 
+    def handle_view_exception(self, e):
+        if isinstance(e, IntegrityError):
+            flash("Movie can\'t be deleted since it\'s being used in a rating curve. You\'ll need to delete that rating curve first.", "error")
+            return True
 
+        return super(ModelView, self).handle_view_exception(exc)

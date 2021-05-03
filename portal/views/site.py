@@ -1,6 +1,8 @@
+from flask import flash
 from models.site import Site
 from views.general import UserModelView
 from flask_security import current_user
+from sqlalchemy.exc import IntegrityError
 
 class SiteView(UserModelView):
     column_list = (
@@ -56,3 +58,17 @@ class SiteView(UserModelView):
     def on_model_change(self, form, model, is_created):
         if is_created:
             model.user_id = current_user.id
+
+    def handle_view_exception(self, e):
+        if isinstance(e, IntegrityError):
+            if e.orig.diag.message_detail.find("bathymetry") != -1:
+                flash(
+                    "Site can\'t be deleted since it\'s being used by a bathymetry. You\'ll need to delete that bathymetry first.",
+                    "error")
+            else:
+                flash(
+                    "Site can\'t be deleted since it\'s being used by a camera. You\'ll need to delete that camera first.",
+                    "error")
+            return True
+
+        return super(ModelView, self).handle_view_exception(exc)
