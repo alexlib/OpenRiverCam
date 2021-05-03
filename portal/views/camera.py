@@ -163,6 +163,13 @@ class CameraConfigView(UserModelView):
     def get_one(self, id):
         return super(CameraConfigView, self).get_query().filter_by(id=id).join(Camera).join(Site).filter_by(user_id=current_user.id).one()
 
+    def handle_view_exception(self, e):
+        if isinstance(e, IntegrityError):
+            flash("Camera config can\'t be deleted since it\'s being used by movies. You\'ll need to delete those movies first.", "error")
+            return True
+
+        return super(ModelView, self).handle_view_exception(exc)
+
 class CameraTypeView(UserModelView):
     column_list = (
         CameraType.id,

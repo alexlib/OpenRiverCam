@@ -6,7 +6,7 @@ from sqlalchemy import event, Integer, ForeignKey, String, Column, DateTime, Enu
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
-from models.movie import Movie
+from models.movie import Movie, MovieType
 
 
 class CameraStatus(enum.Enum):
@@ -119,8 +119,12 @@ def receive_after_update(mapper, connection, target):
     if not target.aoi_bbox and target.gcps_src_0_x:
         queue_task("run_camera_config", target)
 
+@event.listens_for(CameraConfig, 'before_delete')
+def receive_after_update(mapper, connection, target):
+    Movie.query.filter(Movie.config_id == target.id).filter(Movie.type == MovieType.MOVIE_TYPE_CONFIG).delete()
+
 def queue_task(type, camera_config):
-    movie = Movie.query.filter(Movie.config_id == camera_config.id).order_by(Movie.id.desc()).first()
+    movie = Movie.query.filter(Movie.config_id == camera_config.id).filter(Movie.type == MovieType.MOVIE_TYPE_CONFIG).order_by(Movie.id.desc()).first()
     if movie:
         movie_json = movie.get_task_json()
         movie_json["h_a"] = movie_json["camera_config"]["gcps"]["h_ref"]
