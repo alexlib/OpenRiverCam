@@ -10,6 +10,12 @@ processing_api = Blueprint("processing_api", __name__)
 
 @processing_api.route("/api/processing/extract_frames/<id>", methods=["POST"])
 def processing_extract_frames(id):
+    """
+    API endpoint for processing callback to set movie status to extracted.
+
+    :param id: movie identifier
+    :rtype: object
+    """
     movie = Movie.query.get(id)
     if not movie:
         raise ValueError("Invalid movie with identifier %s" % id)
@@ -22,6 +28,12 @@ def processing_extract_frames(id):
 
 @processing_api.route("/api/processing/run/<id>", methods=["POST"])
 def processing_compute_piv(id):
+    """
+    API endpoint for processing callback to set movie status to finished and store discharge results.
+
+    :param id: movie identifier
+    :rtype: object
+    """
     schema = {
         "type": "object",
         "properties": {
@@ -50,6 +62,12 @@ def processing_compute_piv(id):
 
 @processing_api.route("/api/processing/get_aoi/<id>", methods=["POST"])
 def processing_get_aoi(id):
+    """
+    API endpoint for processing callback to set camera configuration AOI Bbox.
+
+    :param id: camera config identifier
+    :rtype: object
+    """
     schema = {
         "type": "object",
         "properties": {
@@ -75,6 +93,12 @@ def processing_get_aoi(id):
 
 @processing_api.route("/api/processing/error/<id>", methods=["POST"])
 def processing_error(id):
+    """
+    API endpoint for processing callback to set error status and message on movie.
+
+    :param id: movie identifier
+    :rtype: object
+    """
     schema = {
         "type": "object",
         "properties": {"error_message": {"type": "string"}},
@@ -98,6 +122,12 @@ def processing_error(id):
 @processing_api.errorhandler(ValidationError)
 @processing_api.errorhandler(ValueError)
 def handle(e):
+    """
+    Custom error handling for processing API endpoints.
+
+    :param e:
+    :return:
+    """
     return (
         jsonify({"error": "Invalid input for processing callback", "message": str(e)}),
         400,

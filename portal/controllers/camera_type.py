@@ -19,12 +19,22 @@ schema = {
 
 @camera_type_api.route("/api/camera_type", methods=["GET"])
 def camera_type_list():
+    """
+    API endpoint to retrieve camera types.
+
+    :rtype: object
+    """
     camera_types = CameraType.query.order_by(CameraType.id.asc()).all()
     return jsonify([ct.to_dict() for ct in camera_types])
 
 
 @camera_type_api.route("/api/camera_type/<id>", methods=["GET"])
 def camera_type_get(id):
+    """
+    API endpoint to retrieve specific camera type.
+
+    :rtype: object
+    """
     camera_type = CameraType.query.get(id)
     if not camera_type:
         raise ValueError("Invalid camera type with identifier %s" % id)
@@ -33,6 +43,11 @@ def camera_type_get(id):
 
 @camera_type_api.route("/api/camera_type", methods=["POST"])
 def camera_type_post():
+    """
+    API endpoint to create camera type.
+
+    :rtype: object
+    """
     content = request.get_json(silent=True)
     validate(instance=content, schema=schema)
     camera_type = CameraType(**content)
@@ -44,6 +59,12 @@ def camera_type_post():
 
 @camera_type_api.route("/api/camera_type/<id>", methods=["PUT"])
 def camera_type_put(id):
+    """
+    API endpoint to update camera type.
+
+    :param id: camera type identifier
+    :rtype: object
+    """
     content = request.get_json(silent=True)
     validate(instance=content, schema=schema)
     camera_type = CameraType.query.get(id)
@@ -59,6 +80,12 @@ def camera_type_put(id):
 
 @camera_type_api.route("/api/camera_type/<id>", methods=["DELETE"])
 def camera_type_delete(id):
+    """
+    API endpoint to delete camera type.
+
+    :param id: camera type identifier
+    :return:
+    """
     camera_type = CameraType.query.get(id)
     if not camera_type:
         raise ValueError("Invalid camera type with identifier %s" % id)
@@ -71,4 +98,10 @@ def camera_type_delete(id):
 @camera_type_api.errorhandler(ValidationError)
 @camera_type_api.errorhandler(ValueError)
 def handle(e):
+    """
+    Custom error handling for camera type API endpoints.
+
+    :param e:
+    :return:
+    """
     return jsonify({"error": "Invalid input for camera type", "message": str(e)}), 400

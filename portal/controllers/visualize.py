@@ -38,6 +38,13 @@ def optimize_rating(h, Q):
     return {"h0": h0, "a": a, "b": b}
 
 def get_jpg_from_bucket(id, regex_string):
+    """
+    Retrieve JPG image from S3 bucket with given regex.
+
+    :param id: movie identifier
+    :param regex_string: regex to filter objects in bucket
+    :return: Image
+    """
     movie = Movie.query.get(id)
     if not movie:
         raise ValueError("Invalid movie with identifier %s" % id)
@@ -68,10 +75,22 @@ def get_jpg_from_bucket(id, regex_string):
 
 @visualize_api.route("/api/visualize/get_snapshot/<id>", methods=["GET"])
 def get_snapshot(id):
+    """
+    Get the snapshot image for a specific movie.
+
+    :param id: movie identifier
+    :return: Image
+    """
     return get_jpg_from_bucket(id, "frame.*\.jpg")
 
 @visualize_api.route("/api/visualize/get_rating_curve/<id>", methods=["GET"])
 def get_rating_curve(id):
+    """
+    Fit a curve through rating curve points.
+
+    :param id: rating curve identifier
+    :return: JSON object containing rating curve parameters
+    """
     args = cleanopts(request.args)
     h = json.loads(args["water_level"])
     Q = json.loads(args["discharge"])
@@ -80,6 +99,12 @@ def get_rating_curve(id):
 
 @visualize_api.route("/api/visualize/get_projected_snapshot/<id>", methods=["GET"])
 def get_projected_snapshot(id):
+    """
+    Get the reprojected snapshot image for a specific movie.
+
+    :param id: movie identifier
+    :return: Image
+    """
     return get_jpg_from_bucket(id, "reprojection_preview.jpg")
 
 def xyla(u, v, res=0.01):
@@ -120,6 +145,12 @@ def xyla(u, v, res=0.01):
 
 @visualize_api.route("/api/visualize/get_velocity_vectors/<id>", methods=["GET"])
 def get_velocity_vectors(id):
+    """
+    Retrieve JSON object with velocity vectors from the NetCDF file for a specific movie.
+
+    :param id: movie identifier
+    :return: JSON object with velocity vectors
+    """
     movie = Movie.query.get(id)
     if not movie:
         raise ValueError("Invalid movie with identifier %s" % id)
@@ -142,6 +173,12 @@ def get_velocity_vectors(id):
 
 @visualize_api.errorhandler(ValueError)
 def handle(e):
+    """
+    Custom error handling for visualization API endpoints.
+
+    :param e:
+    :return:
+    """
     return (
         jsonify({"error": "Invalid request", "message": str(e)}),
         400,

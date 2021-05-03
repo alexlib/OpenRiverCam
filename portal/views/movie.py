@@ -15,6 +15,7 @@ from views.elements.s3uploadfield import s3UploadField
 
 
 class FilterMovieBySite(BaseSQLAFilter):
+
     # Override to create an appropriate query and apply a filter to said query with the passed value from the filter UI
     def apply(self, query, value, alias=None):
         return (
