@@ -1,0 +1,8 @@
+---
+applications:
+ - name: OpenRiverCamProcessing
+   no-route: true
+   health-check-type: process
+   memory: 512M
+   disk_quota: 2048M
+   command: python main.py

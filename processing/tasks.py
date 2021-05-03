@@ -72,7 +72,7 @@ def extract_frames(movie, prefix="frame", start_frame=0, end_frame=0, logger=log
     os.remove(fn)
 
     # API request to confirm frame extraction is finished.
-    requests.post("http://portal/api/processing/extract_frames/%s" % movie["id"])
+    requests.post("{}/processing/extract_frames/{}".format(os.getenv("ORC_API_URL"), movie["id"]))
     #requests.post("http://localhost/api/processing/extract_frames/%s" % movie["id"])
 
 
@@ -470,7 +470,7 @@ def run(movie, piv_kwargs={}, logger=logging):
     logger.debug(f"Performing callback with discharge value {Q}")
     # API request to confirm movie run is finished.
     requests.post(
-        "http://portal/api/processing/run/%s" % movie["id"],
+        "{}/processing/run/{}".format(os.getenv("ORC_API_URL"), movie["id"]),
         json=Q,
     )
     # requests.post(
@@ -494,7 +494,7 @@ def run_camera_config(movie, logger=logging):
     extract_project_frames(movie, logger=logger)
 
     requests.post(
-        "http://portal/api/processing/get_aoi/{:d}".format(movie['camera_config']["id"]),
+        "{}/processing/get_aoi/{:d}".format(os.getenv("ORC_API_URL"), movie['camera_config']["id"]),
         json=bbox_json,
     )
     # requests.post(

@@ -1,0 +1,1 @@
+web: uwsgi /home/vcap/app/uwsgi_cloud.ini

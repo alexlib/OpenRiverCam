@@ -1,3 +1,4 @@
+import os
 from flask import Flask, redirect, jsonify, url_for
 from flask_admin import helpers as admin_helpers
 from flask_security import Security, login_required, SQLAlchemySessionUserDatastore
@@ -15,10 +16,10 @@ app.register_blueprint(bathymetry_api)
 app.register_blueprint(ratingcurve_api)
 
 app.debug = True
-app.config["SECRET_KEY"] = "super-secret"
-app.config["SECURITY_REGISTERABLE"] = True
+app.config["SECRET_KEY"] = os.getenv("APP_SECRET_KEY")
+app.config["SECURITY_REGISTERABLE"] = (os.getenv("FLASK_ENV") != "ibmcloud")
 app.config["SECURITY_SEND_REGISTER_EMAIL"] = False
-app.config["SECURITY_PASSWORD_SALT"] = "salt"
+app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
 
 # Setup Flask-Security
 user_datastore = SQLAlchemySessionUserDatastore(db, User, Role)
@@ -52,6 +53,6 @@ def shutdown_session(exception=None):
 
 
 if __name__ == "__main__":
-
     # Start app
-    app.run()
+    port = int(os.getenv("PORT", 80))
+    app.run(host='0.0.0.0', port=port)
