@@ -81,6 +81,11 @@ class CameraConfig(Base, SerializerMixin):
         return "{}".format(self.__str__())
 
     def get_task_json(self):
+        """
+        Get dict with main properties of camera config for the JSON content towards the processing node.
+
+        :return: dict
+        """
         return {
             "id": self.id,
             "camera_type": self.camera.camera_type.get_task_json(),
@@ -116,14 +121,34 @@ class CameraConfig(Base, SerializerMixin):
 
 @event.listens_for(CameraConfig, "after_update")
 def receive_after_update(mapper, connection, target):
+    """
+    Send task to processing node if the camera config has the gcps but not the AOI Bbox.
+
+    :param mapper:
+    :param connection:
+    :param target:
+    """
     if not target.aoi_bbox and target.gcps_src_0_x:
         queue_task("run_camera_config", target)
 
 @event.listens_for(CameraConfig, 'before_delete')
 def receive_after_update(mapper, connection, target):
+    """
+    Remove the corresponding config movies which were used during camera config before attempting to delete the camera config.
+
+    :param mapper:
+    :param connection:
+    :param target:
+    """
     Movie.query.filter(Movie.config_id == target.id).filter(Movie.type == MovieType.MOVIE_TYPE_CONFIG).delete()
 
 def queue_task(type, camera_config):
+    """
+    Send a task to the processing node.
+
+    :param type: task type
+    :param camera_config: camera config object instance
+    """
     movie = Movie.query.filter(Movie.config_id == camera_config.id).filter(Movie.type == MovieType.MOVIE_TYPE_CONFIG).order_by(Movie.id.desc()).first()
     if movie:
         movie_json = movie.get_task_json()
@@ -158,6 +183,11 @@ class CameraType(Base, SerializerMixin):
         return "{}: {}".format(self.id, self.__str__())
 
     def get_task_json(self):
+        """
+        Get dict with main properties of camera type for the JSON content towards the processing node.
+
+        :return: dict
+        """
         return {
             "name": self.name,
             "lensParameters": {

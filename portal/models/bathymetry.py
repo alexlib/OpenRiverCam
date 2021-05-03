@@ -20,6 +20,11 @@ class Bathymetry(Base, SerializerMixin):
         return "{}".format(self.__str__())
 
     def get_task_json(self):
+        """
+        Get dict of coordinates for the JSON content towards the processing node.
+
+        :return: dict
+        """
         return {
             "coords": list(map(lambda c: [c.x, c.y, c.z], self.coordinates))
         }
