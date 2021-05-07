@@ -19,6 +19,12 @@ schema = {
 
 @ratingcurve_api.route("/api/ratingpoints/<id>", methods=["POST"])
 def ratingpoints_included(id):
+    """
+    API endpoint to update which rating points should be included in a specific rating curve.
+
+    :param id: ratingcurve identifier
+    :rtype: object
+    """
     content = request.get_json(silent=True)
     validate(instance=content, schema=schema)
     ratingcurve = RatingCurve.query.get(id)
@@ -35,4 +41,10 @@ def ratingpoints_included(id):
 @ratingcurve_api.errorhandler(ValidationError)
 @ratingcurve_api.errorhandler(ValueError)
 def handle(e):
+    """
+    Custom error handling for ratingcurve API endpoints.
+
+    :param e:
+    :return:
+    """
     return jsonify({"error": "Invalid input for rating curve points", "message": str(e)}), 400

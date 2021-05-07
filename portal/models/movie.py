@@ -61,6 +61,11 @@ class Movie(Base, SerializerMixin):
         return "{}: {}".format(self.id, self.__str__())
 
     def get_task_json(self):
+        """
+        Get dict with main properties of the movie for the JSON content towards the processing node.
+
+        :return: dict
+        """
         # Camera config relation might not have been loaded yet during the after_update event.
         if not self.config and self.config_id:
             movie = Movie.query.get(self.id)
@@ -81,6 +86,14 @@ class Movie(Base, SerializerMixin):
 @event.listens_for(Movie, "before_insert")
 @event.listens_for(Movie, "before_update")
 def receive_before_insert(mapper, connection, target):
+    """
+    Select most recent bathymetry for the selected site.
+    Set status to processing if movie is extracted and the water level is known.
+
+    :param mapper:
+    :param connection:
+    :param target:
+    """
     # Select most recent bathymetry for target site.
     if not target.bathymetry_id and target.config and target.type == MovieType.MOVIE_TYPE_NORMAL:
         bathymetry = Bathymetry.query.filter(Bathymetry.site_id == target.config.camera.site_id).order_by(Bathymetry.id.desc()).first()
@@ -98,6 +111,14 @@ def receive_before_insert(mapper, connection, target):
 @event.listens_for(Movie, "after_insert")
 @event.listens_for(Movie, "after_update")
 def receive_after_update(mapper, connection, target):
+    """
+    Send extract task to processing node for new movies.
+    Send run task to processing node if the movie status is processing and the water level is known.
+
+    :param mapper:
+    :param connection:
+    :param target:
+    """
     if target.status == MovieStatus.MOVIE_STATUS_NEW:
         queue_task("extract_frames", target)
     elif (
@@ -108,6 +129,12 @@ def receive_after_update(mapper, connection, target):
 
 
 def queue_task(type, movie):
+    """
+    Send task to processing node.
+
+    :param type: task type
+    :param movie: movie object instance
+    """
     connection = pika.BlockingConnection(
         pika.URLParameters(os.getenv("AMQP_CONNECTION_STRING"))
     )
@@ -122,6 +149,13 @@ def queue_task(type, movie):
 
 @event.listens_for(Movie, 'after_delete')
 def receive_after_update(mapper, connection, target):
+    """
+    Clean up S3 bucket and files when movie gets deleted.
+
+    :param mapper:
+    :param connection:
+    :param target:
+    """
     if target.file_bucket:
         s3 = utils.get_s3()
         if s3.Bucket(target.file_bucket) in s3.buckets.all():

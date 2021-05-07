@@ -4,6 +4,11 @@ import ibm_boto3
 from ibm_botocore.client import Config
 
 def get_s3():
+    """
+    Get boto3 resource connection to the S3 file storage.
+
+    :return:
+    """
     return boto3.resource(
         "s3",
         endpoint_url=os.getenv("S3_ENDPOINT_URL"),

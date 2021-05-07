@@ -19,6 +19,11 @@ class Site(Base, SerializerMixin):
         return "{}: {}".format(self.id, self.__str__())
 
     def get_task_json(self):
+        """
+        Get dict with main properties of the site for the JSON content towards the processing node.
+
+        :return: dict
+        """
         return {
             "id": self.id,
             "name": self.name,
