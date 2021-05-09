@@ -26,6 +26,12 @@ def geojson_linestring(lon_lat, props):
     }
 
 def read_epsg(f):
+    """
+    Read EPSG code from first line of the file.
+
+    :param f: File handle.
+    :return: string or void
+    """
     line = f.readline()
     if "EPSG:" in line.upper():
         try:
@@ -40,6 +46,11 @@ def read_epsg(f):
 
 
 def read_coords(f):
+    """
+    Read coordinate lines from file and return a dict with a list of coordinates.
+
+    :rtype: object
+    """
     reader = csv.DictReader(f, fieldnames=['x', 'y', 'z'], delimiter=',')
     # skip the header line
     # next(reader)
@@ -71,6 +82,12 @@ schema = {
 
 @bathymetry_api.route("/api/bathymetry/<id>", methods=["POST"])
 def bathymetry_coordinates(id):
+    """
+    API endpoint to overwrite X,Y,Z coordinates for a specific bathymetry.
+
+    :param id: bathymetry identifier
+    :return:
+    """
     content = request.get_json(silent=True)
     print(f"Content = {content}")
     validate(instance=content, schema=schema)
@@ -87,6 +104,12 @@ def bathymetry_coordinates(id):
 
 @bathymetry_api.route("/api/bathymetry_txt/<id>", methods=["GET", "POST"])
 def bathymetry_coordinates_txt(id):
+    """
+    API endpoint to transform and store the posted X,Y,Z coordinates text blob in the specified bathymetry.
+
+    :param id: bathymetry identifier
+    :rtype: object
+    """
     content = request.get_json(silent=True)
     print(content)
     # content = "EPSG:4326\n5, 6, 7\n2, 3, 4\n"
@@ -114,6 +137,12 @@ def bathymetry_coordinates_txt(id):
 
 @bathymetry_api.route("/api/bathymetry_details/<id>", methods=["GET"])
 def bathymetry_details(id):
+    """
+    API endpoint to retrieve bathymetry information including the bathymetry coordinates in a geojson.
+
+    :param id: bathymetry identifier
+    :return: JSON object with site and bathymetry information
+    """
     bathymetry = Bathymetry.query.get(id)
     coordinates = BathymetryCoordinate.query.filter(BathymetryCoordinate.bathymetry_id == bathymetry.id).all()
     bathym_positions = [(c.x, c.y) for c in coordinates]
@@ -146,4 +175,10 @@ def bathymetry_details(id):
 @bathymetry_api.errorhandler(ValidationError)
 @bathymetry_api.errorhandler(ValueError)
 def handle(e):
+    """
+    Custom error handling for bathymetry API endpoints.
+
+    :param e:
+    :return:
+    """
     return jsonify({"error": "Invalid input for bathymetry", "message": str(e)}), 400

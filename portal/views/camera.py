@@ -5,6 +5,7 @@ from flask_admin.model.helpers import get_mdict_item_or_list
 from flask_admin.form import rules
 from flask_admin.helpers import is_form_submitted, validate_form_on_submit
 from flask_security import current_user
+from sqlalchemy.exc import IntegrityError
 from models.site import Site
 from models.movie import Movie, MovieStatus, MovieType
 from models.camera import CameraConfig, CameraType, Camera
@@ -15,20 +16,36 @@ from math import sqrt
 
 
 class FilterCameraConfigBySite(BaseSQLAFilter):
-    # Override to create an appropriate query and apply a filter to said query with the passed value from the filter UI
     def apply(self, query, value, alias=None):
+        """
+        Override to create an appropriate query and apply a filter to said query with the passed value from the filter UI
+
+        :param query:
+        :param value:
+        :param alias:
+        :return:
+        """
         return (
             query
                 .filter(Site.id == value)
                 .filter(Site.user_id == current_user.id)
         )
 
-    # readable operation name. This appears in the middle filter line drop-down
     def operation(self):
+        """
+        Readable operation name. This appears in the middle filter line drop-down
+
+        :return:
+        """
         return u"equals"
 
-    # Override to provide the options for the filter - in this case it's a list of the titles of the Client model
     def get_options(self, view):
+        """
+        Override to provide the options for the filter - in this case it's a list of the titles of the Client model
+
+        :param view:
+        :return:
+        """
         return [(site.id, site.name) for site in (Site.query.filter_by(user_id=current_user.id).order_by(Site.name) if current_user else [])]
 
 
@@ -61,6 +78,12 @@ class CameraConfigView(UserModelView):
     }
 
     def validate_form(self, form):
+        """
+        Additional server side validation for camera config. Calculate max distance between the GCPS coordinates.
+
+        :param form:
+        :return:
+        """
         if is_form_submitted():
             prevent_submit = False
             # Get list of all model attributes.
@@ -94,6 +117,11 @@ class CameraConfigView(UserModelView):
 
     @expose('/edit/', methods=('GET', 'POST'))
     def edit_view(self):
+        """
+        Over-write default edit_view with the multi-step forms.
+
+        :return:
+        """
         id = get_mdict_item_or_list(request.args, 'id')
         model = self.get_one(id)
         movie = Movie.query.filter(Movie.config_id == model.id).filter(Movie.type == MovieType.MOVIE_TYPE_CONFIG).order_by(Movie.id.desc()).first()
@@ -152,19 +180,45 @@ class CameraConfigView(UserModelView):
         self._form_edit_rules = rules.RuleSet(self, self.form_edit_rules)
         return super(CameraConfigView, self).edit_view()
 
-    # Need this so the filter options are always up-to-date.
     @expose("/")
     def index_view(self):
+        """
+        Ensure the filter options are always up-to-date.
+
+        :return:
+        """
         self._refresh_filters_cache()
         return super(CameraConfigView, self).index_view()
 
-    # Don't show config for sites which are not from this user.
     def get_query(self):
+        """
+        Don't show config for sites which are not from this user.
+
+        :return:
+        """
         return super(CameraConfigView, self).get_query().join(Camera).join(Site).filter_by(user_id=current_user.id)
 
-    # Don't allow to access a specific config if it's not from this user.
     def get_one(self, id):
+        """
+        Don't allow to access a specific config if it's not from this user.
+
+        :param id:
+        :return:
+        """
         return super(CameraConfigView, self).get_query().filter_by(id=id).join(Camera).join(Site).filter_by(user_id=current_user.id).one()
+
+    def handle_view_exception(self, e):
+        """
+        Human readable error message for database integrity errors.
+
+        :param e:
+        :return:
+        """
+        if isinstance(e, IntegrityError):
+            flash("Camera config can\'t be deleted since it\'s being used by movies. You\'ll need to delete those movies first.", "error")
+            return True
+
+        return super(ModelView, self).handle_view_exception(exc)
 
 class CameraTypeView(UserModelView):
     column_list = (
@@ -189,17 +243,46 @@ class CameraTypeView(UserModelView):
         "lens_f": "Focal length of lens, e.g. 2.8mm or 4mm",
     }
 
-    # Don't show camera types which are not from this user.
     def get_query(self):
+        """
+        Don't show camera types which are not from this user.
+
+        :return:
+        """
         return super(CameraTypeView, self).get_query().filter_by(user_id=current_user.id)
 
-    # Don't allow to access a specific camera type if it's not from this user.
     def get_one(self, id):
+        """
+        Don't allow to access a specific camera type if it's not from this user.
+
+        :param id:
+        :return:
+        """
         return super(CameraTypeView, self).get_query().filter_by(id=id).filter_by(user_id=current_user.id).one()
 
     def on_model_change(self, form, model, is_created):
+        """
+        Store the user id of the creator to link the camera type to this account.
+
+        :param form:
+        :param model:
+        :param is_created:
+        """
         if is_created:
             model.user_id = current_user.id
+
+    def handle_view_exception(self, e):
+        """
+        Human readable error message for database integrity errors.
+
+        :param e:
+        :return:
+        """
+        if isinstance(e, IntegrityError):
+            flash("Camera type can\'t be deleted since it\'s being used by a camera. You\'ll need to delete that camera first.", "error")
+            return True
+
+        return super(ModelView, self).handle_view_exception(exc)
 
 class CameraView(UserModelView):
     form_args = {
@@ -215,10 +298,32 @@ class CameraView(UserModelView):
         }
     }
 
-    # Don't show cameras for sites which are not from this user.
     def get_query(self):
+        """
+        Don't show cameras for sites which are not from this user.
+
+        :return:
+        """
         return super(CameraView, self).get_query().join(Site).filter_by(user_id=current_user.id)
 
-    # Don't allow to access a specific camera if it's not from this user.
     def get_one(self, id):
+        """
+        Don't allow to access a specific camera if it's not from this user.
+
+        :param id:
+        :return:
+        """
         return super(CameraView, self).get_query().filter_by(id=id).join(Site).filter_by(user_id=current_user.id).one()
+
+    def handle_view_exception(self, e):
+        """
+        Human readable error message for database integrity errors.
+
+        :param e:
+        :return:
+        """
+        if isinstance(e, IntegrityError):
+            flash("Camera can\'t be deleted since it\'s being used in a camera configuration. You\'ll need to delete that camera configuration first.", "error")
+            return True
+
+        return super(ModelView, self).handle_view_exception(exc)

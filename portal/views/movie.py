@@ -3,6 +3,7 @@ from flask_admin.contrib.sqla.filters import BaseSQLAFilter
 from flask_admin import expose
 from flask_admin.actions import action
 from flask_security import current_user
+from sqlalchemy.exc import IntegrityError
 from models import db
 from models.movie import Movie, MovieType
 from models.site import Site
@@ -14,20 +15,37 @@ from views.elements.s3uploadfield import s3UploadField
 
 
 class FilterMovieBySite(BaseSQLAFilter):
-    # Override to create an appropriate query and apply a filter to said query with the passed value from the filter UI
+
     def apply(self, query, value, alias=None):
+        """
+        Override to create an appropriate query and apply a filter to said query with the passed value from the filter UI.
+
+        :param query:
+        :param value:
+        :param alias:
+        :return:
+        """
         return (
             query
                 .filter(Site.id == value)
                 .filter(Site.user_id == current_user.id)
         )
 
-    # readable operation name. This appears in the middle filter line drop-down
     def operation(self):
+        """
+        Readable operation name. This appears in the middle filter line drop-down
+
+        :return:
+        """
         return u"equals"
 
-    # Override to provide the options for the filter - in this case it's a list of the titles of the Client model
     def get_options(self, view):
+        """
+        Override to provide the options for the filter - in this case it's a list of the titles of the Client model.
+
+        :param view:
+        :return:
+        """
         return [(site.id, site.name) for site in (Site.query.filter_by(user_id=current_user.id).order_by(Site.name) if current_user else [])]
 
 class MovieView(UserModelView):
@@ -106,22 +124,41 @@ class MovieView(UserModelView):
         "discharge_q50",
     )
 
-    # Don't show movies which are uploaded specifically for the camera config or movies not from this user.
     def get_query(self):
+        """
+        Don't show movies which are uploaded specifically for the camera config or movies not from this user.
+
+        :return:
+        """
         return super(MovieView, self).get_query().filter_by(type=MovieType.MOVIE_TYPE_NORMAL).join(CameraConfig).join(Camera).join(Site).filter_by(user_id=current_user.id)
 
-    # Don't allow to access a specific movie if it's not from this user.
     def get_one(self, id):
+        """
+        Don't allow to access a specific movie if it's not from this user.
+
+        :param id:
+        :return:
+        """
         return super(MovieView, self).get_query().filter_by(id=id).join(CameraConfig).join(Camera).join(Site).filter_by(user_id=current_user.id).one()
 
-    # Need this so the filter options are always up-to-date.
     @expose("/")
     def index_view(self):
+        """
+        Ensure the filter options are always up-to-date.
+
+        :return:
+        """
         self._refresh_filters_cache()
         return super(MovieView, self).index_view()
 
     @action('create_ratingcurve', 'Make rating curve')
     def action_create_ratingcurve(self, ids):
+        """
+        Custom action in movie list view to create a rating curve with selected movies.
+
+        :param ids: list of movie identifiers
+        :return:
+        """
         movies = Movie.query.filter(Movie.id.in_(ids)).all()
         site_id = movies[0].config.camera.site_id
         print("#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n")
@@ -157,6 +194,17 @@ class MovieView(UserModelView):
             return redirect(url_for('ratingcurve.edit_view', id=rating_curve.id))
 
         else:
-            flash("There are not enough rating points. Minimum 5 points are required to construct a rating curve")
+            flash("There are not enough rating points. Minimum 5 points are required to construct a rating curve", "error")
 
+    def handle_view_exception(self, e):
+        """
+        Human readable error message for database integrity errors.
 
+        :param e:
+        :return:
+        """
+        if isinstance(e, IntegrityError):
+            flash("Movie can\'t be deleted since it\'s being used in a rating curve. You\'ll need to delete that rating curve first.", "error")
+            return True
+
+        return super(ModelView, self).handle_view_exception(exc)

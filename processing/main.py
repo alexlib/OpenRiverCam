@@ -29,36 +29,11 @@ def process(ch, method, properties, body):
                 # Acknowledge queue item at end of task.
                 ch.basic_ack(delivery_tag=method.delivery_tag)
                 requests.post(
-                    "http://portal/api/processing/error/%s"
-                    % taskInput["kwargs"]["movie"]["id"],
+                    "{}/processing/error/{}".format(os.getenv("ORC_API_URL"), taskInput["kwargs"]["movie"]["id"]),
                     json={"error_message": str(e)},
                 )
                 r = 500
 
-        # # Example request to API (only used for posting/updating information).
-        # r = requests.get('http://portal/api/sites')
-        #
-        # # Example upload file to S3.
-        # s3 = boto3.resource('s3',
-        #                     endpoint_url='http://storage:9000',
-        #                     aws_access_key_id=os.getenv('S3_ACCESS_KEY'),
-        #                     aws_secret_access_key=os.getenv('S3_ACCESS_SECRET'),
-        #                     config=boto3.session.Config(signature_version='s3v4')
-        #                     )
-        #
-        # # Create bucket if it doesn't exist yet.
-        # if s3.Bucket('test-bucket') not in s3.buckets.all():
-        #     s3.create_bucket(Bucket='test-bucket')
-        #
-        # uploadTestFile = io.BytesIO()
-        # # Seek beginning of in-memory file before storing.
-        # uploadTestFile.seek(0)
-        # s3.Object('test-bucket', 'test.jpg').put(Body=uploadTestFile)
-        #
-        # # Example download file from S3.
-        # downloadTestFile = io.BytesIO()
-        # s3.Object('test-bucket', 'test.jpg').download_fileobj(downloadTestFile)
-        #
     except Exception as e:
         print("Processing failed with error: %s" % str(e))
         traceback.print_tb(e.__traceback__)

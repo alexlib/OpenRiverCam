@@ -10,8 +10,10 @@ email_validator
 bcrypt
 pika==1.1.0
 boto3==1.16.25
+ibm-cos-sdk==2.4.4
 numpy
 scipy
 xarray
 h5netcdf
 pyproj
+uwsgi

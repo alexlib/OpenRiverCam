@@ -53,15 +53,29 @@ class RatingCurveView(UserModelView):
         else "",
     )
 
-    # Don't show rating curves for sites which are not from this user.
     def get_query(self):
+        """
+        Don't show rating curves for sites which are not from this user.
+
+        :return:
+        """
         return super(RatingCurveView, self).get_query().join(Site).filter_by(user_id=current_user.id)
 
-    # Don't allow to access a rating curves if it's not from this user.
     def get_one(self, id):
+        """
+        Don't allow to access a rating curves if it's not from this user.
+
+        :param id:
+        :return:
+        """
         return super(RatingCurveView, self).get_query().filter_by(id=id).join(Site).filter_by(user_id=current_user.id).one()
 
     @expose("/")
     def index_view(self):
+        """
+        Always refresh filter options.
+
+        :return:
+        """
         self._refresh_filters_cache()
         return super(RatingCurveView, self).index_view()
