@@ -1,5 +1,6 @@
 import boto3
 import os
+import pyproj
 import ibm_boto3
 from ibm_botocore.client import Config
 
@@ -22,3 +23,15 @@ def get_s3():
         config=Config(signature_version="oauth"),
         endpoint_url=os.getenv('S3_ENDPOINT_URL')
     )
+
+def get_projs(user_projs=[]):
+    """
+    Retrieve a serializable list of pyproj supported codes. Currently supported are all UTM zones and Latitude-longitude
+    user_projs are additional projections requested by user in epsg code integer format
+    """
+    utm = range(32601, 32661) + range(32701, 32761)
+    latlong = [4326]
+    others = [28992, ]  # dutch Rijksdriehoek
+    all_codes = user_projs + latlong + utm + others
+    crs_list = [{"epsg": code, "name": pyproj.CRS.from_epsg(code).name} for code in all_codes]
+    return crs_list
