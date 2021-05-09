@@ -29,9 +29,8 @@ def get_projs(user_projs=[]):
     Retrieve a serializable list of pyproj supported codes. Currently supported are all UTM zones and Latitude-longitude
     user_projs are additional projections requested by user in epsg code integer format
     """
-    utm = range(32601, 32661) + range(32701, 32761)
-    latlong = [4326]
+    utm = list(range(32601, 32661)) + list(range(32701, 32761))
     others = [28992, ]  # dutch Rijksdriehoek
-    all_codes = user_projs + latlong + utm + others
+    all_codes = user_projs + utm + others
     crs_list = [{"epsg": code, "name": pyproj.CRS.from_epsg(code).name} for code in all_codes]
     return crs_list

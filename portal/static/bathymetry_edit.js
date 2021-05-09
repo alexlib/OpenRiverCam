@@ -1,8 +1,29 @@
 $(document).ready(function () {
     // simulate a click
     document.getElementById("listButton").click();
-});
+    // fill the epsg dropdown with info
+    const site_id = $('input#site_id').val();
+    console.log(site_id);
+    $.ajax({
+        type: 'GET',
+        url: `/api/get_epsg_codes/${site_id}`,
+//        data: JSON.stringify(text_area.val()),
+        contentType: "application/json",
+        dataType: 'json',
+//        success: function(data){
+//            console.log(data)
+//        }
+        success: function(data) {
+                // clear any inputs
+                $("epsg").empty();
+                $.each(data, function () {
+                    $("#epsg").append($("<option></option>").val(this['epsg']).html(`EPSG:${this['epsg']} ${this['name']}`));
+            });
+        }
+    });
 
+
+});
 
 $(function() {
     // Add extra rows for bathymetry coordinates.
