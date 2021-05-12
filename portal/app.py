@@ -4,7 +4,7 @@ from flask_admin import helpers as admin_helpers
 from flask_security import Security, login_required, SQLAlchemySessionUserDatastore
 from models import db
 from models.user import User, Role
-from controllers import camera_type_api, processing_api, visualize_api, bathymetry_api, ratingcurve_api
+from controllers import camera_type_api, processing_api, visualize_api, bathymetry_api, ratingcurve_api, project_api
 from views import admin
 
 # Create flask app
@@ -14,6 +14,7 @@ app.register_blueprint(processing_api)
 app.register_blueprint(visualize_api)
 app.register_blueprint(bathymetry_api)
 app.register_blueprint(ratingcurve_api)
+app.register_blueprint(project_api)
 
 app.debug = True
 app.config["SECRET_KEY"] = os.getenv("APP_SECRET_KEY")

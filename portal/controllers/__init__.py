@@ -3,3 +3,4 @@ from .processing import *
 from .visualize import *
 from .bathymetry import *
 from .ratingcurve import *
+from .project import *

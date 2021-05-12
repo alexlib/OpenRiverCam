@@ -37,15 +37,17 @@
         {{ details_columns  }}
         {{ lib.render_form_fields(form, form_opts=form_opts) }}
         <hr />
+        <input type="hidden" id="bathymetry_id" value="{{model.id}}" />
         <div class="tab">
           <button class="tablinks" type="button" id="listButton" onclick="openTab(event, 'list_view')">Edit coordinates</button>
           <button class="tablinks" type="button" id="csvButton" onclick="openTab(event, 'csv_view')">Insert CSV</button>
         </div>
         <div id="list_view" class="tabcontent">
             <span class="info-text">
-                Edit coordinates<span class="info fa-info-circle fa-sm" title="Manually supply X, Y, Z coordinates in the site's valid Coordinate Reference System"></span>
+                Edit coordinates<span class="info fa-info-circle fa-sm" title="Manually supply X, Y, Z coordinates in the bathymetry's valid Coordinate Reference System.
+Latitude - longitude is assumed if no Coordinate Reference System is supplied."></span>
             </span>
-            <input type="hidden" id="bathymetry_id" value="{{model.id}}" />
+            <div type="container" style="border:1px;margin:5px 0;padding:3px;overflow:scroll;">
             <table id="coordinates">
                 <tr>
                     <th style="text-align: center;">X</th>
@@ -77,6 +79,7 @@
                 </tr>
                 {% endif %}
             </table>
+            </div>
             <p>
                 <a id="add" style="color: #089de3; cursor: pointer;">Add another coordinate</a>
             </p>
@@ -95,8 +98,8 @@
             <br>
             <div class="container" style="border:1px;margin:5px 0;padding:3px;overflow:scroll;">
                <textarea id="csv_area" name="csv_area" value="Check" rows="10" cols="50"
-                          placeholder='EPSG:4326&#10;5.9137, 50.807056, 136.7&#10;5.9139, 50.807061, 135.6&#10;...insert more coordinates in x, y, z format&#10;...&#10;5.9141, 50.807073, 135.5'>
-               </textarea>
+                         style="font-size: 14px;line-height: 120%;"
+                          placeholder='5.9137, 50.807056, 136.7&#10;5.9139, 50.807061, 135.6&#10;...insert more coordinates in x, y, z format&#10;...&#10;5.9141, 50.807073, 135.5'></textarea>
             </div>
             <div class="form-group">
                 <div class="col-md-offset-2 col-md-10 submit-row">

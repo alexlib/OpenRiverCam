@@ -3,7 +3,6 @@ $(document).ready(function () {
     document.getElementById("listButton").click();
 });
 
-
 $(function() {
     // Add extra rows for bathymetry coordinates.
     $('#add').on('click', () => {

@@ -4,11 +4,16 @@
   {{ super() }}
   {% block edit_form %}
     <span class="info-text">Ground control points<span class="info fa-info-circle fa-sm"
-        title="Select 4 ground control points in the frame. Provide the X and Y coordinate of each ground control point. Use
-            the colors to identify which marker belongs to which coordinate."></span>
+        title="Select 4 ground control points in the frame. Provide the Coordinate reference system in which points were measured,
+and the X and Y coordinate of each ground control point.
+Use the colors to identify which marker belongs to which coordinate."></span>
     </span>
-
     {% call lib.form_tag(action=action) %}
+        <div class="form-group ">
+            <label for="crs" class="control-label">EPSG code of Coordinate Reference System
+            </label>
+            {{ form.crs(**{'class': 'form-control is-invalid' if h.is_field_error(form.crs.errors) else 'form-control'})|safe }}
+        </div>
         <div style="position: relative">
             <img id="snapshot-gcps" src="/api/visualize/get_snapshot/{{movie.id}}"  style="width:100%;" />
             <canvas id="snapshot-gcps-canvas" width="100%" height="100%" style="width: 100%; height:100%; position: absolute; left: 0; top: 0;"></canvas>
@@ -19,8 +24,8 @@
                     <th width="100">Color</th>
                     <th width="50" style="text-align: center">Pixel X [column]</th>
                     <th width="50" style="text-align: center">Pixel Y [row]</th>
-                    <th width="50" style="text-align: center">Coordinate X [m]</th>
-                    <th width="50" style="text-align: center">Coordinate Y [m]</th>
+                    <th width="50" style="text-align: center">Coordinate X [lon or m]</th>
+                    <th width="50" style="text-align: center">Coordinate Y [lat or m]</th>
                 </tr>
                 <tr>
                     <td>Red {{h.is_field_error(form.gcps_src_0_y.errors)}}</td>

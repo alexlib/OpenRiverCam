@@ -7,7 +7,7 @@ from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
 from models.movie import Movie, MovieType
-
+import pyproj
 
 class CameraStatus(enum.Enum):
     CAMERA_STATUS_INACTIVE = 0
@@ -37,6 +37,7 @@ class CameraConfig(Base, SerializerMixin):
     camera_id = Column(Integer, ForeignKey("camera.id"), nullable=False)
     time_start = Column(DateTime)
     time_end = Column(DateTime)
+    crs = Column(Integer)  # Coordinate reference system (EPSG-code) in which ground control points and camera lens position are measured
     movie_setting_resolution = Column(String)
     movie_setting_fps = Column(Float)
     gcps_src_0_x = Column(Integer)
@@ -86,6 +87,24 @@ class CameraConfig(Base, SerializerMixin):
 
         :return: dict
         """
+        # convert any coordinates to site's EPSG code
+        crs_camera_config = pyproj.CRS.from_epsg(self.crs if self.crs is not None else 4326)  # assume WGS84 latlon if not provided
+        crs_site = pyproj.CRS.from_epsg(self.camera.site.position_crs)
+        transform = pyproj.Transformer.from_crs(crs_camera_config, crs_site, always_xy=True)
+        dst = [
+            list(transform.transform(float(self.gcps_dst_0_x), float(self.gcps_dst_0_y))) if self.gcps_dst_0_x is not None else [None, None],
+            list(transform.transform(float(self.gcps_dst_1_x),
+                                     float(self.gcps_dst_1_y))) if self.gcps_dst_1_x is not None else [None, None],
+            list(transform.transform(float(self.gcps_dst_2_x),
+                                     float(self.gcps_dst_2_y))) if self.gcps_dst_2_x is not None else [None, None],
+            list(transform.transform(float(self.gcps_dst_3_x),
+                                     float(self.gcps_dst_3_y))) if self.gcps_dst_3_x is not None else [None, None],
+
+        ]
+        if self.lens_position_x is not None:
+            lensPosition = list(transform.transform(float(self.lens_position_x), float(self.lens_position_y))) + [float(self.lens_position_z)]
+        else:
+            lensPosition = [None, None, None]
         return {
             "id": self.id,
             "camera_type": self.camera.camera_type.get_task_json(),
@@ -94,12 +113,7 @@ class CameraConfig(Base, SerializerMixin):
             "time_end": str(self.time_end.isoformat()) if self.time_end else None,
             "gcps": {
                 "src": [ [self.gcps_src_0_x, self.gcps_src_0_y], [self.gcps_src_1_x, self.gcps_src_1_y ], [self.gcps_src_2_x, self.gcps_src_2_y ], [self.gcps_src_3_x, self.gcps_src_3_y ] ],
-                "dst": [
-                    [float(self.gcps_dst_0_x) if self.gcps_dst_0_x is not None else None, float(self.gcps_dst_0_y) if self.gcps_dst_0_y is not None else None],
-                    [float(self.gcps_dst_1_x) if self.gcps_dst_1_x is not None else None, float(self.gcps_dst_1_y) if self.gcps_dst_1_y is not None else None],
-                    [float(self.gcps_dst_2_x) if self.gcps_dst_2_x is not None else None, float(self.gcps_dst_2_y) if self.gcps_dst_2_y is not None else None],
-                    [float(self.gcps_dst_3_x) if self.gcps_dst_3_x is not None else None, float(self.gcps_dst_3_y) if self.gcps_dst_3_y is not None else None]
-                ],
+                "dst": dst,
                 "z_0": float(self.gcps_z_0) if self.gcps_z_0 is not None else None,
                 "h_ref": float(self.gcps_h_ref) if self.gcps_h_ref is not None else None
             },
@@ -110,11 +124,7 @@ class CameraConfig(Base, SerializerMixin):
                 "up_right": [ self.corner_up_right_x, self.corner_up_right_y ],
             },
             "resolution": float(self.projection_pixel_size) if self.projection_pixel_size else None,
-            "lensPosition": [
-                float(self.lens_position_x) if self.lens_position_x is not None else None,
-                float(self.lens_position_y) if self.lens_position_y is not None else None,
-                float(self.lens_position_z) if self.lens_position_z is not None else None
-            ],
+            "lensPosition": lensPosition,
             "aoi": { "bbox": json.loads(self.aoi_bbox) if self.aoi_bbox else {} },
             "aoi_window_size": self.aoi_window_size,
         }
