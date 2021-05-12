@@ -121,9 +121,14 @@ it up, please first go to the list view of your sites, and look up the EPSG code
 the bathymetry coordinates, recorded on-site into this coordinate reference system.
 
 To establish a new bathymetry, navigate to `Setup`, and then `Bathymetry`. Similar to setting up a new site, click on
-`Create` and then select the site for which you wish to establish a bathymetry, and the time at which the bathymetry
-was recorded. The time is important, as this may give a better understanding of changing conditions of the
-bathymetry on that site. Once you have created a new bathymetry, you can start adding bathymetry points to it, as
+`Create` and then select the site for which you wish to establish a bathymetry, the time at which the bathymetry
+was recorded, and the Coordinate reference system (EPSG code as integer value) in which the coordinates are measured.
+The time is important, as this may give a better understanding of changing conditions of the
+bathymetry on that site. Because most surveys with GPS equipment report in Longitudes for x-coordinates, and Latitudes for y-coordinates, the
+system assumes you are reporting in regular Longitude Latitude coordinates. You can leave this field blanc in this
+case. Click on `Save` to store a new bathymetry.
+
+Once you have created a new bathymetry, you can start adding bathymetry points to it, as
 shown in the animation below. Add as many points as you want. Only make sure that they are ordered from left to right
 entirely. Once you are done, click `Save` to store the results in the database. You can always edit the points by
 selecting the `Edit` button left of the bathymetry.
@@ -131,12 +136,10 @@ selecting the `Edit` button left of the bathymetry.
 .. image:: img/bathymetry_edit.gif
 
 An alternative way to providing bathymetry is to paste a list of coordinates in comma-separated-values (CSV) format.
-This format should have as header the EPSG code in which the eastern (x) and northern (y) oriented coordinates are
-given. The content is a simple set of rows, with `X, Y, Z` where X is the Eastern oriented coordinate (or longitude),
-Y is the Northern oriented coordinate (or latitude) and Z is the elevation, in the reference system you used, or your
-GPS device used. If you use CSV inputs, you are free to use the CRS, represented as EPSG code, of your choice
-to feed in coordinates. They will be automatically converted into the CRS of the site with which the coordinates are
-used. This is ideal if you use an RTK GPS device, as these mostly give coordinates in latitude and longitude. Note that
+The content is a simple set of rows, with `X, Y, Z` where X is the Eastern oriented coordinate (or longitude),
+Y is the Northern oriented coordinate (or latitude) and Z is the elevation (in meters), in the reference system you
+provided when creating the bathymetry. Again, note that RTK GPS devices usually report
+coordinates in latitude and longitude so this is the default. Note that
 if you provide latitude and longitude coordinates, also the order should be the Eastern oriented coordinates first,
 and then the Northern oriented coordinates. An example of a set of latitude longitude points with
 bathymetry is given below. This is a bathymetry used for our site in The Netherlands, Limburg. It will be automatically
@@ -144,7 +147,6 @@ converted to the local EPSG code 32631 (UTM zone 31 North) when fed into the bat
 
 .. code-block::
 
-    EPSG:4326
     5.91330733, 50.80720217, 141.100
     5.91331467, 50.80720417, 141.000
     5.91332283, 50.80720633, 140.800
@@ -259,13 +261,11 @@ Ground Control Points, camera location and staff gauge reference level
 ----------------------------------------------------------------------
 In the next configuration step, you are required to provide the following information:
 
-- First, provide your ground control points. You can do this by left-clicking on the shown image frame from your
-  sample movie, on the 4 ground control points in the objective. After that, fill in the exact coordinates of the
-  ground control points in the fields X and Y (for east-west oriented and south-north oriented coordinates). If
-  possible supply these coordinates in the same projection system as used for the site. If you do that, the resulting
-  projected files can be visualized in a GIS program, on top of background maps. If you only have a local coordinate
-  system, e.g. when you have used a dumpy spirit level for surveying, then you can still enter these coordinates, but
-  bear in mind that you can then not plot the resulting projected frames on a GIS environment.
+- First, provide the Coordinate reference system used during the survey (again, leave blanc if you use regular
+  Longitude Latitude). And provide your ground control points.You can do this by left-clicking on the shown image frame
+  from your sample movie, on the 4 ground control points in the objective. After that, fill in the exact
+  coordinates of the ground control points in the fields X and Y (for east-west oriented and south-north oriented
+  coordinates). Make sure the coordinates are provided in the correct Coordinate Reference System.
 
   .. image:: img/gcps_edit.gif
 
@@ -277,7 +277,7 @@ In the next configuration step, you are required to provide the following inform
   would have a camera pointing upstream on a bridge, your first point should be on the right-top side of the objective,
   the second on the bottom right, the third on the bottom left and the last on the top-left.
 
-- Third, you will have to provide information that allows OpenRiverCam to re-interpret the locations of groujnd
+- Third, you will have to provide information that allows OpenRiverCam to re-interpret the locations of ground
   control points in new movies, with different water levels. Because of the change in water level, the water moves
   closer (when water level is higher than in your sample movie) or further away from the lens (when  the water level is
   lower. This can easily be re-interpreted by providing:
@@ -288,13 +288,11 @@ In the next configuration step, you are required to provide the following inform
   - the water level as read from the staff gauge in place on the site. This is because for any new movie, you will
     read the staff gauge to interpret the water level.
   - the coordinates (X, Y and height) of the position of the lens, as measured in the coordinate reference system you
-    have used throughout your entire survey, whether RTK or dumpy spirit level.
-
+    selected earlier (if not provided, the default is again Longitude Latitude).
 
 .. note:: it is very important that all coordinates you use throughout the camera and bathymetry configurations are
-   *in the same coordinate reference system* (CRS), and that this is a coordinate system in meters (not latitude
-   longitude). Ideally use, the same CRS as used for the site. Latitude longitude locations can easily be converted into
-   the CRS of your site, by using the Free and Open Source Software package QGIS. To obtain QGIS please go to
+   *in the same coordinate reference system* (CRS). We highly recommend using the default Latitude longitude
+   as this is the system that most RTK GPS solutions report in. If needed, locations can easily be converted into
+   the CRS of your choice, by using the Free and Open Source Software package QGIS. To obtain QGIS please go to
    `http://www.qgis.org/ <http://www.qgis.org/>`_. A further explanation of the required GIS manipulations is out of
    scope of this manual.
-

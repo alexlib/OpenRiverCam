@@ -5,7 +5,7 @@ Quick start
 
 To get you started with the software quickly, this section goes through all functionalities with an example package of data.
 You can download this package in a zip-file from the following link: ZIP-FILE. The zip-file contains all the sample
-data sets, including survey data and some sample videos to get you started. It should take you about XXXX minutes to
+data sets, including survey data and some sample videos to get you started. It should take you about one hour to
 complete this tutorial.
 
 We assume that you have a user login for the tool and that you have a deployment that you can go to, either on your
@@ -64,17 +64,21 @@ Now we will provide the bathymetry, that was measured during the survey on this 
 `Bathymetry`, and then choose `Create`. First you have to select for which site you wish to provide bathymetry, and
 a time stamp. This is meant to ensure you can provide a new bathymetry in case the profile has been significantly
 changing due to erosion and or sedimentation, or because you wish to use a profile that is over a part of the
-objective that has more favourable conditions for particle image velocimetry, e.g. due to light conditions.
+objective that has more favourable conditions for particle image velocimetry, e.g. due to light conditions. You also
+can provide an alternative Coordinate Reference System as EPSG code. If you do not provide this, OpenRiverCam
+assumes you are providing coordinates in Longitude (x) Latitude (y), because most GPS hardware reports in Longitude
+Latitude. OpenRiverCam automatically reprojects it to the site's local projection system. Leave this field empty!
 
-Once you have select a site and time stamp, you can provide bathymetry. We will choose a very fast method to provide
-bathymetry, by giving a set of comma separated values in longitude, latitude, elevation format, and the EPSG code
-above it. The EPSG code for regular latitude longitude is 4326. To do this copy and paste the CSV file content
-shown below. If you provide a CSV file, please always use a flat text editor such as textpad,
-notepad++ or your own favorite editor, not Word or Excel.
+Once everything is selected, click on `Save` to store the new bathymetry. At this stage, it does not yet contain any
+cross-section data.
+
+Once you have select a site and time stamp, you can provide bathymetry cross-section data. We will choose a very fast
+method to provide bathymetry, by giving a set of comma separated values in longitude, latitude, elevation format, and
+the EPSG code above it. The EPSG code for regular latitude longitude is 4326. To do this copy and paste the CSV file
+content shown below. If you provide a CSV text, please always use a flat text editor such as textpad, notepad++ or
+your own favorite editor, not Word or Excel.
 
 .. code-block::
-
-    EPSG:4326
     39.252163365,-6.76912008666667,-18.0319991607666
     39.2521632766667,-6.76912268833333,-17.9779991607666
     39.2521634916667,-6.76912599166667,-17.9489991607666
@@ -161,28 +165,34 @@ Once all fields are provided, click on `Save`. You should see a `Please wait` pa
 
 Camera config step 2:
 ~~~~~~~~~~~~~~~~~~~~~
-After a short while, you are redirected to a new page where you can provide the survey information. If you look
-carefully at the ground control points snapshot, you will see that there are 4 sticks in the water. Below the sticks
-are marked with red dots, at the place where they enter the water. These are your ground control points.
+After a short while, you are redirected to a new page where you can provide the survey information.
+At the top, you can again select the Coordinate Reference System used during the survey. If you do not provide any
+value, Longitude (x) Latitude (y) is assumed, as most GPS systems report in this coordinate system. Provide a valid EPSG
+code if you have measured in another projection system. Then move to the configuration of ground control points.
+
+If you look carefully at the ground control points snapshot, you will see that there are 4 sticks in the water. Below
+the sticks are marked with red dots, at the place where they enter the water. These are your ground control points.
 
 Please do the following:
 
 - click on all four ground control points in the order defined in the table below. So start with the top-left
-  coordinate to make sure you don't mix coordinates up.
-- fill out the right coordinates with the right the ground control point, looking at the color coding. You will see
+  coordinate to make sure you don't mix coordinates up. Remember we leave the Coordinate Reference System blanc,
+  therefore, the coordinates below are in latitude longitude. They have to be selected with many decimals. 7 decimals
+  means roughly an precision in the centimeter range.
+- fill out the right coordinates with the right ground control point, looking at the color coding. You will see
   it follows the same order. You can click points in different orders. Just make sure that the coordinate you enter
-  matches the right color.
+  matches the right color as indicated below.
 
 The coordinates are provided in the table below.
 
-=============  ================  ================
-Control point  Coordinate X [m]  Coordinate Y [m]
-=============  ================  ================
-top-left       527861.12         9251763.74
-top-right      527871.16         9251764.63
-bottom-right   527870.45         9251761.85
-bottom-left    527862.67         9251760.47
-=============  ================  ================
+=============  =======================  =======================
+Control point  Coordinate X [lon or m]  Coordinate Y [lat or m]
+=============  =======================  =======================
+top-left       39.2521259               -6.7691474
+top-right      39.2522168               -6.7691393
+bottom-right   39.2522104               -6.7691645
+bottom-left    39.2521400               -6.7691770
+=============  =======================  =======================
 
 Fill out the following water levels:
 
@@ -205,20 +215,15 @@ you want to remove a wrongly selected point, then right-click on it.
 
 Then fill out the location of the camera in the used coordinate reference system as follows:
 
-====================== ==========
-Lens coordinate X [m]: 527869.47
-Lens coordinate Y [m]: 9251757.48
-Lens coordinate Z [m]: -14.38
-====================== ==========
+=============================  =======================
+Lens coordinate X [lon or m]:  39.2522015333333
+Lens coordinate Y [lat or m]:  -6.76920395
+Lens coordinate Z [m]:         -14.38
+=============================  =======================
 
 Pixel size can be set at 0.01 m.
 
 Click on `Next`.
-
-.. note::
-   We are planning to make it possible to supply the coordinates of the lens in a coordinate reference system of
-   choice, similar to the bathymetry. If this is implemented you will be able to supply such coordinates in for
-   instance latitude and longitude coordinates instead of the local projection system.
 
 Camera config step 3
 ~~~~~~~~~~~~~~~~~~~~
@@ -326,6 +331,3 @@ with a relatively simple field survey. A few things to note at the end of this t
 - If you like this software, and have requests for new features, please reach out to us via info@tahmo.org, or
   info@rainbowsensing.com. You can also visit the software's code page on github and submit new feature requests
   there, on https://github.com/TAHMO/OpenRiverCam.
-
-
-TODO
