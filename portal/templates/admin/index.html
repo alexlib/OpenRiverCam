@@ -10,21 +10,23 @@
             <h1>OpenRiverCam Dashboard</h1>
             <p>OpenRiverCam is operational software to estimate river flows from movies for several sites under your
                 management, and establish and maintain rating curves.</p>
-            <img src="{{ url_for('static', filename='img/front.jpg') }}"  style="width:60%;" />
+            <img src="{{ url_for('static', filename='img/front.jpg') }}"  style="width:50%;" />
 
             <p>
                 <i class="fa fa-question-circle-o"></i>
-                <a href="https://openrivercam.readthedocs.io" target="_blank">https://openrivercam.readthedocs.io</a>
-            </p>
-            <p>
+                <a href="https://openrivercam.readthedocs.io" target="_blank">https://openrivercam.readthedocs.io</a><br>
+<!--            </p>-->
+<!--            <p>-->
                 <i class="fa fa-github"></i>
                 <a href="https://github.com/TAHMO/OpenRiverCam" target="_blank">https://github.com/TAHMO/OpenRiverCam</a>
             </p>
 
         </div>
     </div>
-    <p>
-                This program is free software: you can redistribute it and/or modify it under the terms of the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank">GNU
+    <p>This program is free software: you can redistribute it and/or modify it under the terms of the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank">GNU
                 General Public License </a> as published by the Free Software Foundation, version 3. </p>
     <p>&copy <a href="https://www.tahmo.org" target="_blank">TAHMO</a> and <a href="https://www.rainbowsensing.com/" target="_blank">Rainbow Sensing</a></p>
+    <img src="{{ url_for('static', filename='img/wmo_hydrohub.png') }}" style="width:200px;"/><img
+        src="{{ url_for('static', filename='img/logos.png') }}" style="width:800px;"/>
+    <p><br>The development of OpenRiverCam was funded through a WMO HydroHub grant titled "Open-source non-contact river flow observations with cameras for Africa". </p>
 {% endblock body %}
