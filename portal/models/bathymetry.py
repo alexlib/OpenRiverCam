@@ -37,9 +37,6 @@ class Bathymetry(Base, SerializerMixin):
             "coords": coords
         }
 
-
-
-
 class BathymetryCoordinate(Base, SerializerMixin):
     __tablename__ = "bathymetrycoordinate"
     id = Column(Integer, primary_key=True)
