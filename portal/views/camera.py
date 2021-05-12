@@ -127,7 +127,6 @@ class CameraConfigView(UserModelView):
         movie = Movie.query.filter(Movie.config_id == model.id).filter(Movie.type == MovieType.MOVIE_TYPE_CONFIG).order_by(Movie.id.desc()).first()
         if movie:
             self._template_args['movie'] = movie
-
             if movie.status == MovieStatus.MOVIE_STATUS_NEW or (model.gcps_src_0_x and not model.aoi_bbox):
                 self.edit_template = 'cameraconfig/edit_waiting.html'
             elif model.aoi_bbox:
@@ -137,6 +136,7 @@ class CameraConfigView(UserModelView):
                 self.edit_template = 'cameraconfig/edit_step3.html'
             else:
                 self.form_edit_rules = (
+                    "crs",
                     "gcps_src_0_x",
                     "gcps_src_0_y",
                     "gcps_src_1_x",
