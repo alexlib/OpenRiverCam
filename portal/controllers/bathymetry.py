@@ -112,25 +112,16 @@ def bathymetry_coordinates_txt(id):
     """
     content = request.get_json(silent=True)
     print(content)
-    # content = "EPSG:4326\n5, 6, 7\n2, 3, 4\n"
     # parse content
     f = StringIO(content.replace(' ', ''))
-    crs_csv = read_epsg(f)
-    if crs_csv is None:
-        raise ValueError("No EPSG code found in header")
     result = read_coords(f)
     validate(instance=result, schema=schema)
     bathymetry = Bathymetry.query.get(id)
     if not bathymetry:
         raise ValueError("Invalid bathymetry with identifier %s" % id)
-    # convert to site's EPSG code
-    crs_site = pyproj.CRS.from_epsg(bathymetry.site.position_crs)
-    transform = pyproj.Transformer.from_crs(crs_csv, crs_site,always_xy=True)
     BathymetryCoordinate.query.filter(BathymetryCoordinate.bathymetry_id == bathymetry.id).delete()
     for coordinate in result["coordinates"]:
-        x, y = transform.transform(coordinate['x'], coordinate['y'])
-        z = coordinate['z']
-        db.add(BathymetryCoordinate(x=x,y=y,z=z,bathymetry_id=bathymetry.id))
+        db.add(BathymetryCoordinate(x=coordinate["x"],y=coordinate["y"],z=coordinate["z"], bathymetry_id=bathymetry.id))
 
     db.commit()
     return jsonify(bathymetry.to_dict())
@@ -145,16 +136,21 @@ def bathymetry_details(id):
     """
     bathymetry = Bathymetry.query.get(id)
     coordinates = BathymetryCoordinate.query.filter(BathymetryCoordinate.bathymetry_id == bathymetry.id).all()
-    bathym_positions = [(c.x, c.y) for c in coordinates]
+    # provide coordinates in the site's crs
+    crs_bathymetry = pyproj.CRS.from_epsg(bathymetry.crs if bathymetry.crs is not None else 4326)  # assume WGS84 latlon if not provided
+    crs_site = pyproj.CRS.from_epsg(bathymetry.site.position_crs)
+    transform = pyproj.Transformer.from_crs(crs_bathymetry, crs_site, always_xy=True)
+    coordinates_site_crs = [list(transform.transform(c.x, c.y)) + [c.z] for c in coordinates]
 
     # left-bank to right-bank distances from point to point, for plotting in Highchart
-    pos_0 = coordinates[0]
-    bathym_yz = [[round(((c.x-pos_0.x)**2+(c.y-pos_0.y)**2)**0.5, 2), round(c.z, 2)] for c in coordinates]
+    pos_0 = coordinates_site_crs[0]
+    bathym_yz = [[round(((c[0]-pos_0[0])**2+(c[1]-pos_0[1])**2)**0.5, 2), round(c[2], 2)] for c in coordinates_site_crs]
 
-    # project to EPSG:4326 (WGS84 lat lon) and make into geojson for plotting in leaflet
-    crs_site = pyproj.CRS.from_epsg(bathymetry.site.position_crs)
+    # project x, y to EPSG:4326 (WGS84 lat lon) and make into geojson for plotting in leaflet
+    bathym_positions = [(c.x, c.y) for c in coordinates]
+    crs_bathymetry = pyproj.CRS.from_epsg(bathymetry.crs if bathymetry.crs is not None else 4326)
     crs_latlon = pyproj.CRS.from_epsg(4326)
-    transform = pyproj.Transformer.from_crs(crs_site, crs_latlon, always_xy=True)
+    transform = pyproj.Transformer.from_crs(crs_bathymetry, crs_latlon, always_xy=True)
     bathym_positions_latlon = [transform.transform(*c) for c in bathym_positions]
 
     # retrieve site in lat-long position, for plotting in leaflet

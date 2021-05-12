@@ -9,10 +9,10 @@ from views.general import UserModelView
 class BathymetryView(UserModelView):
     column_list = (
         "site",
-        Bathymetry.timestamp
+        Bathymetry.timestamp,
+        Bathymetry.crs,
     )
-    form_columns = ("site", Bathymetry.timestamp)
-
+    form_columns = ("site", Bathymetry.timestamp, Bathymetry.crs)
     form_args = {
         "site": {
             "query_factory": lambda: Site.query.filter_by(
@@ -23,17 +23,18 @@ class BathymetryView(UserModelView):
     column_labels = {
         "site": "Site name",
         "timestamp": "Time stamp",
+        "crs": "Coordinate reference system",
     }
 
     column_descriptions = {
         "site": "Name of the site as provided in your site setup",
         "timestamp": "Time of measurement of the bathymetry cross section",
+        "crs": "The coordinate reference system in which the bathymetry is stored. If left blanc, Latitude-Longitude is assumed",
     }
 
     create_template = "bathymetry/create.html"
     edit_template = "bathymetry/edit.html"
     details_template = "bathymetry/details.html"
-
 
     def get_query(self):
         """
