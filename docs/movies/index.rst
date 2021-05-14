@@ -63,6 +63,8 @@ A movie, once uploaded can have different statuses. These are briefly described 
   bathymetry is not within the area of interest selected. Please carefully check if the bathymetry is in the right
   position geographically.
 
+.. _movie_processing:
+
 Movie processing
 ----------------
 Once movies are in the MOVIE_STATUS_PROCESSING state, many different steps are taken in the backend. The overview
