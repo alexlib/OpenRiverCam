@@ -28,7 +28,7 @@ Use the colors to identify which marker belongs to which coordinate."></span>
                     <th width="50" style="text-align: center">Coordinate Y [lat or m]</th>
                 </tr>
                 <tr>
-                    <td>Red {{h.is_field_error(form.gcps_src_0_y.errors)}}</td>
+                    <td>Red</td>
                     <td>{{ form.gcps_src_0_x(**{'readonly':True,'class': 'form-control is-invalid' if h.is_field_error(form.gcps_src_0_x.errors) else 'form-control'})|safe }}</td>
                     <td>{{ form.gcps_src_0_y(**{'readonly':True,'class': 'form-control is-invalid' if h.is_field_error(form.gcps_src_0_y.errors) else 'form-control'})|safe }}</td>
                     <td>{{ form.gcps_dst_0_x(**{'class': 'form-control is-invalid' if h.is_field_error(form.gcps_dst_0_x.errors) else 'form-control'})|safe }}</td>
