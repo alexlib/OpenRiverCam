@@ -90,7 +90,7 @@ class CameraConfigView(UserModelView):
             mapper = inspect(CameraConfig)
             for column in mapper.attrs:
                 # Check if model attribute is present in this form.
-                if column.key != "time_end" and hasattr(form, column.key) and getattr(form, column.key) is not None:
+                if column.key != "time_end" and column.key != "crs" and hasattr(form, column.key) and getattr(form, column.key) is not None:
                     # Check if data is set for this form field.
                     if getattr(form, column.key).data is None:
                         getattr(form, column.key).errors = ['Required']

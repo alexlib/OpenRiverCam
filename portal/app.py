@@ -18,7 +18,7 @@ app.register_blueprint(project_api)
 
 app.debug = True
 app.config["SECRET_KEY"] = os.getenv("APP_SECRET_KEY")
-app.config["SECURITY_REGISTERABLE"] = (os.getenv("FLASK_ENV") != "ibmcloud")
+app.config["SECURITY_REGISTERABLE"] = (os.getenv("APP_REGISTRATION_ENABLED") != "false")
 app.config["SECURITY_SEND_REGISTER_EMAIL"] = False
 app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
 
