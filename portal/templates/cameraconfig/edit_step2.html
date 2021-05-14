@@ -124,13 +124,13 @@ Use the colors to identify which marker belongs to which coordinate."></span>
         </span>
 
         <div class="form-group ">
-            <label for="lens_position_x" class="control-label">Lens coordinate X [m]
+            <label for="lens_position_x" class="control-label">Lens coordinate X [lon or m]
                 &nbsp;
             </label>
             {{ form.lens_position_x(**{'class': 'form-control is-invalid' if h.is_field_error(form.lens_position_x.errors) else 'form-control'})|safe }}
         </div>
         <div class="form-group ">
-            <label for="lens_position_y" class="control-label">Lens coordinate Y [m]
+            <label for="lens_position_y" class="control-label">Lens coordinate Y [lat or m]
                 &nbsp;
             </label>
             {{ form.lens_position_y(**{'class': 'form-control is-invalid' if h.is_field_error(form.lens_position_y.errors) else 'form-control'})|safe }}
