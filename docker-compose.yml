@@ -4,7 +4,7 @@ services:
   portal:
     build: ./portal
     ports:
-      - 80:80
+      - 9003:80
     environment:
       AMQP_CONNECTION_STRING: "amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/"
       DB_CONNECTION_STRING: "postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/openrivercam"

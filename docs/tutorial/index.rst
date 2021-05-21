@@ -80,6 +80,7 @@ can provide an alternative Coordinate Reference System as EPSG code. If you do n
 assumes you are providing coordinates in Longitude (x) Latitude (y), because most GPS hardware reports in Longitude
 Latitude. OpenRiverCam automatically reprojects it to the site's local projection system. Leave this field empty!
 
+Please select any time stamp you want for this demonstration. 
 Once everything is selected, click on `Save` to store the new bathymetry. At this stage, it does not yet contain any
 cross-section data.
 
