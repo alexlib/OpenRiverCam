@@ -1,5 +1,5 @@
 import os
-from flask import Flask, redirect, jsonify, url_for
+from flask import Flask, redirect, jsonify, url_for, request
 from flask_admin import helpers as admin_helpers
 from flask_security import Security, login_required, SQLAlchemySessionUserDatastore
 from models import db
@@ -69,12 +69,21 @@ def shutdown_session(exception=None):
 def session_clear(exception=None):
     """
     Resolve database session issues for the combination of Postgres/Sqlalchemy to rollback database transactions after an exception is thrown.
-
-    :param exception:
     """
     db.remove()
     if exception and db.is_active:
         db.rollback()
+
+@app.before_request
+def before_request():
+    """
+    Redirect all requests to HTTPS if the environment variable for this is configured.
+    """
+    # NOTE: String check on FORCE_HTTPS since this is loaded from env variables and not an actual boolean.
+    if not request.is_secure and os.getenv("FORCE_HTTPS") == "true":
+        url = request.url.replace('http://', 'https://', 1)
+        code = 301
+        return redirect(url, code=code)
 
 if __name__ == "__main__":
     # Start app

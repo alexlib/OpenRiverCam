@@ -3,4 +3,6 @@ applications:
  - name: OpenRiverCamPortal
    health-check-type: process
    memory: 256M
+   env:
+     FORCE_HTTPS: true
    command: uwsgi /home/vcap/app/uwsgi_cloud.ini
