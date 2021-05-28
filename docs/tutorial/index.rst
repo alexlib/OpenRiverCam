@@ -4,22 +4,32 @@ Quick start
 ===========
 
 To get you started with the software quickly, this section goes through all functionalities with an example package of data.
-You can download this package in a zip-file from the following link: ZIP-FILE. The zip-file contains all the sample
-data sets, including survey data and some sample videos to get you started. It should take you about one hour to
-complete this tutorial.
+You can download this package in a zip-file from the following link: Click `here <https://github.com/TAHMO/OpenRiverCam/releases/download/v0.1/ORC_demo_videos.zip>`_  to download it.
 
-We assume that you have a user login for the tool and that you have a deployment that you can go to, either on your
-local computer or on a provided web server. In case you have a locally deployed version using the Docker image,
-please open a browser and type `localhost` in the browser window and login with your credentials. If your system
-administrator has installed a web server deployment then please ask for the correct website to go to. We use Google
-Chrome throughout our tutorial. Below you see the expected result.
+The zip-file contains a set of sample videos to get you started. Please unzip all files to an easy to find location. It
+should take you about one hour to complete this tutorial. It may take a bit longer if the system perfroming
+the processing is not very fast. Note that the amount of work you have to do yourself is very limited!
+
+We use Google Chrome throughout our tutorial.
+
+First you have to go to the right website and login with credentials. There are two options here:
+
+- Your administrator has deployed OpenRiverCam and has provided you with website and login details. Please use these
+  by surfing on your favourite browser to the identified page and clicking on `Login` on the top-right of the site.
+- You have started the service locally with the provided Docker image. In that case, please browse to `localhost` on
+  your web browser. Click on `Login` and login with your credentials. If you haven't registered yet, then you will
+  find a link to `register for an account` on this page. Click on it and choose an email address and a password of your
+  choice. Then click on `Register`. You will now have a login for the next time you use OpenRiverCam, and you will
+  automatically be logged in.
+
+The result should be as shown below.
 
 .. image:: img/landing_page.png
 
 .. _tutorial_site_setup:
 
-setup a new site
-----------------
+Setting up a new site
+---------------------
 
 For this tutorial we assume that a new camera has been installed on a new site, and that all required surveying has
 been performed. For a manual on surveying, please refer to the :ref:`survey manual <survey>`. Therefore, we need to
@@ -46,10 +56,11 @@ For more information on creating a new site, please go to :ref:`Site management 
 Add a new camera type
 ---------------------
 We are going to use a Foscam F19901 EP camera. We will add this camera type and its intrinsic lens characteristics to
-our database. To do this, select `Setup`, `Camera types`, `Create`. Fill out the following details:
+our database. To do this, select `Setup`, `Camera types`, `Create`. Fill out the following details (check carefully
+the value of the barrel distortion, it is negative and has 6 decimals, 5 zeros!):
 
 - Camera name: Foscam F19901EP
-- k1 barrel distortion [-]: -3e-6
+- k1 barrel distortion [-]: -0.000003
 - c Optical center [-]: 2
 - f Focal length [mm]: 4
 
@@ -69,6 +80,7 @@ can provide an alternative Coordinate Reference System as EPSG code. If you do n
 assumes you are providing coordinates in Longitude (x) Latitude (y), because most GPS hardware reports in Longitude
 Latitude. OpenRiverCam automatically reprojects it to the site's local projection system. Leave this field empty!
 
+Please select any time stamp you want for this demonstration. 
 Once everything is selected, click on `Save` to store the new bathymetry. At this stage, it does not yet contain any
 cross-section data.
 
@@ -79,6 +91,7 @@ content shown below. If you provide a CSV text, please always use a flat text ed
 your own favorite editor, not Word or Excel.
 
 .. code-block::
+
     39.252163365,-6.76912008666667,-18.0319991607666
     39.2521632766667,-6.76912268833333,-17.9779991607666
     39.2521634916667,-6.76912599166667,-17.9489991607666
@@ -113,7 +126,8 @@ your own favorite editor, not Word or Excel.
 
 Copy-paste the entire contents into the text area where indicated, and click on `Store CSV`. Accept the warning
 message, and you will be brought to the details page that shows the site location, with the spatial coordinates of
-the profile points, and a plot of the bathymetry from left to right bank. Below you can see this result.
+the profile points. You can also click on `Cross-section view` to see the the bathymetry from left to
+right bank as a profile. Below you can see this result.
 
 .. image:: img/tutorial_bathymetry.png
 
@@ -154,14 +168,15 @@ A new screen will be shown where you can insert the following:
 - Time Start: this is the start time of the period in which the camera configuration is valid. If you change the
   orientation of the camera or anything else, then you have to make a new camera configuration and ensure the old one
   becomes invalid and the new one receives a start time commensurate with the validity period. Select for instance
-  today as a Time Start value
+  today as a Time Start value. For this tutorial choose any date you like.
 - Time End: Here select any day in the future. This is the end time of the period in which this configuration is
   valid. After this period, you may install for instance a new camera, or alter the angle or anything else about the
-  camera configuration.
+  camera configuration. For this tutorial choose any date you like.
 - File: here we need to provide a sample movie in which the ground control points are visible, taken during the
   survey period. Here, select the video `control_point.mkv` from the tutorial Zipfile.
 
-Once all fields are provided, click on `Save`. You should see a `Please wait` page.
+Once all fields are provided, click on `Save`. You should see a `Please wait` page. If you do not see this. Please
+refresh the page by pressing Ctrl-R on your keyboard.
 
 Camera config step 2:
 ~~~~~~~~~~~~~~~~~~~~~
@@ -169,9 +184,6 @@ After a short while, you are redirected to a new page where you can provide the 
 At the top, you can again select the Coordinate Reference System used during the survey. If you do not provide any
 value, Longitude (x) Latitude (y) is assumed, as most GPS systems report in this coordinate system. Provide a valid EPSG
 code if you have measured in another projection system. Then move to the configuration of ground control points.
-
-If you look carefully at the ground control points snapshot, you will see that there are 4 sticks in the water. Below
-the sticks are marked with red dots, at the place where they enter the water. These are your ground control points.
 
 Please do the following:
 
@@ -183,7 +195,10 @@ Please do the following:
   it follows the same order. You can click points in different orders. Just make sure that the coordinate you enter
   matches the right color as indicated below.
 
-The coordinates are provided in the table below.
+The coordinates are provided in the table below. The process is highlighted in the animation below the table. Note
+that in this animation, the values are entered very fast because they were available in the browser's cache. You will
+have to type them in very carefully or copy paste them from the table. Make sure that the `-` (minus) signs in each
+Y-coordinate are typed in correctly.
 
 =============  =======================  =======================
 Control point  Coordinate X [lon or m]  Coordinate Y [lat or m]
@@ -193,6 +208,8 @@ top-right      39.2522168               -6.7691393
 bottom-right   39.2522104               -6.7691645
 bottom-left    39.2521400               -6.7691770
 =============  =======================  =======================
+
+.. image:: img/gcps.gif
 
 Fill out the following water levels:
 
@@ -242,6 +259,13 @@ on the projected image. Click on `Save` to finalize the configuration.
 .. note::
    We will change the last step so that you can also provide a window size in meters distance, instead of pixels.
 
+After clicking `Save`, you can go back to the `List` view by clicking on `List`. You should now see the configuration
+with start and end time appearing in the list. You can also click on details (see red dot below) to see all the
+information about the camera configuration as it appears in the database ofd OpenRiverCam. This is rather technical,
+so not treated any further here.
+
+.. image:: img/tutorial_cameraconfig_list.png
+
 .. _tutorial_movie_process:
 
 Process a new movie
@@ -278,15 +302,44 @@ staff gauge. You will find that it is about 1.18 meters. Fill out this value in 
 on `Save`. You are now redirected back to the list of movies, but now you will see that the water level is in
 the table, and that the status of the movie changed to `MOVIE_STATUS_PROCESSING`. This means that the back-end of
 OpenRiverCam is crunching the numbers. It may take a while before the results appear. You can reload the page a few
-times to see if the status already has changed. If the status becomes `MOVIE_STATUS_FINISHED`, you can click on the
-`View` button left of the movie in the table, indicated with an eye icon. This will show the results of the analysis,
-including the median velocity estimates on the water surface, and the table with results for this movie. This table
-now also displays the median discharge in m3/s, estimated from the combination of the water level and the surface
-velocities.
+times to see if the status already has changed.
+
+.. image:: img/tutorial_movie_edit.png
 
 .. note:: If you click on the `Edit` button really fast after the upload procedure, you may find a message indicating
    that the frame is not yet available. Please reload a few times to see the frame appearing and then continue the
    process as normal.
+
+.. note:: The processing may take several minutes. In a future release, we will add a progress bar to provide a user
+   with feedback on the processing status.
+
+Inspecting results
+~~~~~~~~~~~~~~~~~~
+If the status becomes `MOVIE_STATUS_FINISHED`, the table will display the median discharge in m3/s as well as a
+number of percentiles that can be used to better understand the uncertainties. Uncertainties are currently estimated
+very conservatively, as the tool assumes that errors are fully correlated in space. We are still working on more
+reliable error estimates. Nonetheless these estimates are very useful to get a feeling of the relative uncertainties
+between different movie analyses.
+
+You can now click on the `View` button left of the movie in the table, indicated with an eye icon. This will show the
+results of the analysis, including the median velocity estimates on the water surface. Yoiu will see that not the
+entire water surface contains velocity estimates. This is because OpenRiverCam contains sophisticated filters, that
+automatically detect spurious velocities or velocities at places where too little patterns were available to provide
+reliable estimates. The filters use spatial and temporal logics to perform this filtering. For instance, when
+velocities in a certain window move from left to right all the time, it is likely that overhanging vegetation was
+present in this window, that moved from left to right due to wind.
+
+Velocities in the cross section that are unknown but needed for a full cross-sectional river flow estimate are
+estimated by fitting a logarithmic relationship between velocity and depth in the places with known velocities. This
+ensures that your discharge estimate always integrates over the entire width of the stream, and no cross-sectional
+area is missing. For more details on this approach we refer to :ref:`movie_processing`.
+
+.. image:: img/tutorial_movie_details.gif
+
+
+.. note:: Currently, it is assumed that the first 5 seconds of a movie contain enough information to estimate river
+  flow. Longer videos will only be processed for the first 5 seconds. Dependent on feedback from users, we may make
+  this a configurable option.
 
 .. _tutorial_rating:
 
@@ -300,11 +353,14 @@ points before the results will appear. In the tutorial data, we have also suppli
 you to process in exactly the same way. To make it really easy, we recommend that you do this in the following manner:
 
 - First upload all the movies, by clicking `Create` and follow the same steps as in the first movie.
-- Once all movies are in the list with status `MOVIE_STATUS_NEW`, go through each one of them by clicking on the
-  `Edit` button and reading and filling out the water level from the staff gauge.
+- Once all movies are in the list with status `MOVIE_STATUS_EXTRACTED`, go through each one of them by clicking on the
+  `Edit` button and reading and filling out the water level from the staff gauge. If you want to enlarge the
+  snapshot, please right-click on the image and select `Open image in new tab`. You can then even zoom in to the image.
+  Once you have read it, close the tab and enter the value in the window.
 
 If you do it in this order, all movies are placed in a queue for processing. You simply can go grab a coffee or tea,
-and occasionally check if new movies have reached the `MOVIE_STATUS_FINISHED` status.
+and occasionally check if new movies have reached the `MOVIE_STATUS_FINISHED` status. Note that per movie, dependent
+on the speed of the system doing the processing, it may take 5 to 10 minutes per movie.
 
 Create a new rating curve from videos
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -328,6 +384,6 @@ with a relatively simple field survey. A few things to note at the end of this t
   of their position on the water surface. Take a short movie of the situation with the camera in its final position
   and then make a new camera configuration based on your measurements. Make sure that you also always measure the
   position of the lens of the camera.
-- If you like this software, and have requests for new features, please reach out to us via info@tahmo.org, or
-  info@rainbowsensing.com. You can also visit the software's code page on github and submit new feature requests
+- If you like this software, and have requests for new features, please reach out to us via info@rainbowsensing.com or
+  info@tahmo.org. You can also visit the software's code page on github and submit new feature requests
   there, on https://github.com/TAHMO/OpenRiverCam.
