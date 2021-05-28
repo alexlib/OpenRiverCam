@@ -65,6 +65,16 @@ def shutdown_session(exception=None):
     # load all expired attributes for the given instance
     db.expire_all()
 
+@app.teardown_request
+def session_clear(exception=None):
+    """
+    Resolve database session issues for the combination of Postgres/Sqlalchemy to rollback database transactions after an exception is thrown.
+
+    :param exception:
+    """
+    db.remove()
+    if exception and db.is_active:
+        db.rollback()
 
 if __name__ == "__main__":
     # Start app
