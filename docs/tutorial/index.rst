@@ -126,7 +126,7 @@ your own favorite editor, not Word or Excel.
 
 Copy-paste the entire contents into the text area where indicated, and click on `Store CSV`. Accept the warning
 message, and you will be brought to the details page that shows the site location, with the spatial coordinates of
-the profile points. You can also click on `Cross-section view` to see the the bathymetry from left to
+the profile points. You can also click on `Cross-section view` to see the bathymetry from left to
 right bank as a profile. Below you can see this result.
 
 .. image:: img/tutorial_bathymetry.png
