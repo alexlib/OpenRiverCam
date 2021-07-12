@@ -477,6 +477,12 @@ def run(movie, piv_kwargs={}, logger=logging):
     #     "http://localhost/api/processing/run/%s" % movie["id"],
     #     json=Q,
     # )
+
+    # Clean up .tif Files in bucket
+    s3 = utils.get_s3()
+    bucket = movie["file"]["bucket"]
+    prefix = "proj"
+    s3.Bucket(bucket).objects.filter(Prefix=prefix).delete()
     logger.info(f"Full run succesfull for movie {movie['id']}")
 
 
