@@ -466,6 +466,8 @@ def run(movie, piv_kwargs={}, logger=logging):
     compute_piv(movie, piv_kwargs=piv_kwargs, logger=logger)
     filter_piv(movie, logger=logger)
     Q = compute_q(movie, logger=logger)
+    # Clean up .tif files
+    _clean_files(movie["file"]["bucket"])
     # TODO: Return the discharge value in the processing callback to be stored in the database.
     logger.debug(f"Performing callback with discharge value {Q}")
     # API request to confirm movie run is finished.
@@ -478,6 +480,18 @@ def run(movie, piv_kwargs={}, logger=logging):
     #     json=Q,
     # )
     logger.info(f"Full run succesfull for movie {movie['id']}")
+
+
+def _clean_files(bucket):
+    """
+        Clean Up Movie .tif files
+
+        :param movie: bucket
+        :return: None
+    """
+    s3 = utils.get_s3()
+    prefix = "proj"
+    s3.Bucket(bucket).objects.filter(Prefix=prefix).delete()
 
 
 def run_camera_config(movie, logger=logging):
