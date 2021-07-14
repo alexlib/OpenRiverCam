@@ -5,7 +5,7 @@ from flask_admin.actions import action
 from flask_security import current_user
 from sqlalchemy.exc import IntegrityError
 from models import db
-from models.movie import Movie, MovieType
+from models.movie import Movie, MovieType, MovieStatus
 from models.site import Site
 from models.camera import CameraConfig, Camera
 from models.ratingcurve import RatingCurve, RatingPoint
@@ -195,6 +195,19 @@ class MovieView(UserModelView):
 
         else:
             flash("There are not enough rating points. Minimum 5 points are required to construct a rating curve", "error")
+
+    def on_model_change(self, form, model, is_created):
+        if not is_created:
+            if model.actual_water_level != self.previous_water_level:
+                model.status = MovieStatus.MOVIE_STATUS_EXTRACTED
+
+    def edit_form(self, obj=None):
+        try:
+            self.previous_water_level = obj.actual_water_level
+        except AttributeError:
+            pass
+
+        return UserModelView.edit_form(self, obj)
 
     def handle_view_exception(self, e):
         """
