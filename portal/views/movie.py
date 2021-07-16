@@ -200,6 +200,7 @@ class MovieView(UserModelView):
         if not is_created:
             if model.actual_water_level != self.previous_water_level:
                 model.status = MovieStatus.MOVIE_STATUS_EXTRACTED
+                flash("Movie Will be reprocessed")
 
     def edit_form(self, obj=None):
         try:
