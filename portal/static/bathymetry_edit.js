@@ -34,7 +34,11 @@ $(function() {
                 success: function() { window.location.href = url_redirect },
                 error: function(error) {
 
-                    alert(error["responseJSON"]["message"]);
+                    Swal.fire({
+                      icon: 'error',
+                      title: 'Oops...',
+                      text: error["responseJSON"]["message"]
+                    })
                     $('input#_store_csv').prop('disabled',false);
                 }
             });
@@ -53,6 +57,8 @@ $(function() {
         const id = $('input#bathymetry_id').val();
         const form = this;
         const count = $('table#coordinates tr>td:first-child').length;
+
+        console.log(count);
 
         // Retrieve coordinates from HTML table.
         const coordinates = [];
@@ -75,7 +81,14 @@ $(function() {
             // Submit parent form on success.
             success: function() { form.submit(); },
             // Enable save button again.
-            error: function() { $('button[type=submit], input[type=submit]').prop('disabled',false); }
+            error: function(error) {
+                Swal.fire({
+                      icon: 'error',
+                      title: 'Oops...',
+                      text: error["responseJSON"]["message"]
+                    })
+                $('button[type=submit], input[type=submit]').prop('disabled',false);
+            }
         });
     });
 });
