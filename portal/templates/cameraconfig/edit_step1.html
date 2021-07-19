@@ -11,10 +11,17 @@
   </span>
 
     {% call lib.form_tag(action=action) %}
+
         {{ lib.render_form_fields(form, form_opts=form_opts) }}
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10 submit-row">
-                <input name="_continue_editing" type="submit" class="btn btn-primary" value="{{ _gettext('Save') }}" />
+                {% if next_step %}
+                    <input type="hidden" value="{{ next_step }}" name="next_step"/>
+                    <input name="_continue_edit_step" type="submit" class="btn btn-primary" value="{{ _gettext('Next') }}" />
+
+                {% else %}
+                    <input name="_continue_editing" type="submit" class="btn btn-primary" value="{{ _gettext('Save') }}" />
+                {% endif %}
                 <a href="{{ return_url }}" class="btn btn-danger" role="button">{{ _gettext('Cancel') }}</a>
             </div>
         </div>
