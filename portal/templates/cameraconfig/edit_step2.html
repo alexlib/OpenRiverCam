@@ -10,6 +10,7 @@ Use the colors to identify which marker belongs to which coordinate."></span>
     </span>
     {% call lib.form_tag(action=action) %}
         <input type="hidden" value="1" name="previous_step"/>
+        <input type="hidden" value="3" name="next_step"/>
 
         <div class="form-group ">
             <label for="crs" class="control-label">EPSG code of Coordinate Reference System
@@ -156,7 +157,7 @@ Use the colors to identify which marker belongs to which coordinate."></span>
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10 submit-row">
                 <input type="submit" name="_goto_prev" class="btn btn-primary" value="{{ _gettext('Back') }}">
-                <input name="_continue_editing" type="submit" class="btn btn-primary" value="{{ _gettext('Next') }}" />
+                <input name="_continue_edit_step" type="submit" class="btn btn-primary" value="{{ _gettext('Next') }}" />
                 <a href="{{ return_url }}" class="btn btn-danger" role="button">{{ _gettext('Cancel') }}</a>
             </div>
         </div>
