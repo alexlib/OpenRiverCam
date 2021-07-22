@@ -100,8 +100,6 @@ def receive_before_insert(mapper, connection, target):
                         Bathymetry.query.filter(Bathymetry.site_id == target.config.camera.site_id). \
                             filter(Bathymetry.coordinates.any()).order_by(Bathymetry.id.desc()) if
                         len(bathymetry.coordinates) >= 6]
-        print(bathymetries)
-        print(bathymetries[0])
         if bathymetries:
             target.bathymetry_id = bathymetries[0].id
         else:
