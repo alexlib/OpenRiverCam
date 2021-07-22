@@ -96,9 +96,14 @@ def receive_before_insert(mapper, connection, target):
     """
     # Select most recent bathymetry for target site.
     if not target.bathymetry_id and target.config and target.type == MovieType.MOVIE_TYPE_NORMAL:
-        bathymetry = Bathymetry.query.filter(Bathymetry.site_id == target.config.camera.site_id).order_by(Bathymetry.id.desc()).first()
-        if bathymetry:
-            target.bathymetry_id = bathymetry.id
+        bathymetries = [bathymetry for bathymetry in
+                        Bathymetry.query.filter(Bathymetry.site_id == target.config.camera.site_id). \
+                            filter(Bathymetry.coordinates.any()).order_by(Bathymetry.id.desc()) if
+                        len(bathymetry.coordinates) >= 6]
+        print(bathymetries)
+        print(bathymetries[0])
+        if bathymetries:
+            target.bathymetry_id = bathymetries[0].id
         else:
             raise Exception('Could not find bathymetry for site')
     if (
