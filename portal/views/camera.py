@@ -143,6 +143,7 @@ class CameraConfigView(UserModelView):
         if movie:
             self._template_args['movie'] = movie
             if movie.status == MovieStatus.MOVIE_STATUS_NEW or (model.gcps_src_0_x and not model.aoi_bbox):
+                self.form_edit_rules = ()
                 self.edit_template = 'cameraconfig/edit_waiting.html'
             elif model.aoi_bbox:
                 previous_session = session.get('previous_step')

@@ -2,9 +2,9 @@ import os
 import enum
 import pika
 import json
-from sqlalchemy import event, Integer, ForeignKey, String, Column, DateTime, Enum, Float, Text
+from sqlalchemy import event, Integer, ForeignKey, String, Column, DateTime, Enum, Float, Text, inspect
 from sqlalchemy_serializer import SerializerMixin
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, object_session
 from models.base import Base
 from models.movie import Movie, MovieType
 import pyproj
@@ -128,6 +128,16 @@ class CameraConfig(Base, SerializerMixin):
             "aoi": { "bbox": json.loads(self.aoi_bbox) if self.aoi_bbox else {} },
             "aoi_window_size": self.aoi_window_size,
         }
+
+
+@event.listens_for(CameraConfig, "before_update")
+def before_update(mapper, connection, target):
+    state = inspect(target)
+    changes = {}
+    hist = state.attrs.get('gcps_src_0_x').load_history()
+    if hist.has_changes():
+        target.aoi_bbox = None
+
 
 @event.listens_for(CameraConfig, "after_update")
 def receive_after_update(mapper, connection, target):
