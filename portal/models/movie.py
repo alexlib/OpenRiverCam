@@ -44,7 +44,6 @@ class Movie(Base, SerializerMixin):
     actual_water_level = Column(Float)
     bathymetry_id = Column(Integer, ForeignKey("bathymetry.id"))
     status = Column(Enum(MovieStatus), default=MovieStatus.MOVIE_STATUS_NEW)
-    error_message = Column(Text)
     discharge_q05 = Column(Float)
     discharge_q25 = Column(Float)
     discharge_q50 = Column(Float)
