@@ -9,7 +9,7 @@ class Bathymetry(Base, SerializerMixin):
     __tablename__ = "bathymetry"
     id = Column(Integer, primary_key=True)
     site_id = Column(Integer, ForeignKey("site.id"), nullable=False)
-    timestamp = Column(DateTime, nullable=False)
+    timestamp = Column(DateTime, nullable=True)
     crs = Column(Integer)
     coordinates = relationship("BathymetryCoordinate", cascade="all, delete")
     site = relationship("Site")
