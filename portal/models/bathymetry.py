@@ -13,6 +13,7 @@ class Bathymetry(Base, SerializerMixin):
     crs = Column(Integer)
     coordinates = relationship("BathymetryCoordinate", cascade="all, delete")
     site = relationship("Site")
+    newsamplefield = Column(Integer, nullable=True)
 
     def __str__(self):
         return "{}".format(self.id)
