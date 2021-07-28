@@ -202,12 +202,15 @@ class MovieView(UserModelView):
                 model.status = MovieStatus.MOVIE_STATUS_EXTRACTED
 
                 rating_points = RatingPoint.query.filter_by(movie_id=model.id)
-                for rating_point in rating_points:
-                    rating_curve = RatingCurve.query.get(rating_point.ratingcurve_id)
-                    rating_curve.a = None
-                    rating_curve.b = None
-                    rating_curve.h0 = None
-                flash("Movie will be reprocessed and rating curve will be affected")
+                if rating_points.count() > 0:
+                    for rating_point in rating_points:
+                        rating_curve = RatingCurve.query.get(rating_point.ratingcurve_id)
+                        rating_curve.a = None
+                        rating_curve.b = None
+                        rating_curve.h0 = None
+                    flash("Movie will be reprocessed and rating curve will be affected")
+                else:
+                    flash("Movie will be reprocessed")
 
     def edit_form(self, obj=None):
         try:
