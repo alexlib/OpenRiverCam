@@ -207,7 +207,7 @@ class MovieView(UserModelView):
                     rating_curve.a = None
                     rating_curve.b = None
                     rating_curve.h0 = None
-                flash("Movie Will be reprocessed And Rating Curve Will be affected")
+                flash("Movie will be reprocessed and rating curve will be affected")
 
     def edit_form(self, obj=None):
         try:
