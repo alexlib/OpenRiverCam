@@ -63,7 +63,11 @@ def read_coords(f):
             flash(f"At least one value of 3 comma-separated values is missing")
             raise ValidationError(f"At least one value of 3 comma-separated values is missing")
         result["coordinates"].append(row)
+    if len(result["coordinates"]) < 6:
+        flash(f"Coordinates Must be a minimum of 6", "error")
+        raise ValidationError(f"Coordinates Must be a minimum of 6")
     return result
+
 
 bathymetry_api = Blueprint("bathymetry_api", __name__)
 schema = {
