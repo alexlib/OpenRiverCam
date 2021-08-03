@@ -55,7 +55,6 @@ def read_coords(f):
     # skip the header line
     # next(reader)
     result = {"coordinates": []}
-    print("another thing here")
     for n, row in enumerate(reader):
         if len(row) != 3:
             flash(f"Line {n + 1} contains {len(row)} comma-separated numbers instead of 3.")
