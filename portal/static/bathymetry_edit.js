@@ -58,8 +58,6 @@ $(function() {
         const form = this;
         const count = $('table#coordinates tr>td:first-child').length;
 
-        console.log(count);
-
         // Retrieve coordinates from HTML table.
         const coordinates = [];
         for (let i = 0; i <= count; i++) {
