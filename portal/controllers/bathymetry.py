@@ -64,7 +64,7 @@ def read_coords(f):
             raise ValidationError(f"At least one value of 3 comma-separated values is missing")
         result["coordinates"].append(row)
     if len(result["coordinates"]) < 6:
-        flash(f"Coordinates Must be a minimum of 6", "error")
+        # flash(f"Coordinates Must be a minimum of 6", "error")
         raise ValidationError(f"Coordinates Must be a minimum of 6")
     return result
 
@@ -98,6 +98,9 @@ def bathymetry_coordinates(id):
     bathymetry = Bathymetry.query.get(id)
     if not bathymetry:
         raise ValueError("Invalid bathymetry with identifier %s" % id)
+
+    if len(content["coordinates"]) < 6:
+        raise ValidationError(f"Coordinates Must be a minimum of 6")
 
     BathymetryCoordinate.query.filter(BathymetryCoordinate.bathymetry_id == bathymetry.id).delete()
     for coordinate in content["coordinates"]:

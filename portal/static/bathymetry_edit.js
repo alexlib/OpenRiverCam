@@ -34,7 +34,11 @@ $(function() {
                 success: function() { window.location.href = url_redirect },
                 error: function(error) {
 
-                    alert(error["responseJSON"]["message"]);
+                    Swal.fire({
+                      icon: 'error',
+                      title: 'Oops...',
+                      text: error["responseJSON"]["message"]
+                    })
                     $('input#_store_csv').prop('disabled',false);
                 }
             });
@@ -75,7 +79,14 @@ $(function() {
             // Submit parent form on success.
             success: function() { form.submit(); },
             // Enable save button again.
-            error: function() { $('button[type=submit], input[type=submit]').prop('disabled',false); }
+            error: function(error) {
+                Swal.fire({
+                      icon: 'error',
+                      title: 'Oops...',
+                      text: error["responseJSON"]["message"]
+                    })
+                $('button[type=submit], input[type=submit]').prop('disabled',false);
+            }
         });
     });
 });
