@@ -173,7 +173,7 @@ def before_update(mapper, connection, target):
                      "projection_pixel_size"]
     for step_2_field in step_2_fields:
         hist = state.attrs.get(step_2_field).load_history()
-        if hist.has_changes():
+        if hist.has_changes() and hist.deleted[0]:
             if float(hist.deleted[0]) == float(hist.added[0]):
                 field_change = False
             else:
