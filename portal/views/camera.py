@@ -1,10 +1,11 @@
-from flask import flash, redirect, request
+from flask import flash, redirect, request, session
 from flask_admin.contrib.sqla.filters import BaseSQLAFilter
 from flask_admin import expose
 from flask_admin.model.helpers import get_mdict_item_or_list
 from flask_admin.form import rules
 from flask_admin.helpers import is_form_submitted, validate_form_on_submit
 from flask_security import current_user
+from wtforms import HiddenField
 from sqlalchemy.exc import IntegrityError
 from models.site import Site
 from models.movie import Movie, MovieStatus, MovieType
@@ -124,51 +125,51 @@ class CameraConfigView(UserModelView):
         """
         id = get_mdict_item_or_list(request.args, 'id')
         model = self.get_one(id)
+        form = self.edit_form(obj=model)
+
+        if request.method == 'POST' and '_goto_prev' in request.form:
+            if form.previous_step:
+                session['previous_step'] = form.previous_step.data
+            url = request.base_url + "?id={}".format(id)
+            return redirect(url)
+
+        if request.method == 'POST' and '_continue_edit_step' in request.form and self.update_model(form, model):
+            if form.next_step:
+                session['next_step'] = form.next_step.data
+            url = request.base_url + "?id={}".format(id)
+            return redirect(url)
+
         movie = Movie.query.filter(Movie.config_id == model.id).filter(Movie.type == MovieType.MOVIE_TYPE_CONFIG).order_by(Movie.id.desc()).first()
         if movie:
             self._template_args['movie'] = movie
             if movie.status == MovieStatus.MOVIE_STATUS_NEW or (model.gcps_src_0_x and not model.aoi_bbox):
+                self.form_edit_rules = ()
                 self.edit_template = 'cameraconfig/edit_waiting.html'
             elif model.aoi_bbox:
-                self.form_edit_rules = (
-                    "aoi_window_size",
-                )
-                self.edit_template = 'cameraconfig/edit_step3.html'
+                previous_session = session.get('previous_step')
+                next_session = session.get('next_step')
+
+                if previous_session:
+                    if previous_session == "2":
+                        self._get_step2_details()
+                    else:
+                        self._get_step_1_details_for_edit()
+                    session.pop('previous_step')
+
+                elif next_session:
+                    if next_session == "2":
+                        self._get_step2_details()
+                    else:
+                        self._get_step_3_details()
+                    session.pop('next_step')
+                else:
+                    self._get_step_3_details()
             else:
-                self.form_edit_rules = (
-                    "crs",
-                    "gcps_src_0_x",
-                    "gcps_src_0_y",
-                    "gcps_src_1_x",
-                    "gcps_src_1_y",
-                    "gcps_src_2_x",
-                    "gcps_src_2_y",
-                    "gcps_src_3_x",
-                    "gcps_src_3_y",
-                    "gcps_dst_0_x",
-                    "gcps_dst_0_y",
-                    "gcps_dst_1_x",
-                    "gcps_dst_1_y",
-                    "gcps_dst_2_x",
-                    "gcps_dst_2_y",
-                    "gcps_dst_3_x",
-                    "gcps_dst_3_y",
-                    "gcps_z_0",
-                    "gcps_h_ref",
-                    "corner_up_left_x",
-                    "corner_up_left_y",
-                    "corner_up_right_x",
-                    "corner_up_right_y",
-                    "corner_down_left_x",
-                    "corner_down_left_y",
-                    "corner_down_right_x",
-                    "corner_down_right_y",
-                    "lens_position_x",
-                    "lens_position_y",
-                    "lens_position_z",
-                    "projection_pixel_size"
-                )
-                self.edit_template = 'cameraconfig/edit_step2.html'
+                if session.get('previous_step') == '1':
+                    self._get_step_1_details_for_edit()
+                    session.pop('previous_step')
+                else:
+                    self._get_step2_details()
         else:
             self.form_edit_rules = (
                 "time_start",
@@ -179,6 +180,63 @@ class CameraConfigView(UserModelView):
 
         self._form_edit_rules = rules.RuleSet(self, self.form_edit_rules)
         return super(CameraConfigView, self).edit_view()
+
+    def get_edit_form(self):
+        form = super(UserModelView, self).get_edit_form()
+        form.previous_step = HiddenField("previous_step")
+        form.next_step = HiddenField("next_step")
+        return form
+
+    def _get_step_3_details(self):
+        self.form_edit_rules = (
+            "aoi_window_size",
+        )
+        self.edit_template = 'cameraconfig/edit_step3.html'
+
+    def _get_step_1_details_for_edit(self):
+        self.form_edit_rules = (
+            "time_start",
+            "time_end",
+        )
+        self._template_args['next_step'] = '2'
+        self.edit_template = 'cameraconfig/edit_step1.html'
+
+    def _get_step2_details(self):
+        self.form_edit_rules = (
+            "crs",
+            "gcps_src_0_x",
+            "gcps_src_0_y",
+            "gcps_src_1_x",
+            "gcps_src_1_y",
+            "gcps_src_2_x",
+            "gcps_src_2_y",
+            "gcps_src_3_x",
+            "gcps_src_3_y",
+            "gcps_dst_0_x",
+            "gcps_dst_0_y",
+            "gcps_dst_1_x",
+            "gcps_dst_1_y",
+            "gcps_dst_2_x",
+            "gcps_dst_2_y",
+            "gcps_dst_3_x",
+            "gcps_dst_3_y",
+            "gcps_z_0",
+            "gcps_h_ref",
+            "corner_up_left_x",
+            "corner_up_left_y",
+            "corner_up_right_x",
+            "corner_up_right_y",
+            "corner_down_left_x",
+            "corner_down_left_y",
+            "corner_down_right_x",
+            "corner_down_right_y",
+            "lens_position_x",
+            "lens_position_y",
+            "lens_position_z",
+            "projection_pixel_size"
+        )
+        self._template_args['next_step'] = '3'
+        self.edit_template = 'cameraconfig/edit_step2.html'
 
     @expose("/")
     def index_view(self):

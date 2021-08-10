@@ -2,12 +2,13 @@ import os
 import enum
 import pika
 import json
-from sqlalchemy import event, Integer, ForeignKey, String, Column, DateTime, Enum, Float, Text
+from sqlalchemy import event, Integer, ForeignKey, String, Column, DateTime, Enum, Float, Text, inspect
 from sqlalchemy_serializer import SerializerMixin
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, object_session
 from models.base import Base
 from models.movie import Movie, MovieType
 import pyproj
+
 
 class CameraStatus(enum.Enum):
     CAMERA_STATUS_INACTIVE = 0
@@ -37,7 +38,8 @@ class CameraConfig(Base, SerializerMixin):
     camera_id = Column(Integer, ForeignKey("camera.id"), nullable=False)
     time_start = Column(DateTime)
     time_end = Column(DateTime)
-    crs = Column(Integer)  # Coordinate reference system (EPSG-code) in which ground control points and camera lens position are measured
+    crs = Column(
+        Integer)  # Coordinate reference system (EPSG-code) in which ground control points and camera lens position are measured
     movie_setting_resolution = Column(String)
     movie_setting_fps = Column(Float)
     gcps_src_0_x = Column(Integer)
@@ -88,11 +90,13 @@ class CameraConfig(Base, SerializerMixin):
         :return: dict
         """
         # convert any coordinates to site's EPSG code
-        crs_camera_config = pyproj.CRS.from_epsg(self.crs if self.crs is not None else 4326)  # assume WGS84 latlon if not provided
+        crs_camera_config = pyproj.CRS.from_epsg(
+            self.crs if self.crs is not None else 4326)  # assume WGS84 latlon if not provided
         crs_site = pyproj.CRS.from_epsg(self.camera.site.position_crs)
         transform = pyproj.Transformer.from_crs(crs_camera_config, crs_site, always_xy=True)
         dst = [
-            list(transform.transform(float(self.gcps_dst_0_x), float(self.gcps_dst_0_y))) if self.gcps_dst_0_x is not None else [None, None],
+            list(transform.transform(float(self.gcps_dst_0_x),
+                                     float(self.gcps_dst_0_y))) if self.gcps_dst_0_x is not None else [None, None],
             list(transform.transform(float(self.gcps_dst_1_x),
                                      float(self.gcps_dst_1_y))) if self.gcps_dst_1_x is not None else [None, None],
             list(transform.transform(float(self.gcps_dst_2_x),
@@ -102,7 +106,8 @@ class CameraConfig(Base, SerializerMixin):
 
         ]
         if self.lens_position_x is not None:
-            lensPosition = list(transform.transform(float(self.lens_position_x), float(self.lens_position_y))) + [float(self.lens_position_z)]
+            lensPosition = list(transform.transform(float(self.lens_position_x), float(self.lens_position_y))) + [
+                float(self.lens_position_z)]
         else:
             lensPosition = [None, None, None]
         return {
@@ -112,22 +117,72 @@ class CameraConfig(Base, SerializerMixin):
             "time_start": str(self.time_start.isoformat()),
             "time_end": str(self.time_end.isoformat()) if self.time_end else None,
             "gcps": {
-                "src": [ [self.gcps_src_0_x, self.gcps_src_0_y], [self.gcps_src_1_x, self.gcps_src_1_y ], [self.gcps_src_2_x, self.gcps_src_2_y ], [self.gcps_src_3_x, self.gcps_src_3_y ] ],
+                "src": [[self.gcps_src_0_x, self.gcps_src_0_y], [self.gcps_src_1_x, self.gcps_src_1_y],
+                        [self.gcps_src_2_x, self.gcps_src_2_y], [self.gcps_src_3_x, self.gcps_src_3_y]],
                 "dst": dst,
                 "z_0": float(self.gcps_z_0) if self.gcps_z_0 is not None else None,
                 "h_ref": float(self.gcps_h_ref) if self.gcps_h_ref is not None else None
             },
             "corners": {
-                "up_left": [ self.corner_up_left_x, self.corner_up_left_y ],
-                "down_left": [ self.corner_down_left_x, self.corner_down_left_y ],
-                "down_right": [ self.corner_down_right_x, self.corner_down_right_y ],
-                "up_right": [ self.corner_up_right_x, self.corner_up_right_y ],
+                "up_left": [self.corner_up_left_x, self.corner_up_left_y],
+                "down_left": [self.corner_down_left_x, self.corner_down_left_y],
+                "down_right": [self.corner_down_right_x, self.corner_down_right_y],
+                "up_right": [self.corner_up_right_x, self.corner_up_right_y],
             },
             "resolution": float(self.projection_pixel_size) if self.projection_pixel_size else None,
             "lensPosition": lensPosition,
-            "aoi": { "bbox": json.loads(self.aoi_bbox) if self.aoi_bbox else {} },
+            "aoi": {"bbox": json.loads(self.aoi_bbox) if self.aoi_bbox else {}},
             "aoi_window_size": self.aoi_window_size,
         }
+
+
+@event.listens_for(CameraConfig, "before_update")
+def before_update(mapper, connection, target):
+    state = inspect(target)
+    field_change = False
+    step_2_fields = ["crs",
+                     "gcps_src_0_x",
+                     "gcps_src_0_y",
+                     "gcps_src_1_x",
+                     "gcps_src_1_y",
+                     "gcps_src_2_x",
+                     "gcps_src_2_y",
+                     "gcps_src_3_x",
+                     "gcps_src_3_y",
+                     "gcps_dst_0_x",
+                     "gcps_dst_0_y",
+                     "gcps_dst_1_x",
+                     "gcps_dst_1_y",
+                     "gcps_dst_2_x",
+                     "gcps_dst_2_y",
+                     "gcps_dst_3_x",
+                     "gcps_dst_3_y",
+                     "gcps_z_0",
+                     "gcps_h_ref",
+                     "corner_up_left_x",
+                     "corner_up_left_y",
+                     "corner_up_right_x",
+                     "corner_up_right_y",
+                     "corner_down_left_x",
+                     "corner_down_left_y",
+                     "corner_down_right_x",
+                     "corner_down_right_y",
+                     "lens_position_x",
+                     "lens_position_y",
+                     "lens_position_z",
+                     "projection_pixel_size"]
+    for step_2_field in step_2_fields:
+        hist = state.attrs.get(step_2_field).load_history()
+        if hist.has_changes() and hist.deleted[0]:
+            if float(hist.deleted[0]) == float(hist.added[0]):
+                field_change = False
+            else:
+                field_change = True
+                break
+
+    if field_change:
+        target.aoi_bbox = None
+
 
 @event.listens_for(CameraConfig, "after_update")
 def receive_after_update(mapper, connection, target):
@@ -141,6 +196,7 @@ def receive_after_update(mapper, connection, target):
     if not target.aoi_bbox and target.gcps_src_0_x:
         queue_task("run_camera_config", target)
 
+
 @event.listens_for(CameraConfig, 'before_delete')
 def receive_after_update(mapper, connection, target):
     """
@@ -152,6 +208,7 @@ def receive_after_update(mapper, connection, target):
     """
     Movie.query.filter(Movie.config_id == target.id).filter(Movie.type == MovieType.MOVIE_TYPE_CONFIG).delete()
 
+
 def queue_task(type, camera_config):
     """
     Send a task to the processing node.
@@ -159,7 +216,8 @@ def queue_task(type, camera_config):
     :param type: task type
     :param camera_config: camera config object instance
     """
-    movie = Movie.query.filter(Movie.config_id == camera_config.id).filter(Movie.type == MovieType.MOVIE_TYPE_CONFIG).order_by(Movie.id.desc()).first()
+    movie = Movie.query.filter(Movie.config_id == camera_config.id).filter(
+        Movie.type == MovieType.MOVIE_TYPE_CONFIG).order_by(Movie.id.desc()).first()
     if movie:
         movie_json = movie.get_task_json()
         movie_json["h_a"] = movie_json["camera_config"]["gcps"]["h_ref"]
@@ -172,7 +230,7 @@ def queue_task(type, camera_config):
         channel.basic_publish(
             exchange="",
             routing_key="processing",
-            body=json.dumps({"type": type, "kwargs": {"movie": movie_json }})
+            body=json.dumps({"type": type, "kwargs": {"movie": movie_json}})
         )
         connection.close()
 
