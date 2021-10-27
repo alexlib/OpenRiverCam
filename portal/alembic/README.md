@@ -3,6 +3,11 @@ Generic single-database configuration.
 
 In general, we recommend to **always backup the entire database before performing any migration activities**.
 
+To make it easier to perform database migrations within running instances with `docker-compose`, a script `alembic.sh`
+is available that can be run outside of docker to perform database migration activities while the `docker-compose`
+service are running. You can run this script as if you are running alembic directly, with all command line
+arguments of alembic between single quotes.
+
 New tables
 ----------
 To generate tables from scratch with a new deployment, run:
