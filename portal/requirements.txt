@@ -6,6 +6,7 @@ wtforms
 psycopg2
 SQLAlchemy-serializer
 jsonschema
+alembic
 email_validator
 bcrypt
 pika==1.1.0
