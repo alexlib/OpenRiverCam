@@ -4,7 +4,7 @@ Quick start
 ===========
 
 To get you started with the software quickly, this section goes through all functionalities with an example package of data.
-You can download this package in a zip-file from the following link: Click `here <https://github.com/TAHMO/OpenRiverCam/releases/download/v0.1/ORC_demo_videos.zip>`_  to download it.
+You can download this package in a zip-file from the following link: Click `here <https://github.com/localdevices/OpenRiverCam/releases/download/v0.1/ORC_demo_videos.zip>`_  to download it.
 
 The zip-file contains a set of sample videos to get you started. Please unzip all files to an easy to find location. It
 should take you about one hour to complete this tutorial. It may take a bit longer if the system perfroming
@@ -386,4 +386,4 @@ with a relatively simple field survey. A few things to note at the end of this t
   position of the lens of the camera.
 - If you like this software, and have requests for new features, please reach out to us via info@rainbowsensing.com or
   info@tahmo.org. You can also visit the software's code page on github and submit new feature requests
-  there, on https://github.com/TAHMO/OpenRiverCam.
+  there, on https://github.com/localdevices/OpenRiverCam.

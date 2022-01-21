@@ -16,7 +16,7 @@ Install docker
 ~~~~~~~~~~~~~~
 For this step, please follow the instructions for your operating system (Mac, Windows or Linux):
 
-https://github.com/TAHMO/OpenRiverCam/releases
+https://github.com/localdevices/OpenRiverCam/releases
 
 For windows users, Docker desktop for Windows includes Docker-compose and so you will not
 need the next step if you are on Windows.
@@ -37,7 +37,7 @@ Install OpenRiverCam
 
 Get the latest release of OpenRiverCam on
 
-https://github.com/TAHMO/OpenRiverCam/releases
+https://github.com/localdevices/OpenRiverCam/releases
 
 Unzip the release to a folder. Then open a terminal in the folder where you unzipped the tool and type (after the prompt
 indicated below with a $ sign).

@@ -36,7 +36,7 @@ the software can be used in three ways:
 - by installation on a server, allowing for central access by multiple users
 - by use of our cloud service (in progress, please stay posted).
 
-The software can be deployed using `docker`. For installation instructions, please refer to https://github.com/TAHMO/OpenRiverCam/blob/master/README.md
+The software can be deployed using `docker`. For installation instructions, please refer to https://github.com/localdevices/OpenRiverCam/blob/master/README.md
 If you are not familiar with `docker`, please ask your administrator to run the installation for you.
 
 This manual

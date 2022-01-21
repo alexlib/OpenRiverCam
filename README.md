@@ -15,7 +15,7 @@ More information: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git.
 4. Clone repository.
 Run
    ```
-   git clone https://github.com/TAHMO/OpenRiverCam.git" in your terminal
+   git clone https://github.com/localdevices/OpenRiverCam.git" in your terminal
    ```
 
 5. Move to the target folder to run the software as a service
