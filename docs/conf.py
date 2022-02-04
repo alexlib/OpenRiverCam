@@ -111,12 +111,3 @@ autodoc_member_order = "bysource"  # overwrite default alphabetical sort
 # TODO: once a logo is in place, uncomment the line below
 html_static_path = ["_static"]
 # html_logo = "img/logo.png"
-html_theme_options = {
-    "logo_only": True,
-    "display_version": False,
-}
-html_context = {
-    "css_files": [
-        "_static/theme_overrides.css",
-    ],  # override wide tables in RTD theme
-}
